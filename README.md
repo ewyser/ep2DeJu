@@ -8,7 +8,7 @@ This is a small Julia project and an implementation of the solver [ep2-3De v1.0]
 
 * **Fig |** Slumping dynamics showing the accumulated plastic strain $\epsilon_p$ after an elastic load of 8 s and an additional elasto-plastic load of $\approx$ 7 s. 
 
-The solver also uses random gaussian fields to generate initial fields, such as the cohesion field or the internal friction angle, which are taken as spatial parameters instead of constant ones. 
+The solver also uses random gaussian fields to generate initial fields, such as the cohesion field or the internal friction angle, which are taken as spatial variables instead of constant parameters. 
 
 <p align="center">
   <img src="scripts/saved/6_coh0.png" width="400"/>
