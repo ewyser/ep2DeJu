@@ -109,7 +109,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
     
     cohr =  ones(typeD,nmp,1).*cohr
-    #phi  =  ones(typeD,nmp,1).*phi0
+    phi  =  ones(typeD,nmp,1).*phi0
     p    = findall(x->x<=2*wl, xp[:,2])
     phi[p] .= phir
 
