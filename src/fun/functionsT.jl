@@ -49,13 +49,11 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     npz = length(zL)
     xp  = ((xL'.*ones(npz,1  )      ))
     zp  = ((     ones(npx,1  )'.*zL ))
-    c   = GRFS(xp,coh0,cohr,ni,meD.h[1])
 
 
 
     xp  = vec(xp)
     zp  = vec(zp)
-    c   = vec(c)
     wl  = 0.15*lz
     x   = LinRange(minimum(xp),maximum(xp),200)
     a   = -1.25
@@ -88,7 +86,6 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         if(pos==1)
             push!(xlt, xp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
             push!(zlt, zp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
-            push!(clt, c[mp])
         end
     end
     #scatter!(xlt,zlt,markershape=:circle,label="",show=true,aspect_ratio=1)

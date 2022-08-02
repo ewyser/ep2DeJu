@@ -8,7 +8,5 @@ include("./fun_fs/DMBC.jl")
 include("./fun_fs/elast.jl")
 include("./fun_fs/plast.jl")
 
-#include("../../src/GRFS_gauss.jl")
-include("./fun/GRFS_exp.jl")
 include("./fun/functionsT.jl")
 include("./fun/RFS.jl")
