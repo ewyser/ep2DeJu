@@ -67,9 +67,9 @@ If needed, modifications can be made to these routines by changing initial param
 
 3. Enter pkg mode ``` ] ``` and instantiate the environment
 ```julia
-(saintVenant) pkg> activate .
-(saintVenant) pkg> instantiate 
-(saintVenant) pkg> st
+(ep2DeJu) pkg> activate .
+(ep2DeJu) pkg> instantiate 
+(ep2DeJu) pkg> st
 ```
 4. Run a script
 ```julia
