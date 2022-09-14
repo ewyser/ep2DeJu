@@ -1,3 +1,6 @@
+# include dependencies & function call(s) for svSolver.jl
+using Printf, LinearAlgebra, DelimitedFiles, Plots, LaTeXStrings, Base.Threads,ProgressMeter
+
 include("./fun_fs/types.jl")
 include("./fun_fs/topol.jl")
 include("./fun_fs/BSpline.jl")

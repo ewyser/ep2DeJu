@@ -1,8 +1,3 @@
-# Initialisation
-using Printf, LinearAlgebra, DelimitedFiles
-using Plots, LaTeXStrings
-using Base.Threads
-using ProgressMeter
 typeD = Float64  # Precision (double=Float64 or single=Float32)
 include("../src/superInclude.jl")
 
