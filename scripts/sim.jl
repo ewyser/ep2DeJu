@@ -15,10 +15,9 @@ include("../src/superInclude.jl")
     # ---------------------------------------------------------------------------
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]
     E       = 1.0e6                                                             # young's modulus             [Pa]
-    Gc      = E/(2.0*(1.0+ν))                                                   # shear modulus               [Pa]
-    Kc      = E/(3.0*(1.0-2.0*ν))                                               # bulk modulus                [Pa]
+    K,G,Del = D(E,ν)                                                            # elastic matrix    
     ρ0      = 2700.0                                                            # density                     [kg/m^3]
-    yd      = sqrt((Kc+4.0/3.0*Gc)/ρ0)                                          # elastic wave speed          [m/s]
+    yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed          [m/s]
     c0      = 20.0e3                                                            # cohesion                    [Pa]
     ϕ0      = 20.0*pi/180                                                       # friction angle              [Rad]
     ψ0      = 0.0                                                               # dilantancy angle
@@ -35,11 +34,6 @@ include("../src/superInclude.jl")
     lz      = 12.80                                                             # domain length along the z-direction
     meD,bc  = meshSetup(nel,lx,lz,typeD)                                        # mesh geometry setup
     mpD     = pointSetup(meD,ni,lz,c0,cr,ϕ0,ϕr,ρ0,nstr,typeD)                   # material point geometry setup
-    # isotropic elastic matrix
-    Del     = [ Kc+4/3*Gc Kc-2/3*Gc Kc-2/3*Gc 0.0 ;
-                Kc-2/3*Gc Kc+4/3*Gc Kc-2/3*Gc 0.0 ;
-                Kc-2/3*Gc Kc-2/3*Gc Kc+4/3*Gc 0.0 ;
-                0.0       0.0       0.0       Gc  ]                             # elastic matrix
     Hp      = H*meD.h[1]                                                        # softening modulus
     # ---------------------------------------------------------------------------
     # display parameters & runtime
