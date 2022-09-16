@@ -86,7 +86,6 @@ include("../src/superInclude.jl")
     println("[=> action!")
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<t
-        t0  = Base.time()
         Δt  = get_Δt(mpD.vp,meD.h,yd)
         g   = get_g(tw,tg)
         topol!(mpD.p2e,mpD.p2n,meD.e2n,meD.xn,meD.zn,mpD.xp,meD.h,meD.nel,mpD.nmp,meD.nn)
@@ -106,11 +105,6 @@ include("../src/superInclude.jl")
         end
         tw += Δt
         it += 1
-        Δτ  = (Base.time()-t0)
-        itps= 1/Δτ
-        if it>1
-            wct+= Δτ
-        end
         if(mod(it,nout)==0)
             plot_Δϵp(mpD.xp,mpD.epII)       
         end 
