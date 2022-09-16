@@ -116,7 +116,7 @@ include("../src/superInclude.jl")
         end 
         next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("(✗) t/T",round(tw/t,digits=2))])
     end
-    ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(meD.nel[1]*meD.nel[2],mpD.nmp)),("iteration(s)",it),("(✓) t/T",1.0)])
+    ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("(✓) t/T",1.0)])
     savefig(path_plot*"plot.png")
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
