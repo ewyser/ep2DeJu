@@ -271,7 +271,7 @@ end
     markerstrokewidth=0,
     ylim=(-10,20),
     )
-    savefig("./out/coh0.png")
+    savefig(path_plot*"coh0.png")
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     scatter(xp[:,1],xp[:,2],zcolor=phi,
     markershape=:circle,
@@ -284,7 +284,7 @@ end
     markerstrokewidth=0,
     ylim=(-10,20),
     )
-    savefig("./out/phi0.png")
+    savefig(path_plot*"phi0.png")
 end
 @views function plot_Δu(xp,up)
             Δu = sqrt.(up[:,1].^2+up[:,2].^2)
