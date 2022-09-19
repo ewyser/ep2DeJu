@@ -1,13 +1,12 @@
-typeD = Float64  # Precision (double=Float64 or single=Float32)
-
+# include dependencies
+include("../src/superInclude.jl")
+# arithmetic precision (double=Float64 or single=Float32)
+typeD = Float64  
+# relative path for figs & data
 path_plot = "./out/"
 if isdir(path_plot)==false
     mkdir(path_plot)    
 end
-
-include("../src/superInclude.jl")
-
-
 
 @views function main()
     # ---------------------------------------------------------------------------
@@ -73,16 +72,12 @@ include("../src/superInclude.jl")
     wct  = 0.0
     flag = 0
 
-    @printf("\no---------------------------------------------o")
-    @printf("\n|             ** ϵp2-3De v1.0 **              |")
-    @printf("\n|      -- finite strain formulation --        |")
-    @printf("\no---------------------------------------------o")
-    @printf("\n nel = [%d,%d,%d]",meD.nel[1],meD.nel[2],meD.nel[3])
-    @printf("\n nno = [%d,%d,%d]",meD.nno[1],meD.nno[2],meD.nno[3])
-    @printf("\n nmp = %d",mpD.nmp)
-    @printf("\no---------------------------------------------o\n") 
-    #prog = Progress(ceil(Int,t/Δt),dt=0.5,barglyphs=BarGlyphs('|','█', ['▁' ,'▂' ,'▃' ,'▄' ,'▅' ,'▆', '▇'],' ','|',),barlen=16,showspeed=false)
-    # action
+    println("o---------------------------------------------o")
+    println("|             ** ϵp2-3De v1.0 **              |")
+    println("|      -- finite strain formulation --        |")
+    println("o---------------------------------------------o")
+    @info "initial geometry:" nel=Int64(meD.nel[3]) nno=meD.nno[3] nmp=mpD.nmp
+    println("o---------------------------------------------o") 
     println("[=> action!")
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<t
