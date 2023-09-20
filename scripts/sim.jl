@@ -89,6 +89,9 @@ end
         solve!(meD.fn,meD.an,meD.pn,meD.vn,meD.mn,meD.fen,meD.fin,bc.x,bc.z,meD.nno,Δt)
         flip!(mpD.vp,mpD.xp,mpD.ϕ,meD.an,meD.vn,mpD.p2n,mpD.nmp,Δt) 
         DMBC!(mpD.up,meD.pn,meD.un,meD.mn,mpD.ϕ,mpD.vp,mpD.mp,mpD.p2n,bc.x,bc.z,mpD.nmp,meD.nn,meD.nno,Δt)   # need to be improved
+
+        deform!(mpD.τ,mpD.ϵ,mpD.ΔJ,mpD.J,mpD.Jbar,meD.Jn,mpD.v,meD.Vn,mpD.v0,mpD.l,mpD.l0,mpD.F,meD.un,mpD.ϕ,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp,Del)
+
         elast!(mpD.τ,mpD.ϵ,mpD.J,mpD.v,mpD.v0,mpD.l,mpD.l0,mpD.F,meD.un,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp,Del) # need to be improved
         if(tw>te)
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
