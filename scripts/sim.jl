@@ -93,17 +93,17 @@ end
         deform!(mpD.τ,mpD.ϵ,mpD.ΔJ,mpD.J,mpD.Jbar,meD.Jn,mpD.v,meD.Vn,mpD.v0,mpD.l,mpD.l0,mpD.F,meD.un,mpD.ϕ,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp,Del)
 
         elast!(mpD.τ,mpD.ϵ,mpD.J,mpD.v,mpD.v0,mpD.l,mpD.l0,mpD.F,meD.un,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp,Del) # need to be improved
-        if(tw>te)
+        if tw>te
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
             CPAplast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
-            if(flag==0)
+            if flag==0 
                 plot_coh(mpD.xp,mpD.coh,mpD.phi,ϕ0)
                 flag+=1
             end
         end
         tw += Δt
         it += 1
-        if(mod(it,nout)==0)
+        if mod(it,nout)==0
             plot_Δϵp(mpD.xp,mpD.epII)       
         end 
         next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("(✗) t/T",round(tw/t,digits=2))])
