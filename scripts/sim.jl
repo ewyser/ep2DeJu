@@ -65,22 +65,26 @@ end
     bcz[bc.z] .= 0
     bc.z = bcz
 
-    tw = 0.0
-    it = 0
-    itps = 0.0
-    nout = 50
-    wct  = 0.0
-    flag = 0
 
-    println("o---------------------------------------------o")
-    println("|             ** ϵp2-3De v1.0 **              |")
-    println("|      -- finite strain formulation --        |")
-    println("o---------------------------------------------o")
-    @info "initial geometry:" nel=Int64(meD.nel[3]) nno=meD.nno[3] nmp=mpD.nmp
-    println("o---------------------------------------------o") 
+
+    
+    # plot & time stepping parameters
+    tw,it,ctr,toc,flag = 0.0,0,0,0.0,0    
+    tC = 1.0/1.0
+
+    @info "** ϵp2-3De v1.0: finite strain formulation **"
+    @info "mesh & mp feature(s):" nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
     println("[=> action!")
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<t
+        # plot/save
+        if tw >= ctr*tC
+            plot_Δϵp(mpD.xp,mpD.epII)
+            ctr+=1
+        end
+        # set clock in/off
+        tic = time_ns()
+        # adaptative Δt
         Δt  = get_Δt(mpD.vp,meD.h,yd)
         g   = get_g(tw,tg)
         topol!(mpD.p2e,mpD.p2n,meD.e2n,meD.xn,meD.zn,mpD.xp,meD.h,meD.nel,mpD.nmp,meD.nn)
@@ -89,9 +93,7 @@ end
         solve!(meD.fn,meD.an,meD.pn,meD.vn,meD.mn,meD.fen,meD.fin,bc.x,bc.z,meD.nno,Δt)
         flip!(mpD.vp,mpD.xp,mpD.ϕ,meD.an,meD.vn,mpD.p2n,mpD.nmp,Δt) 
         DMBC!(mpD.up,meD.pn,meD.un,meD.mn,mpD.ϕ,mpD.vp,mpD.mp,mpD.p2n,bc.x,bc.z,mpD.nmp,meD.nn,meD.nno,Δt)   # need to be improved
-
         deform!(mpD.τ,mpD.ϵ,mpD.ΔJ,mpD.J,mpD.Jbar,meD.Jn,mpD.v,meD.Vn,mpD.v0,mpD.l,mpD.l0,mpD.F,meD.un,mpD.ϕ,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp,Del)
-
         elast!(mpD.τ,mpD.ϵ,mpD.J,mpD.v,mpD.v0,mpD.l,mpD.l0,mpD.F,meD.un,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp,Del) # need to be improved
         if tw>te
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
@@ -101,11 +103,9 @@ end
                 flag+=1
             end
         end
-        tw += Δt
-        it += 1
-        if mod(it,nout)==0
-            plot_Δϵp(mpD.xp,mpD.epII)       
-        end 
+        # update sim time
+        tw,it,toc = tw+Δt,it+1,((time_ns()-tic))
+        # update progress bas
         next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("(✗) t/T",round(tw/t,digits=2))])
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("(✓) t/T",1.0)])
