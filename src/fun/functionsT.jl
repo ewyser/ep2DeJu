@@ -136,13 +136,14 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     ϕ    = zeros(typeD,nmp ,nn       )
     ∂ϕx  = zeros(typeD,nmp ,nn       )
     ∂ϕz  = zeros(typeD,nmp ,nn       )
+    ϕ∂ϕ  = zeros(typeD,nmp ,nn,3     )
     B    = zeros(typeD,nstr,nn.*2,nmp)
     # connectivity
     p2e  = zeros(UInt64,nmp,1)
     p2n  = zeros(UInt64,nmp,nn)
     # push to struct
     mpD  = point(nmp,l0,l,v0,v,m,xp,up,vp,pp,coh,cohr,phi,epII,ΔJ,J,ΔJbar,Jbar,
-                 dF,dFbar,F,Fbar,b,bT,e,ome,s,τ,dev,ep,ϕ,∂ϕx,∂ϕz,B,p2e,p2n)
+                 dF,dFbar,F,Fbar,b,bT,e,ome,s,τ,dev,ep,ϕ∂ϕ,B,p2e,p2n)
     return(mpD)
 end
 #----------------------------------------------------------------------------------------------------------

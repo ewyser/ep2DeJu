@@ -77,7 +77,7 @@ function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-@views function ϕ∂ϕ!(B,ϕ,∂ϕx,∂ϕz,xp,xn,zn,p2n,h,xB,nn,nmp)
+@views function ϕ∂ϕ!(B,ϕ,xp,xn,zn,p2n,h,xB,nn,nmp)
     #preprocessing
     xb = copy(xB[1:2])
     zb = copy(xB[3:4])
@@ -95,15 +95,15 @@ end
             type   = whichType(zn[id],zb,Δz)
             ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
             # convolution of basis function
-            ϕ[mp,nn]   =  ϕx*  ϕz                                        
-            ∂ϕx[mp,nn] = dϕx*  ϕz                                        
-            ∂ϕz[mp,nn] =  ϕx* dϕz
+            ϕ[mp,nn,1] =  ϕx*  ϕz                                        
+            ϕ[mp,nn,2] = dϕx*  ϕz                                        
+            ϕ[mp,nn,3] =  ϕx* dϕz
         end
         # B-matrix assembly
-        B[1,1:2:end,mp].= ∂ϕx[mp,:]
-        B[2,2:2:end,mp].= ∂ϕz[mp,:]
-        B[4,1:2:end,mp].= ∂ϕz[mp,:]
-        B[4,2:2:end,mp].= ∂ϕx[mp,:]
+        B[1,1:2:end,mp].= ϕ[mp,:,2]
+        B[2,2:2:end,mp].= ϕ[mp,:,3]
+        B[4,1:2:end,mp].= ϕ[mp,:,3]
+        B[4,2:2:end,mp].= ϕ[mp,:,2]
     end
 end
 #----------------------------------------------------------------------------------------------------------

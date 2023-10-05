@@ -54,9 +54,7 @@ mutable struct point
     dev  ::Array{Float64}
     ep   ::Array{Float64}
     # additional quantities
-    ϕ    ::Array{Float64}
-    ∂ϕx  ::Array{Float64}
-    ∂ϕz  ::Array{Float64}
+    ϕ∂ϕ  ::Array{Float64}
     B    ::Array{Float64}
     # connectivity
     p2e  ::Array{Int64}

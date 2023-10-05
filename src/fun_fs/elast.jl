@@ -1,5 +1,5 @@
 
-@views function deform!(ΔJ,J,Jbar,Jn,m,v,Vn,ΔF,ΔFbar,F,Fbar,un,ϕ,∂ϕx,∂ϕz,p2n,nmp)
+@views function deform!(ΔJ,J,Jbar,Jn,m,v,Vn,ΔF,ΔFbar,F,Fbar,un,ϕ∂ϕ,p2n,nmp)
     # init mesh quantities to zero
     Jn .= 0.0
     Vn .= 0.0
@@ -11,12 +11,12 @@
         iD        = p2n[p,:]
         Δun       = hcat(un[iD,1],un[iD,2])
         # compute incremental deformation gradient
-        ΔF[:,:,p].= ID+vcat(∂ϕx[p,:]'*Δun,∂ϕz[p,:]'*Δun)'
+        ΔF[:,:,p].= ID+vcat(ϕ∂ϕ[p,:,2]'*Δun,ϕ∂ϕ[p,:,3]'*Δun)'
         ΔJ[p]     = det(ΔF[:,:,p])
         Jbar[p]   = det(Fbar[:,:,p])
         # accumulation
-        Jn[iD]  .+= ϕ[p,:].*v[p].*(Jbar[p].*ΔJ[p])
-        Vn[iD]  .+= ϕ[p,:].*v[p]  
+        Jn[iD]  .+= ϕ∂ϕ[p,:].*v[p].*(Jbar[p].*ΔJ[p])
+        Vn[iD]  .+= ϕ∂ϕ[p,:].*v[p]  
     end 
     # compute nodal deformation determinant
     @threads for no in eachindex(Jn)
@@ -26,7 +26,7 @@
     end
     # compute determinant Jbar 
     @threads for p in 1:nmp
-        buff         = ϕ[p,:]'*Jn[p2n[p,:]]
+        buff         = ϕ∂ϕ[p,:,1]'*Jn[p2n[p,:]]
         ΔFbar[:,:,p].= ((buff/(Jbar[p].*ΔJ[p])).^(1/2)).*ΔF[:,:,p]
         #ΔFbar[:,:,p].= ΔF[:,:,p]
         Fbar[:,:,p] .= ΔFbar[:,:,p]*Fbar[:,:,p]

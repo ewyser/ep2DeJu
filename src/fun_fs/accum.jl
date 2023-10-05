@@ -1,4 +1,4 @@
-@views function accum!(mn,pn,fen,fin,σ,τ,J,vp,v,mp,ϕ,B,p2n,g,nmp,nn)
+@views function accum!(mn,pn,fen,fin,σ,τ,J,vp,v,mp,ϕ∂ϕ,B,p2n,g,nmp,nn)
     # initialize nodal quantities
     mn .= 0.0
     pn .= 0.0
@@ -10,7 +10,7 @@
     for p in 1:nmp
         # index & buffer
         iD        .= p2n[p,:]
-        buff      .= ϕ[p,:].*mp[p]
+        buff      .= ϕ∂ϕ[p,:,1].*mp[p]
         # accumulation
         σ[:,p]    .= τ[:,p]./J[p]
         mn[iD  ] .+= buff

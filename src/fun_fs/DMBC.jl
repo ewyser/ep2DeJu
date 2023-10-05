@@ -1,4 +1,4 @@
-@views function DMBC!(up,pn,un,mn,ϕ,vp,mp,p2n,bcx,bcz,nmp,nn,nno,Δt)
+@views function DMBC!(up,pn,un,mn,ϕ∂ϕ,vp,mp,p2n,bcx,bcz,nmp,nn,nno,Δt)
     # initialize
     pn.= 0.0
     un.= 0.0
@@ -8,7 +8,7 @@
         # index & buffer
         iD       .= p2n[p,:]
         # accumulation
-        pn[iD,:].+= repeat(ϕ[p,:].*mp[p],1,2).*repeat(vp[p,:]',nn,1) 
+        pn[iD,:].+= repeat(ϕ∂ϕ[p,:,1].*mp[p],1,2).*repeat(vp[p,:]',nn,1) 
     end    
     # solve for nodal incremental displacement
     @threads for n in 1:nno[3]
@@ -19,6 +19,6 @@
     end
     # update material point's displacement
     @threads for p in 1:nmp
-        up[p,:].+= (ϕ[p,:]'*un[p2n[p,:],:])'
+        up[p,:].+= (ϕ∂ϕ[p,:,1]'*un[p2n[p,:],:])'
     end
 end

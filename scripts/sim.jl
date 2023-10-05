@@ -92,12 +92,12 @@ end
         Δt  = get_Δt(mpD.vp,meD.h,yd)
         g   = get_g(tw,tg)
         topol!(mpD.p2e,mpD.p2n,meD.e2n,meD.xn,meD.zn,mpD.xp,meD.h,meD.nel,mpD.nmp,meD.nn)
-        ϕ∂ϕ!(mpD.B,mpD.ϕ,mpD.∂ϕx,mpD.∂ϕz,mpD.xp,meD.xn,meD.zn,mpD.p2n,meD.h,meD.xB,meD.nn,mpD.nmp)
-        accum!(meD.mn,meD.pn,meD.fen,meD.fin,mpD.σ,mpD.τ,mpD.J,mpD.vp,mpD.v,mpD.mp,mpD.ϕ,mpD.B,mpD.p2n,g,mpD.nmp,meD.nn)
+        ϕ∂ϕ!(mpD.B,mpD.ϕ∂ϕ,mpD.xp,meD.xn,meD.zn,mpD.p2n,meD.h,meD.xB,meD.nn,mpD.nmp)
+        accum!(meD.mn,meD.pn,meD.fen,meD.fin,mpD.σ,mpD.τ,mpD.J,mpD.vp,mpD.v,mpD.mp,mpD.ϕ∂ϕ,mpD.B,mpD.p2n,g,mpD.nmp,meD.nn)
         solve!(meD.fn,meD.an,meD.pn,meD.vn,meD.mn,meD.fen,meD.fin,bc.x,bc.z,meD.nno,Δt)
-        flip!(mpD.vp,mpD.xp,mpD.ϕ,meD.an,meD.vn,mpD.p2n,mpD.nmp,Δt) 
-        DMBC!(mpD.up,meD.pn,meD.un,meD.mn,mpD.ϕ,mpD.vp,mpD.mp,mpD.p2n,bc.x,bc.z,mpD.nmp,meD.nn,meD.nno,Δt)   # need to be improved
-        deform!(mpD.ΔJ,mpD.J,mpD.Jbar,meD.Jn,mpD.mp,mpD.v,meD.Vn,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.Fbar,meD.un,mpD.ϕ,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp)
+        flip!(mpD.vp,mpD.xp,mpD.ϕ∂ϕ,meD.an,meD.vn,mpD.p2n,mpD.nmp,Δt) 
+        DMBC!(mpD.up,meD.pn,meD.un,meD.mn,mpD.ϕ∂ϕ,mpD.vp,mpD.mp,mpD.p2n,bc.x,bc.z,mpD.nmp,meD.nn,meD.nno,Δt)   # need to be improved
+        deform!(mpD.ΔJ,mpD.J,mpD.Jbar,meD.Jn,mpD.mp,mpD.v,meD.Vn,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.Fbar,meD.un,mpD.ϕ∂ϕ,mpD.p2n,mpD.nmp)
         elast!(mpD.τ,mpD.ϵ,mpD.ΔJ,mpD.J,mpD.v,mpD.v0,mpD.l,mpD.l0,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.nmp,Del) # need to be improved
         if tw>te
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
