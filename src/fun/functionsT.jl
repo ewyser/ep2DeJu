@@ -118,9 +118,10 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     ΔJbar= ones(typeD,nmp,1)
     Jbar = ones(typeD,nmp,1)
     # tensors
-    dF   = zeros(typeD,nmp,4) 
-    F    = repeat([1 0 0 1],nmp,1)
-    Fbar = F
+    dF   = zeros(2,2,nmp)
+    dFbar= zeros(2,2,nmp)
+    F    = repeat(Matrix(I,2,2),outer=[1,1,nmp])
+    Fbar = repeat(Matrix(I,2,2),outer=[1,1,nmp])
     b    = zeros(typeD,nmp,4)
     bT   = zeros(typeD,nmp,4)
     e    = zeros(typeD,nstr,nmp)
@@ -140,7 +141,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     p2n  = zeros(UInt64,nmp,nn)
     # push to struct
     mpD  = point(nmp,l0,l,v0,v,m,xp,up,vp,pp,coh,cohr,phi,epII,ΔJ,J,ΔJbar,Jbar,
-                 dF,F,Fbar,b,bT,e,ome,s,τ,dev,ep,ϕ,∂ϕx,∂ϕz,B,p2e,p2n)
+                 dF,dFbar,F,Fbar,b,bT,e,ome,s,τ,dev,ep,ϕ,∂ϕx,∂ϕz,B,p2e,p2n)
     return(mpD)
 end
 #----------------------------------------------------------------------------------------------------------

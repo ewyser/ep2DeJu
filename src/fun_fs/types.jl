@@ -42,6 +42,7 @@ mutable struct point
     Jbar ::Array{Float64}
     # tensors
     ΔF   ::Array{Float64}
+    ΔFbar::Array{Float64}
     F    ::Array{Float64}
     Fbar ::Array{Float64}
     b    ::Array{Float64}

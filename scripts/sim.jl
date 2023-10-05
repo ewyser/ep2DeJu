@@ -1,3 +1,6 @@
+# julia -i -O3 -t auto --check-bounds=no --project=.
+# include("./scripts/sim.jl")
+
 # include dependencies
 include("../src/superInclude.jl")
 # arithmetic precision (double=Float64 or single=Float32)
@@ -76,10 +79,10 @@ end
     @info "mesh & mp feature(s):" nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
     println("[=> action!")
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
-    while tw<t
+    while tw<=t
         # plot/save
         if tw >= ctr*tC
-            plot_Δϵp(mpD.xp,mpD.epII)
+            plot_Δϵp(mpD.xp,mpD.ΔFbar)
             ctr+=1
         end
         # set clock in/off
@@ -93,8 +96,8 @@ end
         solve!(meD.fn,meD.an,meD.pn,meD.vn,meD.mn,meD.fen,meD.fin,bc.x,bc.z,meD.nno,Δt)
         flip!(mpD.vp,mpD.xp,mpD.ϕ,meD.an,meD.vn,mpD.p2n,mpD.nmp,Δt) 
         DMBC!(mpD.up,meD.pn,meD.un,meD.mn,mpD.ϕ,mpD.vp,mpD.mp,mpD.p2n,bc.x,bc.z,mpD.nmp,meD.nn,meD.nno,Δt)   # need to be improved
-        deform!(mpD.τ,mpD.ϵ,mpD.ΔJ,mpD.J,mpD.Jbar,meD.Jn,mpD.v,meD.Vn,mpD.v0,mpD.l,mpD.l0,mpD.F,meD.un,mpD.ϕ,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp,Del)
-        elast!(mpD.τ,mpD.ϵ,mpD.J,mpD.v,mpD.v0,mpD.l,mpD.l0,mpD.F,meD.un,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp,Del) # need to be improved
+        deform!(mpD.ΔJ,mpD.J,mpD.Jbar,meD.Jn,mpD.v,meD.Vn,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.Fbar,meD.un,mpD.ϕ,mpD.∂ϕx,mpD.∂ϕz,mpD.p2n,mpD.nmp)
+        elast!(mpD.τ,mpD.ϵ,mpD.J,mpD.v,mpD.v0,mpD.l,mpD.l0,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.nmp,Del) # need to be improved
         if tw>te
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
             CPAplast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
