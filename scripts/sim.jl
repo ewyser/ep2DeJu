@@ -89,18 +89,17 @@ end
         end
         # set clock in/off
         tic = time_ns()
-        # adaptative Δt
-        Δt  = get_Δt(mpD.vp,meD.h,yd)
-        g   = get_g(tw,tg)
+        # adaptative Δt & linear increase in gravity
+        Δt,g  = get_Δt(mpD.vp,meD.h,yd),get_g(tw,tg)
+        # bsmpm cycle
         topol!(mpD.p2e,mpD.p2n,meD.e2n,meD.xn,meD.zn,mpD.xp,meD.h,meD.nel,mpD.nmp,meD.nn)
         ϕ∂ϕ!(mpD.B,mpD.ϕ∂ϕ,mpD.xp,meD.xn,meD.zn,mpD.p2n,meD.h,meD.xB,meD.nn,mpD.nmp)
         accum!(meD.mn,meD.pn,meD.fen,meD.fin,mpD.σ,mpD.τ,mpD.J,mpD.vp,mpD.v,mpD.mp,mpD.ϕ∂ϕ,mpD.B,mpD.p2n,g,mpD.nmp,meD.nn)
         solve!(meD.fn,meD.an,meD.pn,meD.vn,meD.mn,meD.fen,meD.fin,bc.x,bc.z,meD.nno,Δt)
         flip!(mpD.vp,mpD.xp,mpD.ϕ∂ϕ,meD.an,meD.vn,mpD.p2n,mpD.nmp,Δt) 
         DMBC!(mpD.up,meD.pn,meD.un,meD.mn,mpD.ϕ∂ϕ,mpD.vp,mpD.mp,mpD.p2n,bc.x,bc.z,mpD.nmp,meD.nn,meD.nno,Δt)   # need to be improved
-        deform!(mpD.ΔJ,mpD.mp,mpD.ΔF,mpD.ΔFbar,meD.mn,meD.un,meD.ΔJn,mpD.ϕ∂ϕ,mpD.p2n,mpD.nmp)
-        
-        elast!(mpD.τ,mpD.ϵ,mpD.ΔJ,mpD.J,mpD.v,mpD.v0,mpD.l,mpD.l0,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.nmp,Del) # need to be improved
+        deform!(mpD.ΔJ,mpD.J,mpD.mp,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.v,mpD.v0,mpD.l,mpD.l0,meD.mn,meD.un,meD.ΔJn,mpD.ϕ∂ϕ,mpD.p2n,mpD.nmp)
+        elast!(mpD.τ,mpD.ϵ,mpD.ΔFbar,mpD.nmp,Del) # need to be improved
         if tw>te
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
             CPAplast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
