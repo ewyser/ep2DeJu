@@ -82,7 +82,7 @@ end
     while tw<=t
         # plot/save
         if tw >= ctr*tC
-            plot_Δϵp(mpD.xp,mpD.ΔFbar)
+            plot_Δϵp(mpD.xp,mpD.epII)
             ctr+=1
         end
         # set clock in/off

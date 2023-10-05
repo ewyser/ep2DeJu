@@ -7,7 +7,7 @@
     ID   = Matrix(I,2,2)
     # action
     @threads for p in 1:nmp
-        # compute incremental deformation gradient
+        # get nodal incremental displacement
         iD        = p2n[p,:]
         Δun       = hcat(un[iD,1],un[iD,2])
         # compute incremental deformation gradient
@@ -15,19 +15,20 @@
         ΔJ[p]     = det(ΔF[:,:,p])
         Jbar[p]   = det(Fbar[:,:,p])
         # accumulation
-        Jn[iD]  .+= ϕ[p,:].*v[p].*(J[p].*ΔJ[p])
+        Jn[iD]  .+= ϕ[p,:].*v[p].*(Jbar[p].*ΔJ[p])
         Vn[iD]  .+= ϕ[p,:].*v[p]  
     end 
     # compute nodal deformation determinant
     @threads for no in eachindex(Jn)
         if Vn[no]>0.0 
-            Jn[no] = Jn[no]./Vn[no]
+            Jn[no] = Jn[no]/Vn[no]
         end
     end
     # compute determinant Jbar 
     @threads for p in 1:nmp
-        iD   = p2n[p,:]
-        ΔFbar[:,:,p].= ((((ϕ[p,:]'*Jn[iD])')/(Jbar[p]*ΔJ[p])).^(1/2)).*ΔF[:,:,p]
+        buff         = ϕ[p,:]'*Jn[p2n[p,:]]
+        ΔFbar[:,:,p].= ((buff/(Jbar[p].*ΔJ[p])).^(1/2)).*ΔF[:,:,p]
+        #ΔFbar[:,:,p].= ΔF[:,:,p]
         Fbar[:,:,p] .= ΔFbar[:,:,p]*Fbar[:,:,p]
     end
 end
