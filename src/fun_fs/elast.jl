@@ -1,5 +1,5 @@
 
-@views function deform!(ΔJ,J,Jbar,Jn,v,Vn,ΔF,ΔFbar,F,Fbar,un,ϕ,∂ϕx,∂ϕz,p2n,nmp)
+@views function deform!(ΔJ,J,Jbar,Jn,m,v,Vn,ΔF,ΔFbar,F,Fbar,un,ϕ,∂ϕx,∂ϕz,p2n,nmp)
     # init mesh quantities to zero
     Jn .= 0.0
     Vn .= 0.0
@@ -33,7 +33,7 @@
     end
 end
 #==#
-@views function elast!(τ,ϵ,J,v,v0,l,l0,ΔF,ΔFbar,F,nmp,Del)
+@views function elast!(τ,ϵ,ΔJ,J,v,v0,l,l0,ΔF,ΔFbar,F,nmp,Del)
     @threads for p in 1:nmp
         # update deformation gradient
         F[:,:,p].= ΔF[:,:,p]*F[:,:,p]

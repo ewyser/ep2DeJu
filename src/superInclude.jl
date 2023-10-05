@@ -13,3 +13,4 @@ include("./fun_fs/plast.jl")
 
 include("./fun/functionsT.jl")
 include("./fun/RFS.jl")
+include("./fun/GRFS_gauss.jl")
