@@ -15,8 +15,7 @@ mutable struct mesh
     vn ::Array{Float64}
     un ::Array{Float64}
     pel::Array{Float64}
-    Jn ::Array{Float64}
-    Vn ::Array{Float64}
+    ΔJn::Array{Float64}
     e2n::Array{Int64}
     xB ::Array{Float64}
 end
@@ -38,8 +37,6 @@ mutable struct point
     epII ::Array{Float64}
     ΔJ   ::Array{Float64}
     J    ::Array{Float64}
-    ΔJbar::Array{Float64}
-    Jbar ::Array{Float64}
     # tensors
     ΔF   ::Array{Float64}
     ΔFbar::Array{Float64}

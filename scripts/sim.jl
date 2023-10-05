@@ -82,7 +82,8 @@ end
     while tw<=t
         # plot/save
         if tw >= ctr*tC
-            plot_Δϵp(mpD.xp,mpD.epII)
+            #plot_Δϵp(mpD.xp,mpD.epII)
+            plot_P(mpD.xp,mpD.σ)
             #plot_v(mpD.xp,mpD.v)
             ctr+=1
         end
@@ -97,7 +98,8 @@ end
         solve!(meD.fn,meD.an,meD.pn,meD.vn,meD.mn,meD.fen,meD.fin,bc.x,bc.z,meD.nno,Δt)
         flip!(mpD.vp,mpD.xp,mpD.ϕ∂ϕ,meD.an,meD.vn,mpD.p2n,mpD.nmp,Δt) 
         DMBC!(mpD.up,meD.pn,meD.un,meD.mn,mpD.ϕ∂ϕ,mpD.vp,mpD.mp,mpD.p2n,bc.x,bc.z,mpD.nmp,meD.nn,meD.nno,Δt)   # need to be improved
-        deform!(mpD.ΔJ,mpD.J,mpD.Jbar,meD.Jn,mpD.mp,mpD.v,meD.Vn,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.Fbar,meD.un,mpD.ϕ∂ϕ,mpD.p2n,mpD.nmp)
+        deform!(mpD.ΔJ,mpD.mp,mpD.ΔF,mpD.ΔFbar,meD.mn,meD.un,meD.ΔJn,mpD.ϕ∂ϕ,mpD.p2n,mpD.nmp)
+        
         elast!(mpD.τ,mpD.ϵ,mpD.ΔJ,mpD.J,mpD.v,mpD.v0,mpD.l,mpD.l0,mpD.ΔF,mpD.ΔFbar,mpD.F,mpD.nmp,Del) # need to be improved
         if tw>te
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)

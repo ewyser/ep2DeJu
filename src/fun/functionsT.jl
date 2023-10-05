@@ -24,8 +24,7 @@ function meshSetup(nel,Lx,Lz,typeD)
     vn  = zeros(typeD,nno[3],2)
     un  = zeros(typeD,nno[3],2)
     pel = zeros(typeD,nno[3],2)
-    Jn  = zeros(typeD,nno[3],1)
-    Vn  = ones(typeD,nno[3],1)*h[1]*h[2]
+    ΔJn = zeros(typeD,nno[3],1)
     # mesh-to-node topology
     e2n = e2N(nno,nel,nn)
     # boundary conditions
@@ -33,7 +32,7 @@ function meshSetup(nel,Lx,Lz,typeD)
     bcx = vcat(findall(x->x<=xB[1], xn),findall(x->x>=xB[2], xn))
     bcz = findall(x->x<=xB[3], zn)
     # push to struct
-    meD = mesh(nel,nno,nn,L,h,xn,zn,mn,fen,fin,fn,an,pn,vn,un,pel,Jn,Vn,e2n,xB)
+    meD = mesh(nel,nno,nn,L,h,xn,zn,mn,fen,fin,fn,an,pn,vn,un,pel,ΔJn,e2n,xB)
     bc  = boundary(bcx,bcz)
     return(meD,bc)
 end
@@ -106,8 +105,8 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     vp   = zeros(typeD,nmp,2)
     pp   = zeros(typeD,nmp,2)
     coh  =  ones(typeD,nmp,1).*coh0#clt
-    coh  =  clt
-    coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
+    #coh  =  clt
+    #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
     cohr =  ones(typeD,nmp,1).*cohr
     phi  =  ones(typeD,nmp,1).*phi0
     p    = findall(x->x<=2*wl, xp[:,2])
@@ -142,7 +141,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     p2e  = zeros(UInt64,nmp,1)
     p2n  = zeros(UInt64,nmp,nn)
     # push to struct
-    mpD  = point(nmp,l0,l,v0,v,m,xp,up,vp,pp,coh,cohr,phi,epII,ΔJ,J,ΔJbar,Jbar,
+    mpD  = point(nmp,l0,l,v0,v,m,xp,up,vp,pp,coh,cohr,phi,epII,ΔJ,J,
                  dF,dFbar,F,Fbar,b,bT,e,ome,s,τ,dev,ep,ϕ∂ϕ,B,p2e,p2n)
     return(mpD)
 end
