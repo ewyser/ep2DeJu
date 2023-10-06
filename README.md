@@ -80,4 +80,4 @@ Method for large strain geotechnical modelling. Int J Numer Anal Methods Geomech
 https://doi.org/10.1002/nag.3599
 
 2. Zhao Y, Jiang C, Choo J. Circumventing volumetric locking in explicit material point
-methods: A simple, efficient, and general approach. Int J Numer Methods Eng. 2023;1-22. https://doi: 10.1002/nme.7347
+methods: A simple, efficient, and general approach. Int J Numer Methods Eng. 2023;1-22. https://doi.org/10.1002/nme.7347
