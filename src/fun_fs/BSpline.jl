@@ -77,33 +77,33 @@ function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-@views function ϕ∂ϕ!(B,ϕ,xp,xn,zn,p2n,h,xB,nn,nmp)
+@views function ϕ∂ϕ!(mpD,meD)
     #preprocessing
-    xb = copy(xB[1:2])
-    zb = copy(xB[3:4])
-    Δx = h[1]
-    Δz = h[2]
+    xb = copy(meD.xB[1:2])
+    zb = copy(meD.xB[3:4])
+    Δx = meD.h[1]
+    Δz = meD.h[2]
     #action
-    @threads for mp in 1:nmp
-        for nn in 1:nn
+    @threads for mp in 1:mpD.nmp
+        for nn in 1:meD.nn
             # compute basis functions
-            id     = p2n[mp,nn]
-            ξ      = (xp[mp,1] - xn[id])/Δx 
-            type   = whichType(xn[id],xb,Δx)
+            id     = mpD.p2n[mp,nn]
+            ξ      = (mpD.xp[mp,1] - meD.xn[id])/Δx 
+            type   = whichType(meD.xn[id],xb,Δx)
             ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-            η      = (xp[mp,2] - zn[id])/Δz
-            type   = whichType(zn[id],zb,Δz)
+            η      = (mpD.xp[mp,2] - meD.zn[id])/Δz
+            type   = whichType(meD.zn[id],zb,Δz)
             ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
             # convolution of basis function
-            ϕ[mp,nn,1] =  ϕx*  ϕz                                        
-            ϕ[mp,nn,2] = dϕx*  ϕz                                        
-            ϕ[mp,nn,3] =  ϕx* dϕz
+            mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
+            mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
+            mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
         end
         # B-matrix assembly
-        B[1,1:2:end,mp].= ϕ[mp,:,2]
-        B[2,2:2:end,mp].= ϕ[mp,:,3]
-        B[4,1:2:end,mp].= ϕ[mp,:,3]
-        B[4,2:2:end,mp].= ϕ[mp,:,2]
+        mpD.B[1,1:2:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[2,2:2:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[4,1:2:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[4,2:2:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
     end
 end
 #----------------------------------------------------------------------------------------------------------

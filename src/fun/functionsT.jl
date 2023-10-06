@@ -31,10 +31,37 @@ function meshSetup(nel,Lx,Lz,typeD)
     xB  = [minimum(xn)+2*h[1],maximum(xn)-2*h[1],0.0,Inf]                                    
     bcx = vcat(findall(x->x<=xB[1], xn),findall(x->x>=xB[2], xn))
     bcz = findall(x->x<=xB[3], zn)
-    # push to struct
-    meD = mesh(nel,nno,nn,L,h,xn,zn,mn,fen,fin,fn,an,pn,vn,un,pel,ΔJn,e2n,xB)
-    bc  = boundary(bcx,bcz)
-    return(meD,bc)
+    bcX = ones(Int64,nno[3],1)
+    bcX[bcx] .= 0
+    bcZ = ones(nno[3],1)
+    bcZ[bcz] .= 0
+    # push to named-Tuple
+    meD = (
+        nel = nel,
+        nno = nno,
+        nn  = nn,
+        L   = L,
+        h   = h,
+        xn  = xn,
+        zn  = zn,
+        mn  = mn,
+        fen = fen,
+        fin = fin,
+        fn  = fn,
+        an  = an,
+        pn  = pn,
+        vn  = vn,
+        un  = un,
+        pel = pel,
+        ΔJn = ΔJn,
+        e2n = e2n,
+        xB  = xB,
+    )
+    bc = (
+        x = bcX,
+        z = bcZ,
+    )
+    return meD,bc
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -120,8 +147,9 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     # tensors
     dF   = zeros(2,2,nmp)
     dFbar= zeros(2,2,nmp)
-    F    = repeat(Matrix(I,2,2),outer=[1,1,nmp])
-    Fbar = repeat(Matrix(I,2,2),outer=[1,1,nmp])
+    F    = ones(2,2,nmp)
+    F[1,2,:] .= F[2,1,:] .= 0.0
+    Fbar = F
     b    = zeros(2,2,nmp)
     bT   = zeros(2,2,nmp)
     e    = zeros(typeD,nstr,nmp)
@@ -140,10 +168,42 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     # connectivity
     p2e  = zeros(UInt64,nmp,1)
     p2n  = zeros(UInt64,nmp,nn)
-    # push to struct
-    mpD  = point(nmp,l0,l,v0,v,m,xp,up,vp,pp,coh,cohr,phi,epII,ΔJ,J,
-                 dF,dFbar,F,Fbar,b,bT,e,ome,s,τ,dev,ep,ϕ∂ϕ,B,p2e,p2n)
-    return(mpD)
+    # push to named-Tuple
+    mpD = (
+        nmp = nmp,
+        l0  = l0,
+        l   = l,
+        v0  = v0,
+        v   = v,
+        mp  = m,
+        xp  = xp,
+        up  = up,
+        vp  = vp,
+        pp  = pp,
+        coh = coh,
+        cohr= cohr,
+        phi = phi,
+        epII= epII,
+        ΔJ  = ΔJ,
+        J   = J,
+        ΔF  = dF,
+        ΔFbar= dFbar,
+        F    = F,
+        Fbar = Fbar,
+        b    = b,
+        bT   = bT,
+        ϵ    = e,
+        ω    = ome,
+        σ    = s,
+        τ    = τ,
+        dev  = dev,
+        ep   = ep,
+        ϕ∂ϕ  = ϕ∂ϕ,
+        B    = B,
+        p2e  = p2e,
+        p2n  = p2n,
+    )
+    return mpD 
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -182,7 +242,7 @@ function e2N(nno,nel,nn)
             end
 
 		end
-	return(convert(Array{Int64},e2n))
+	return convert(Array{Int64},e2n)
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -213,7 +273,7 @@ function save2txt(meD,mpD,bc)
     BC[vcat(bcx,bcz)].= 0
     writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/bcs.txt" ,vec(BC)) 
 
-    return("done")
+    return "done"
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -228,7 +288,7 @@ end
              Kc-2/3*Gc Kc+4/3*Gc Kc-2/3*Gc 0.0 ;
              Kc-2/3*Gc Kc-2/3*Gc Kc+4/3*Gc 0.0 ;
              0.0       0.0       0.0       Gc  ]
-    return(Kc,Gc,D)
+    return Kc,Gc,D
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -243,7 +303,7 @@ end
     cmax = [maximum(vmax[:,1]) maximum(vmax[:,2])]
     cmax = [Δx/(cmax[1]+yd) Δz/(cmax[2]+yd)]
     Δt   = 0.5*maximum(cmax)
-    return(Δt)
+    return Δt
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -258,7 +318,7 @@ function get_g(tw::Float64,tg::Float64)
     else
         g = 9.81
     end
-    return(g)
+    return g
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -294,50 +354,50 @@ end
     )
     savefig(path_plot*"phi0.png")
 end
-@views function plot_Δu(xp,up)
-            Δu = sqrt.(up[:,1].^2+up[:,2].^2)
-            gr(size=(2*250,2*125),legend=true,markersize=2.5)
-            scatter(xp[:,1],xp[:,2],zcolor=Δu,
-                markershape=:circle,
-                label="",
-                show=true,
-                aspect_ratio=1,
-                c=:viridis,
-                ylim=(-10.0,20.0),
-                )     
-end
-@views function plot_P(xp,σ)
-            p = -(σ[1,:]+σ[2,:]+σ[3,:])/3/1e3
-            gr(size=(2*250,2*125),legend=true,markersize=2.5)
-            scatter(xp[:,1],xp[:,2],zcolor=p,
-                markershape=:circle,
-                label="",
-                show=true,
-                aspect_ratio=1,
-                c=:viridis,
-                ylim=(-10.0,20.0),
-                )     
-end
-@views function plot_Δϵp(xp,epII)
-            gr(size=(2*250,2*125),legend=true,markersize=2.5)
-            scatter(xp[:,1],xp[:,2],zcolor=epII,
-                markershape=:circle,
-                label="",
-                show=true,
-                aspect_ratio=1,
-                c=:viridis,
-                clims=(0.0,2.0),
-                ylim=(-10.0,20.0),
-                )     
-end
-@views function plot_v(xp,v)
-    gr(size=(2*250,2*125),legend=true,markersize=2.5)
-    scatter(xp[:,1],xp[:,2],zcolor=v,
+
+default(
+    fontfamily="Computer Modern",
+    linewidth=2,
+    framestyle=:box,
+    label=nothing,
+    grid=false
+    )
+@views function __plotStuff(mpD,type,ctr)
+    xlab = L"$x-$direction"
+    ylab = L"$z-$direction"
+    
+    gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0,markerstrokecolor=:match,)
+    if type == "P"
+        p = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
+        scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=p,
+            xlabel = xlab,
+            ylabel = ylab,
+            label=L"$p=-\dfrac{1}{3}\left(\sigma_{xx,p}+\sigma_{yy,p}+\sigma_{zz,p}\right)$",
+            aspect_ratio=1,
+            c=:viridis,
+            ylim=(-10.0,20.0),
+            title="Pressure",
+            show=true,
+            )  
+    elseif type == "epII"
+        scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=mpD.epII,
         markershape=:circle,
         label="",
         show=true,
         aspect_ratio=1,
         c=:viridis,
+        clims=(0.0,2.0),
         ylim=(-10.0,20.0),
-        )     
+        ) 
+    elseif type == "Δu"
+        scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=sqrt.(mpD.up[:,1].^2+mpD.up[:,2].^2),
+            markershape=:circle,
+            label="",
+            show=true,
+            aspect_ratio=1,
+            c=:viridis,
+            ylim=(-10.0,20.0),
+            )
+    end
+    return ctr+=1
 end
