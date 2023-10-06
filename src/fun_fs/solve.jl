@@ -6,7 +6,7 @@
     meD.vn .= 0.0
     # solve momentum equation on the mesh
     @threads for n ∈ 1:meD.nno[3]
-        if(meD.mn[n]>0.0)
+        if meD.mn[n]>0.0 
             mnT          = [1.0/meD.mn[n];1.0/meD.mn[n]] #(2,)
             fnT          = meD.fen[n,:].-meD.fin[n,:]    #(2,)
             vnT          = meD.pn[n,:] .*mnT         #(2,)
