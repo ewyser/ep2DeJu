@@ -32,6 +32,7 @@
     @threads for p ∈ 1:mpD.nmp
         mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*(((mpD.ϕ∂ϕ[p,:,1]'*meD.ΔJn[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(1/2))
     end
+    return nothing
 end
 @views function elast!(mpD,Del,isΔFbar)
     @threads for p ∈ 1:mpD.nmp
@@ -51,4 +52,5 @@ end
         # krichhoff stress tensor
         mpD.τ[:,p].= (Del*mpD.ϵ[:,p]) 
     end
+    return nothing
 end

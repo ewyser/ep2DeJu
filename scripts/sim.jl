@@ -67,4 +67,5 @@ if isdir(path_plot)==false mkdir(path_plot) end
     savefig(path_plot*"plot_vollock_"*string(isΔFbar)*".png")
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
+    return nothing
 end
