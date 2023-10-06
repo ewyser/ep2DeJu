@@ -27,7 +27,7 @@
         end
     end
     # update material point's displacement
-    @threads for p ∈ 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         mpD.up[p,:].+= (mpD.ϕ∂ϕ[p,:,1]'*meD.un[mpD.p2n[p,:],:])'
     end
 end
