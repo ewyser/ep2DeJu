@@ -84,8 +84,8 @@ end
     Δx = meD.h[1]
     Δz = meD.h[2]
     #action
-    @threads for mp in 1:mpD.nmp
-        for nn in 1:meD.nn
+    for mp ∈ 1:mpD.nmp
+        for nn ∈ 1:meD.nn
             # compute basis functions
             id     = mpD.p2n[mp,nn]
             ξ      = (mpD.xp[mp,1] - meD.xn[id])/Δx 

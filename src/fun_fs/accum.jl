@@ -7,7 +7,7 @@
     # accumulate material point contributions
     iD  = zeros(Int64  ,meD.nn)
     buff= zeros(Float64,meD.nn)
-    for p in 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         # index & buffer
         iD            .= mpD.p2n[p,:]
         buff          .= mpD.ϕ∂ϕ[p,:,1].*mpD.mp[p]

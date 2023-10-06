@@ -5,15 +5,13 @@
     meD.an .= 0.0
     meD.vn .= 0.0
     # solve momentum equation on the mesh
-    @threads for n in 1:meD.nno[3]
+    for n ∈ 1:meD.nno[3]
         if(meD.mn[n]>0.0)
-            mnT      = [1.0/meD.mn[n];1.0/meD.mn[n]] #(2,)
-            fnT      = meD.fen[n,:].-meD.fin[n,:]    #(2,)
-            vnT      = meD.pn[n,:] .*mnT         #(2,)
-
-            η        = sqrt(fnT[1]^2+fnT[2]^2)      #()
-            fnT      = fnT .- D.*η.*sign.(vnT)      #(2,)
-            
+            mnT          = [1.0/meD.mn[n];1.0/meD.mn[n]] #(2,)
+            fnT          = meD.fen[n,:].-meD.fin[n,:]    #(2,)
+            vnT          = meD.pn[n,:] .*mnT         #(2,)
+            η            = sqrt(fnT[1]^2+fnT[2]^2)      #()
+            fnT          = fnT .- D.*η.*sign.(vnT)      #(2,)
             meD.an[n,:] .= fnT.*mnT.*[bcx[n];bcz[n]]
             meD.vn[n,:] .= (meD.pn[n,:].+Δt.*fnT).*mnT.*[bcx[n];bcz[n]]
         end

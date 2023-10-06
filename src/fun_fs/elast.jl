@@ -6,7 +6,7 @@
     # set identity matrix
     ID   = Matrix(I,2,2)
     # action
-    @threads for p in 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         # get nodal incremental displacement
         iD            = mpD.p2n[p,:]
         Δun           = meD.un[iD,:]
@@ -23,18 +23,18 @@
         meD.ΔJn[iD] .+= mpD.ϕ∂ϕ[p,:].*mpD.mp[p].*mpD.ΔJ[p]  
     end 
     # compute nodal deformation determinant
-    @threads for no in eachindex(meD.ΔJn)
+    for no ∈ 1:meD.nno[3]
         if meD.mn[no]>0.0 
             meD.ΔJn[no] = meD.ΔJn[no]/meD.mn[no]
         end
     end
     # compute determinant Jbar 
-    @threads for p in 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*(((mpD.ϕ∂ϕ[p,:,1]'*meD.ΔJn[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(1/2))
     end
 end
 @views function elast!(mpD,Del,isΔFbar)
-    @threads for p in 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         # compute logarithmic strain tensor
         ϵ          = [    mpD.ϵ[1,p] 0.5*mpD.ϵ[4,p];
                       0.5*mpD.ϵ[4,p]     mpD.ϵ[2,p]]

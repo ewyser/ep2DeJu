@@ -5,7 +5,7 @@
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 function plast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
-    @threads for mp in 1:nmp
+    for mp ∈ 1:nmp
         c   = coh[mp]+Hp*epII[mp]
         if c<cr
             c = cr
@@ -46,7 +46,7 @@ function CPAplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
     ψ    = 0.5*pi/180.0
     ftol = 1e-6
     ηtol = 1e4
-    @threads for p in 1:nmp
+    for p ∈ 1:nmp
         ϕ   = phi[p]
         H   = cos(ϕ)*Hp
         ϵII0= epII[p]
@@ -109,7 +109,7 @@ function bEplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
     ftol = 1e-6
     ηtol = 1e4
     I    = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
-    @threads for p in 1:nmp
+    @threads for p ∈ 1:nmp
         ϕ   = phi[p]
         H   = cos(ϕ)*Hp
         ϵII0= epII[p]
