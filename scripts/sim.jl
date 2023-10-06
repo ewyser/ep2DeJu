@@ -49,7 +49,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         solve!(meD,bc,Δt)
         flipDM!(mpD,meD,bc,Δt)
         deform!(mpD,meD)
-        elast!(mpD,Del,isΔFbar) # need to be improved
+        elast!(mpD,Del,isΔFbar)
         if tw>te
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
             CPAplast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
