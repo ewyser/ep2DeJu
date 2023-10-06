@@ -8,13 +8,13 @@ This is a small Julia project and an implementation of the mechanical solver [ep
 
 * **Fig |** Slumping dynamics showing the accumulated plastic strain $\epsilon_p^{\mathrm{acc}}$ after an elastic load of 8 s and an additional elasto-plastic load of $\approx$ 7 s. 
 
-The solver relies on random gaussian fields to generate initial fields $\psi(\boldsymbol{x})$, such as the cohesion $c(\boldsymbol{x})$ or the internal friction angle $\phi(\boldsymbol{x})$, which are taken as spatial variables instead of constant parameters. 
+The solver relies on random gaussian fields to generate initial fields $\psi(\boldsymbol{x})$, such as the cohesion $c(\boldsymbol{x}_p)$ or the internal friction angle $\phi(\boldsymbol{x}_p)$, which are taken as spatial variables instead of constant parameters. 
 
 <p align="center">
   <img src="docs/saved/6_coh0.png" width="400"/>
 </p>
 
-* **Fig |** Initial cohesion field with average $\mu=20$ kPa with a variance $\sigma=5$ kPa. This corresponds to the initial condition for the result showed above. 
+* **Fig |** Initial cohesion field $c_0(\boldsymbol{x}_p)$ with average $\mu=20$ kPa with a variance $\sigma=5$ kPa. This corresponds to the initial condition for the result showed above. 
 
 ## **Content**
 1. [Usage](#id-section2)
@@ -68,7 +68,7 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 julia> include("./scripts/sim.jl")
 julia> ϵp2De(80,false)
 ```
-5. Input parameters: ``nel`` is the number of elements along the $x$ dim. and ``isΔFbar`` is a boolean argument (``true``/``false``) controlling volumetric locking corrections using $\Delta\bar{F}$ for the stress update (see [1,2]). 
+5. Input parameters: ``nel`` is the number of elements along the $x$ dim. and ``isΔFbar`` is a boolean arg. (``true``/``false``) controlling volumetric locking corrections using $\Delta\bar{F}$ for the stress update (see [1,2]). 
 
 5. The outputs (figs, gif, etc.) are saved in the folder ``` ./out/ ```
 
