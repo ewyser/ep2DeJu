@@ -363,10 +363,8 @@ default(
     grid=false
     )
 @views function __plotStuff(mpD,type,ctr)
-    xlab = L"$x-$direction"
-    ylab = L"$z-$direction"
-    
-    gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0,markerstrokecolor=:match,)
+    xlab,ylab = L"$x-$direction",L"$z-$direction"
+    gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.5,)#markerstrokecolor=:match,)
     if type == "P"
         p = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
         scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=p,

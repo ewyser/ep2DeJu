@@ -1,5 +1,6 @@
 # julia -i -O3 -t auto --check-bounds=no --project=.
 # include("./scripts/sim.jl")
+# ϵp2De(80,true)
 
 # include dependencies
 include("../src/superInclude.jl")
@@ -67,8 +68,3 @@ if isdir(path_plot)==false mkdir(path_plot) end
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
 end
-ϵp2De(80,true)
-
-
-
-# https://techytok.com/lesson-parallel-computing/
