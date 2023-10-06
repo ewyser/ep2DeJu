@@ -42,20 +42,21 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-function CPAplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
+function CPAplast!(mpD,Del,Hp,cr)
     ψ    = 0.5*pi/180.0
     ftol = 1e-6
     ηtol = 1e4
-    for p ∈ 1:nmp
-        ϕ   = phi[p]
+    ηmax = 0
+    for p ∈ 1:mpD.nmp
+        ϕ   = mpD.phi[p]
         H   = cos(ϕ)*Hp
-        ϵII0= epII[p]
-        c0  = coh[p]+Hp*ϵII0
+        ϵII0= mpD.ϵpII[p]
+        c0  = mpD.coh[p]+Hp*ϵII0
         if c0<cr
             c0 = cr
         end
-        σm  = 0.5*(τ[1,p]+τ[2,p])
-        τII = sqrt(0.25*(τ[1,p]-τ[2,p])^2+τ[4,p]^2)
+        σm  = 0.5*(mpD.τ[1,p]+mpD.τ[2,p])
+        τII = sqrt(0.25*(mpD.τ[1,p]-mpD.τ[2,p])^2+mpD.τ[4,p]^2)
         f   = τII+σm*sin(ϕ)-c0*cos(ϕ)
         e   = [0 f]
         if f>0.0
@@ -64,39 +65,40 @@ function CPAplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
             η   = 0
             while abs(f)>ftol
                 η  += 1
-                ∂σf = [ (τ[1,p]-τ[2,p])/(4*τII)+sin(ϕ)/2;
-                       -(τ[1,p]-τ[2,p])/(4*τII)+sin(ϕ)/2;
-                        0.0                             ;
-                        τ[4,p]/τII                      ]
-                ∂σg = [ (τ[1,p]-τ[2,p])/(4*τII)+sin(ψ)/2;
-                       -(τ[1,p]-τ[2,p])/(4*τII)+sin(ψ)/2;
-                        0.0                             ;
-                        τ[4,p]/τII                      ] 
+                ∂σf = [ (mpD.τ[1,p]-mpD.τ[2,p])/(4*τII)+sin(ϕ)/2;
+                       -(mpD.τ[1,p]-mpD.τ[2,p])/(4*τII)+sin(ϕ)/2;
+                        0.0                                     ;
+                        mpD.τ[4,p]/τII                      ]
+                ∂σg = [ (mpD.τ[1,p]-mpD.τ[2,p])/(4*τII)+sin(ψ)/2;
+                       -(mpD.τ[1,p]-mpD.τ[2,p])/(4*τII)+sin(ψ)/2;
+                        0.0                                     ;
+                        mpD.τ[4,p]/τII                          ] 
 
                 Δγ  = f/(H+∂σf'*Del*∂σg)
                 Δσ  = Δγ*Del*∂σg
                 Δϵ  = Δϵ+Del\Δσ
-                τ[:,p] -= Δσ
                 ϵII = ϵII0+sqrt(2/3*(Δϵ[1]^2+Δϵ[2]^2+Δϵ[3]^2+2*Δϵ[4]^2))
-                c0  = coh[p]+Hp*ϵII
+                c0  = mpD.coh[p]+Hp*ϵII
                 if c0<cr
                     c0 = cr
                 end
-                σm = 0.5*(τ[1,p]+τ[2,p])
-                τII = sqrt(0.25*(τ[1,p]-τ[2,p])^2+τ[4,p]^2)
-                f = τII+σm*sin(ϕ)-c0*cos(ϕ)
+                mpD.τ[:,p] .-= Δσ
+                σm           = 0.5*(mpD.τ[1,p]+mpD.τ[2,p])
+                τII          = sqrt(0.25*(mpD.τ[1,p]-mpD.τ[2,p])^2+mpD.τ[4,p]^2)
+                f            = τII+σm*sin(ϕ)-c0*cos(ϕ)
                 if η>ηtol
                     @printf("\nCPA: max(η_it)>%d",ηtol)
                     @printf("\n     f = %.6f",f)
                     @printf("\n     program killed...")
                     exit(1)
                 end
+                ηmax = max(η,ηmax)
             end
-            ϵ[:,p] -= Δϵ
-            epII[p] = ϵII 
+            mpD.ϵ[:,p] .-= Δϵ
+            mpD.ϵpII[p]  = ϵII 
         end
     end
-    return nothing
+    return ηmax
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -113,7 +115,7 @@ function bEplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
     @threads for p ∈ 1:nmp
         ϕ   = phi[p]
         H   = cos(ϕ)*Hp
-        ϵII0= epII[p]
+        ϵII0= ϵpII[p]
         c0  = coh[p]+Hp*ϵII0
         if c0<cr
             c0 = cr
@@ -169,7 +171,7 @@ function bEplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
                 η += 1 
             end
             ϵ[:,p] -= δϵ
-            epII[p] = δϵII
+            ϵpII[p] = δϵII
             τ[:,p]  = σ 
         end
     end

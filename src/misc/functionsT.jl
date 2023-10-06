@@ -183,7 +183,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         coh = coh,
         cohr= cohr,
         phi = phi,
-        epII= epII,
+        ϵpII= epII,
         ΔJ  = ΔJ,
         J   = J,
         ΔF  = dF,
@@ -377,8 +377,8 @@ default(
             title="Pressure",
             show=true,
             )  
-    elseif type == "epII"
-        scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=mpD.epII,
+    elseif type == "ϵpII"
+        scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=mpD.ϵpII,
             xlabel = xlab,
             ylabel = ylab,    
             label="",

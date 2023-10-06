@@ -29,7 +29,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     @info "mesh & mp feature(s):" nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
     # plot & time stepping parameters
-    tw,tC,it,ctr,toc,flag = 0.0,1.0/1.0,0,0,0.0,0    
+    tw,tC,it,ctr,toc,flag,ηmax = 0.0,1.0/1.0,0,0,0.0,0,0    
     # action
     @info "launch bsmpm calculation cycle..."
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
@@ -52,7 +52,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         elast!(mpD,Del,isΔFbar)
         if tw>te
             #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
-            CPAplast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
+            ηmax = CPAplast!(mpD,Del,Hp,cr)
             if flag==0 
                 plot_coh(mpD.xp,mpD.coh,mpD.phi,ϕ0)
                 flag+=1
@@ -61,9 +61,9 @@ if isdir(path_plot)==false mkdir(path_plot) end
         # update sim time
         tw,it,toc = tw+Δt,it+1,((time_ns()-tic))
         # update progress bas
-        next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("(✗) t/T",round(tw/t,digits=2))])
+        next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax",ηmax),("(✗) t/T",round(tw/t,digits=2))])
     end
-    ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("(✓) t/T",1.0)])
+    ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax",ηmax),("(✓) t/T",1.0)])
     savefig(path_plot*"plot_vollock_"*string(isΔFbar)*".png")
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
