@@ -1,4 +1,4 @@
-@views function flipDM!(mpD,meD,bcx,bcz,Δt)
+@views function flipDM!(mpD,meD,bc,Δt)
     # init.
     iD = zeros(Int64,meD.nn)
     # flip update
@@ -23,7 +23,7 @@
     @threads for n ∈ 1:meD.nno[3]
         if(meD.mn[n]>0.0)
             mnT         = [1.0/meD.mn[n] 1.0/meD.mn[n]]
-            meD.un[n,:].= reshape(Δt.*meD.pn[n,:]'.*mnT.*[bcx[n] bcz[n]],2)
+            meD.un[n,:].= reshape(Δt.*meD.pn[n,:]'.*mnT.*[bc.x[n] bc.z[n]],2)
         end
     end
     # update material point's displacement

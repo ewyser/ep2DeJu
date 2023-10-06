@@ -46,8 +46,8 @@ if isdir(path_plot)==false mkdir(path_plot) end
         topol!(mpD,meD)
         ϕ∂ϕ!(mpD,meD)
         accum!(mpD,meD,g)
-        solve!(meD,bc.x,bc.z,Δt)
-        flipDM!(mpD,meD,bc.x,bc.z,Δt)
+        solve!(meD,bc,Δt)
+        flipDM!(mpD,meD,bc,Δt)
         deform!(mpD,meD)
         elast!(mpD,Del,isΔFbar) # need to be improved
         if tw>te
