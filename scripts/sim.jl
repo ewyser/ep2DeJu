@@ -1,6 +1,6 @@
 # julia -i -O3 -t auto --check-bounds=no --project=.
 # include("./scripts/sim.jl")
-# ϵp2De(80,true)
+# ϵp2De(80,"P",true)
 
 # include dependencies
 include("../src/superInclude.jl")
@@ -10,7 +10,7 @@ typeD = Float64
 path_plot = "./out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
-@views function ϵp2De(nel::Int64,isΔFbar::Bool)
+@views function ϵp2De(nel::Int64,varPlot::String,isΔFbar::Bool)
     @info "** ϵp2-3De v1.0: finite strain formulation **"
     # non-dimensional constant                                                   
     ni,nstr = 2,4                                                               # number of material point along 1d, number of stresses
@@ -29,14 +29,14 @@ if isdir(path_plot)==false mkdir(path_plot) end
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     @info "mesh & mp feature(s):" nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
     # plot & time stepping parameters
-    tw,tC,it,ctr,toc,flag,ηmax = 0.0,1.0/1.0,0,0,0.0,0,0    
+    tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
     @info "launch bsmpm calculation cycle..."
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<=t
         # plot/save
         if tw >= ctr*tC
-            ctr = __plotStuff(mpD,"P",ctr)
+            ctr = __plotStuff(mpD,varPlot,ctr)
         end
         # set clock on/off
         tic = time_ns()
@@ -59,12 +59,12 @@ if isdir(path_plot)==false mkdir(path_plot) end
             end
         end
         # update sim time
-        tw,it,toc = tw+Δt,it+1,((time_ns()-tic))
+        tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
         # update progress bas
-        next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax",ηmax),("(✗) t/T",round(tw/t,digits=2))])
+        next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✗) t/T",round(tw/t,digits=2))])
     end
-    ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax",ηmax),("(✓) t/T",1.0)])
-    savefig(path_plot*"plot_vollock_"*string(isΔFbar)*".png")
+    ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✓) t/T",1.0)])
+    savefig(path_plot*"plot_"*string(varPlot)*"_vollock_"*string(isΔFbar)*".png")
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
     return nothing

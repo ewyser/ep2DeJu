@@ -326,6 +326,13 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
+default(
+    fontfamily="Computer Modern",
+    linewidth=2,
+    framestyle=:box,
+    label=nothing,
+    grid=false
+    )
 @views function plot_coh(xp,coh,phi,ϕ0)
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     scatter(xp[:,1],xp[:,2],zcolor=coh./1e3,
@@ -354,14 +361,6 @@ end
     )
     savefig(path_plot*"phi0.png")
 end
-
-default(
-    fontfamily="Computer Modern",
-    linewidth=2,
-    framestyle=:box,
-    label=nothing,
-    grid=false
-    )
 @views function __plotStuff(mpD,type,ctr)
     xlab,ylab = L"$x-$direction",L"$z-$direction"
     gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.75,)#markerstrokecolor=:match,)
@@ -377,26 +376,33 @@ default(
             title="Pressure",
             show=true,
             )  
-    elseif type == "ϵpII"
+    elseif type == "epII"
         scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=mpD.ϵpII,
             xlabel = xlab,
             ylabel = ylab,    
-            label="",
-            show=true,
+            label=L"$\epsilon_{II}^{\mathrm{acc}}$",
             aspect_ratio=1,
             c=:viridis,
             clims=(0.0,2.0),
             ylim=(-10.0,20.0),
+            title="Plastic strain",
+            show=true,
             ) 
-    elseif type == "Δu"
+    elseif type == "du"
         scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=sqrt.(mpD.up[:,1].^2+mpD.up[:,2].^2),
             markershape=:circle,
-            label="",
-            show=true,
+            xlabel = xlab,
+            ylabel = ylab,
+            label=L"$\Delta u$",
             aspect_ratio=1,
             c=:viridis,
             ylim=(-10.0,20.0),
+            title="Displacement",
+            show=true,
             )
+    else
+        @error "field --"*string(type)*"-- not found as a valid arg. for plot"
+        exit(1)
     end
     return ctr+=1
 end
