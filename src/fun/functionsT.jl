@@ -381,14 +381,15 @@ default(
             )  
     elseif type == "epII"
         scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=mpD.epII,
-        markershape=:circle,
-        label="",
-        show=true,
-        aspect_ratio=1,
-        c=:viridis,
-        clims=(0.0,2.0),
-        ylim=(-10.0,20.0),
-        ) 
+            xlabel = xlab,
+            ylabel = ylab,    
+            label="",
+            show=true,
+            aspect_ratio=1,
+            c=:viridis,
+            clims=(0.0,2.0),
+            ylim=(-10.0,20.0),
+            ) 
     elseif type == "Δu"
         scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=sqrt.(mpD.up[:,1].^2+mpD.up[:,2].^2),
             markershape=:circle,
