@@ -2,6 +2,7 @@
 using Printf, LinearAlgebra, DelimitedFiles, Plots, LaTeXStrings, Base.Threads,ProgressMeter
 
 include("./fun_fs/topol.jl")
+#include("./fun_fs/gimp.jl")
 include("./fun_fs/bspline.jl")
 include("./fun_fs/accum.jl")
 include("./fun_fs/solve.jl")

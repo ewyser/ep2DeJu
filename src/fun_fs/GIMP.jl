@@ -20,26 +20,25 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-function ϕ∂ϕ!(B,ϕ,∂ϕx,∂ϕz,σ,τ,J,xp,l,xn,zn,p2n,h,xB,nn,nmp)
-    Threads.@threads for mp in 1:nmp
-        for nn in 1:nn
+function ϕ∂ϕ!(mpD,meD)
+    Threads.@threads for mp in 1:mpD.nmp
+        for nn in 1:meD.nn
             # compute basis functions
-            id     = p2n[mp,nn]
-            ξ      = xp[mp,1] - xn[id] 
-            η      = xp[mp,2] - zn[id]
-            ϕx,dϕx = NdN(ξ,h[1],l[mp,1])
-            ϕz,dϕz = NdN(η,h[2],l[mp,2])
+            id     = mpD.p2n[mp,nn]
+            ξ      = mpD.xp[mp,1] - meD.xn[id] 
+            η      = mpD.xp[mp,2] - meD.zn[id]
+            ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l0[mp,1])
+            ϕz,dϕz = NdN(η,meD.h[2],mpD.l0[mp,2])
             # convolution of basis function
-            ϕ[mp,nn]   =  ϕx*  ϕz                                        
-            ∂ϕx[mp,nn] = dϕx*  ϕz                                        
-            ∂ϕz[mp,nn] =  ϕx* dϕz
+            mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
+            mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
+            mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
         end
         # B-matrix assembly
-        B[1,1:2:end,mp] = ∂ϕx[mp,:]
-        B[2,2:2:end,mp] = ∂ϕz[mp,:]
-        B[4,1:2:end,mp] = ∂ϕz[mp,:]
-        B[4,2:2:end,mp] = ∂ϕx[mp,:]
-        σ[:,mp]         = τ[:,mp]/J[mp]
+        mpD.B[1,1:2:end,mp] = mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[2,2:2:end,mp] = mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[4,1:2:end,mp] = mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[4,2:2:end,mp] = mpD.ϕ∂ϕ[mp,:,2]
     end
     return nothing
 end
