@@ -1,6 +1,6 @@
 # julia -i -O3 -t auto --check-bounds=no --project=.
 # include("./scripts/sim.jl")
-# ϵp2De(80,"P",true)
+# ϵp2De(80,"P","mohr",true)
 
 # include dependencies
 include("../src/superInclude.jl")
@@ -10,7 +10,7 @@ typeD = Float64
 path_plot = "./out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
-@views function ϵp2De(nel::Int64,varPlot::String,isΔFbar::Bool)
+@views function ϵp2De(nel::Int64,varPlot::String,plastMod::String,isΔFbar::Bool)
     @info "** ϵp2-3De v1.0: finite strain formulation **"
     # non-dimensional constant                                                   
     ni,nstr = 2,4                                                               # number of material point along 1d, number of stresses
@@ -43,20 +43,14 @@ if isdir(path_plot)==false mkdir(path_plot) end
         # adaptative Δt & linear increase in gravity
         Δt,g  = get_Δt(mpD.vp,meD.h,yd),get_g(tw,tg)
         # bsmpm cycle
-        topol!(mpD,meD)
         ϕ∂ϕ!(mpD,meD)
-        accum!(mpD,meD,g)
+        mapsto!(mpD,meD,bc,g,Δt,"p->N")                  
         solve!(meD,bc,Δt)
-        flipDM!(mpD,meD,bc,Δt)
-        deform!(mpD,meD)
-        elast!(mpD,Del,isΔFbar)
-        if tw>te
-            #plast!(mpD.τ,mpD.ϵ,mpD.epII,mpD.coh,mpD.phi,mpD.nmp,Del,Hp,cr)
-            ηmax = CPAplast!(mpD,Del,Hp,cr)
-            if flag==0 
-                plot_coh(mpD.xp,mpD.coh,mpD.phi,ϕ0)
-                flag+=1
-            end
+        mapsto!(mpD,meD,bc,g,Δt,"p<-N")
+        ηmax = elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,plastMod,tw>te)
+        if tw>te && flag == 0
+            plot_coh(mpD.xp,mpD.coh,mpD.phi,ϕ0)
+            flag+=1
         end
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
@@ -64,7 +58,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✗) t/T",round(tw/t,digits=2))])
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✓) t/T",1.0)])
-    savefig(path_plot*"plot_"*string(varPlot)*"_vollock_"*string(isΔFbar)*".png")
+    savefig(path_plot*varPlot*"_"*plastMod*"_vollock_"*string(isΔFbar)*".png")
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
     return nothing

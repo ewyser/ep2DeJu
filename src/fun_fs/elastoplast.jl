@@ -1,5 +1,3 @@
-
-# For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
 @views function deform!(mpD,meD)
     # init mesh quantities to zero
     meD.ΔJn .= 0.0
@@ -34,6 +32,7 @@
     end
     return nothing
 end
+# For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
 @views function elast!(mpD,Del,isΔFbar)
     @threads for p ∈ 1:mpD.nmp
         # compute logarithmic strain tensor
@@ -53,4 +52,21 @@ end
         mpD.τ[:,p].= (Del*mpD.ϵ[:,p]) 
     end
     return nothing
+end
+@views function elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,plastMod,plastOn)
+    # get def. & logarithmic strains
+    deform!(mpD,meD)
+    # update kirchoff stresses
+    elast!(mpD,Del,isΔFbar)
+    # plastic corrector
+    if plastOn 
+        ηmax = plast!(mpD,K,Del,Hp,cr,plastMod) 
+    else 
+        ηmax=0 
+    end
+    # get cauchy stresses
+    @threads for p ∈ 1:mpD.nmp
+        mpD.σ[:,p] .= mpD.τ[:,p]./mpD.J[p]
+    end
+    return ηmax
 end

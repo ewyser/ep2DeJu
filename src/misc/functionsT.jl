@@ -140,6 +140,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     phi[p] .= phir
 
     epII = zeros(typeD,nmp,1)
+    epV  = zeros(typeD,nmp,1)
     ΔJ   = ones(typeD,nmp,1)
     J    = ones(typeD,nmp,1)
     ΔJbar= ones(typeD,nmp,1)
@@ -184,6 +185,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         cohr= cohr,
         phi = phi,
         ϵpII= epII,
+        ϵpV = epV, 
         ΔJ  = ΔJ,
         J   = J,
         ΔF  = dF,
