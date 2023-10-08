@@ -53,14 +53,14 @@ end
     end
     return nothing
 end
-@views function elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,plastMod,plastOn)
+@views function elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,cmType,plastOn)
     # get def. & logarithmic strains
     deform!(mpD,meD)
     # update kirchoff stresses
     elast!(mpD,Del,isΔFbar)
     # plastic corrector
     if plastOn 
-        ηmax = plast!(mpD,K,Del,Hp,cr,plastMod) 
+        ηmax = plast!(mpD,K,Del,Hp,cr,cmType) 
     else 
         ηmax=0 
     end

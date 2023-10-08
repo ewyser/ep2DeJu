@@ -1,5 +1,6 @@
 #----------------------------------------------------------------------------------------------------------
 function meshSetup(nel,Lx,Lz,typeD)
+    dof = 2
     # geometry                                               
     L   = [Lx,ceil(Lz)]
     h   = [L[1]/nel,L[1]/nel]
@@ -16,15 +17,15 @@ function meshSetup(nel,Lx,Lz,typeD)
     zn  = vec(zn)
     # nodal quantities
     mn  = zeros(typeD,nno[3],1) 
-    fen = zeros(typeD,nno[3],2) 
-    fin = zeros(typeD,nno[3],2)
-    fn  = zeros(typeD,nno[3],2)
-    an  = zeros(typeD,nno[3],2)
-    pn  = zeros(typeD,nno[3],2)
-    vn  = zeros(typeD,nno[3],2)
-    un  = zeros(typeD,nno[3],2)
-    pel = zeros(typeD,nno[3],2)
-    ΔJn = zeros(typeD,nno[3],1)
+    fen = zeros(typeD,nno[3],dof) 
+    fin = zeros(typeD,nno[3],dof)
+    fn  = zeros(typeD,nno[3],dof)
+    an  = zeros(typeD,nno[3],dof)
+    pn  = zeros(typeD,nno[3],dof)
+    vn  = zeros(typeD,nno[3],dof)
+    un  = zeros(typeD,nno[3],dof)
+    pel = zeros(typeD,nno[3],dof)
+    ΔJn = zeros(typeD,nno[3],dof)
     # mesh-to-node topology
     e2n = e2N(nno,nel,nn)
     # boundary conditions
@@ -35,11 +36,13 @@ function meshSetup(nel,Lx,Lz,typeD)
     bcX[bcx] .= 0
     bcZ = ones(nno[3],1)
     bcZ[bcz] .= 0
+    bc   = hcat(bcX,bcZ)
     # push to named-Tuple
     meD = (
         nel = nel,
         nno = nno,
         nn  = nn,
+        dof = dof,
         L   = L,
         h   = h,
         xn  = xn,
@@ -56,12 +59,10 @@ function meshSetup(nel,Lx,Lz,typeD)
         ΔJn = ΔJn,
         e2n = e2n,
         xB  = xB,
+        bc  = bc,
     )
-    bc = (
-        x = bcX,
-        z = bcZ,
-    )
-    return meD,bc
+    bc = ()
+    return meD
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------

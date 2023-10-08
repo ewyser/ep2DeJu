@@ -88,15 +88,15 @@ end
     end
     return ηmax
 end
-function plast!(mpD,Kc,Del,Hp,cr,plastMod)
-    if plastMod == "mohr"
+function plast!(mpD,Kc,Del,Hp,cr,cmType)
+    if cmType == "mohr"
         ηmax = MCplast!(mpD,Del,Hp,cr)
-    elseif plastMod == "J2"
+    elseif cmType == "J2"
         ηmax = J2plast!(mpD,Del,Kc,Hp,cr)
-    elseif plastMod == "camC"
+    elseif cmType == "camC"
 
     else
-        @error "invalid plastic model --"*string(plastMod)*"--"
+        @error "invalid plastic model --"*string(cmType)*"--"
         exit(1) 
     end
     return ηmax

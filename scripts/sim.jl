@@ -10,7 +10,7 @@ typeD = Float64
 path_plot = "./out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
-@views function ϵp2De(nel::Int64,varPlot::String,plastMod::String,isΔFbar::Bool)
+@views function ϵp2De(nel::Int64,varPlot::String,cmType::String,isΔFbar::Bool)
     @info "** ϵp2-3De v1.0: finite strain formulation **"
     # non-dimensional constant                                                   
     ni,nstr = 2,4                                                               # number of material point along 1d, number of stresses
@@ -24,7 +24,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     t,te,tg = 15.0,10.0,15.0/1.5                                                # simulation time [s], elastic loading [s], gravity load
     # mesh & mp setup
     lx,lz   = 64.1584,12.80                                                     # domain geometry
-    meD,bc  = meshSetup(nel,lx,lz,typeD)                                        # mesh geometry setup
+    meD     = meshSetup(nel,lx,lz,typeD)                                        # mesh geometry setup
     mpD     = pointSetup(meD,ni,lz,c0,cr,ϕ0,ϕr,ρ0,nstr,typeD)                   # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     @info "mesh & mp feature(s):" nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
@@ -44,10 +44,10 @@ if isdir(path_plot)==false mkdir(path_plot) end
         Δt,g  = get_Δt(mpD.vp,meD.h,yd),get_g(tw,tg)
         # bsmpm cycle
         ϕ∂ϕ!(mpD,meD)
-        mapsto!(mpD,meD,bc,g,Δt,"p->N")                  
-        solve!(meD,bc,Δt)
-        mapsto!(mpD,meD,bc,g,Δt,"p<-N")
-        ηmax = elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,plastMod,tw>te)
+        mapsto!(mpD,meD,g,Δt,"p->N")                  
+        solve!(meD,Δt)
+        mapsto!(mpD,meD,g,Δt,"p<-N")
+        ηmax = elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,cmType,tw>te)
         if tw>te && flag == 0
             plot_coh(mpD.xp,mpD.coh,mpD.phi,ϕ0)
             flag+=1
@@ -58,7 +58,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✗) t/T",round(tw/t,digits=2))])
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✓) t/T",1.0)])
-    savefig(path_plot*varPlot*"_"*plastMod*"_vollock_"*string(isΔFbar)*".png")
+    savefig(path_plot*varPlot*"_"*cmType*"_vollock_"*string(isΔFbar)*".png")
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
     return nothing

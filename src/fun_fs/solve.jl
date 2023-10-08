@@ -1,4 +1,4 @@
-@views function solve!(meD,bc,Δt)
+@views function solve!(meD,Δt)
     D   = 0.1
     # initialize
     meD.fn .= 0.0
@@ -12,8 +12,8 @@
             vnT          = meD.pn[n,:] .*mnT         #(2,)
             η            = sqrt(fnT[1]^2+fnT[2]^2)      #()
             fnT          = fnT .- D.*η.*sign.(vnT)      #(2,)
-            meD.an[n,:] .= fnT.*mnT.*[bc.x[n];bc.z[n]]
-            meD.vn[n,:] .= (meD.pn[n,:].+Δt.*fnT).*mnT.*[bc.x[n];bc.z[n]]
+            meD.an[n,:] .= fnT.*mnT.*meD.bc[n,:]
+            meD.vn[n,:] .= (meD.pn[n,:].+Δt.*fnT).*mnT.*meD.bc[n,:]
         end
     end
     return nothing

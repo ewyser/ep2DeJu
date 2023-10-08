@@ -14,13 +14,13 @@
         # accumulation
         mpD.σ[:,p]    .= mpD.τ[:,p]./mpD.J[p]
         meD.mn[iD  ] .+= buff
-        meD.pn[iD,:] .+= repeat(buff,1,2).*repeat(mpD.vp[p,:]',meD.nn,1) 
+        meD.pn[iD,:] .+= repeat(buff,1,meD.dof).*repeat(mpD.vp[p,:]',meD.nn,1) 
         meD.fen[iD,2].-= buff.*g
-        meD.fin[iD,:].+= mpD.v[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],2,meD.nn)' 
+        meD.fin[iD,:].+= mpD.v[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],meD.dof,meD.nn)' 
     end
     return nothing
 end
-@views function flipDM!(mpD,meD,bc,Δt)
+@views function flipDM!(mpD,meD,Δt)
     # init.
     iD = zeros(Int64,meD.nn)
     # flip update
@@ -39,13 +39,13 @@ end
         # index & buffer
         iD           .= mpD.p2n[p,:]
         # accumulation
-        meD.pn[iD,:].+= repeat(mpD.ϕ∂ϕ[p,:,1].*mpD.mp[p],1,2).*repeat(mpD.vp[p,:]',meD.nn,1) 
+        meD.pn[iD,:].+= repeat(mpD.ϕ∂ϕ[p,:,1].*mpD.mp[p],1,meD.dof).*repeat(mpD.vp[p,:]',meD.nn,1) 
     end    
     # solve for nodal incremental displacement
     @threads for n ∈ 1:meD.nno[3]
-        if(meD.mn[n]>0.0)
-            mnT         = [1.0/meD.mn[n] 1.0/meD.mn[n]]
-            meD.un[n,:].= reshape(Δt.*meD.pn[n,:]'.*mnT.*[bc.x[n] bc.z[n]],2)
+        if meD.mn[n]>0.0
+            mnT         = [1.0/meD.mn[n];1.0/meD.mn[n]]
+            meD.un[n,:].= Δt.*meD.pn[n,:].*mnT.*meD.bc[n,:]
         end
     end
     # update material point's displacement
@@ -54,11 +54,11 @@ end
     end
     return nothing
 end
-@views function mapsto!(mpD,meD,bc,g,Δt,to)
+@views function mapsto!(mpD,meD,g,Δt,to)
     if to == "p->N"
         accum!(mpD,meD,g)
     elseif to == "p<-N"
-        flipDM!(mpD,meD,bc,Δt)
+        flipDM!(mpD,meD,Δt)
     end
     return nothing
 end
