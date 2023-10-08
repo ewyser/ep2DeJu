@@ -41,7 +41,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         # set clock on/off
         tic = time_ns()
         # adaptative Δt & linear increase in gravity
-        Δt,g  = get_Δt(mpD.vp,meD.h,yd),get_g(tw,tg)
+        Δt,g  = get_Δt(mpD.v,meD.h,yd),get_g(tw,tg,meD.nD)
         # bsmpm cycle
         ϕ∂ϕ!(mpD,meD)
         mapsto!(mpD,meD,g,Δt,"p->N")                  
@@ -49,7 +49,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         mapsto!(mpD,meD,g,Δt,"p<-N")
         ηmax = elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,cmType,tw>te)
         if tw>te && flag == 0
-            plot_coh(mpD.xp,mpD.coh,mpD.phi,ϕ0)
+            plot_coh(mpD.x,mpD.coh,mpD.phi,ϕ0)
             flag+=1
         end
         # update sim time

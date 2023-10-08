@@ -1,12 +1,12 @@
 @views function topol!(mpD,meD)
-    xmin = minimum(meD.xn)
-    zmin = minimum(meD.zn)
+    xmin = minimum(meD.x)
+    zmin = minimum(meD.z)
     Δx::Float64 = 1.0/meD.h[1]
     Δz::Float64 = 1.0/meD.h[2]
     nez::Int64  = meD.nel[2]
     id::Int64   = 0
     @threads for p ∈ 1:mpD.nmp
-        id = (floor(Int64,(mpD.xp[p,2]-zmin)*Δz)+1::Int64)+(nez)*floor(Int64,(mpD.xp[p,1]-xmin)*Δx)
+        id = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1::Int64)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
         for n ∈ 1:meD.nn
             mpD.p2n[p,n] = meD.e2n[id,n]
         end
@@ -105,11 +105,11 @@ end
         for nn ∈ 1:meD.nn
             # compute basis functions
             id     = mpD.p2n[mp,nn]
-            ξ      = (mpD.xp[mp,1] - meD.xn[id])/Δx 
-            type   = whichType(meD.xn[id],xb,Δx)
+            ξ      = (mpD.x[mp,1] - meD.x[id])/Δx 
+            type   = whichType(meD.x[id],xb,Δx)
             ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-            η      = (mpD.xp[mp,2] - meD.zn[id])/Δz
-            type   = whichType(meD.zn[id],zb,Δz)
+            η      = (mpD.x[mp,2] - meD.z[id])/Δz
+            type   = whichType(meD.z[id],zb,Δz)
             ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
             # convolution of basis function
             mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        

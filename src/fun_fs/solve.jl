@@ -1,19 +1,19 @@
 @views function solve!(meD,Δt)
     D   = 0.1
     # initialize
-    meD.fn .= 0.0
-    meD.an .= 0.0
-    meD.vn .= 0.0
+    meD.f .= 0.0
+    meD.a .= 0.0
+    meD.v .= 0.0
     # solve momentum equation on the mesh
     @threads for n ∈ 1:meD.nno[3]
-        if meD.mn[n]>0.0 
-            mnT          = [1.0/meD.mn[n];1.0/meD.mn[n]] #(2,)
-            fnT          = meD.fen[n,:].-meD.fin[n,:]    #(2,)
-            vnT          = meD.pn[n,:] .*mnT         #(2,)
+        if meD.m[n]>0.0 
+            mnT          = [1.0/meD.m[n];1.0/meD.m[n]] #(2,)
+            fnT          = meD.fext[n,:].-meD.fint[n,:]    #(2,)
+            vnT          = meD.p[n,:] .*mnT         #(2,)
             η            = sqrt(fnT[1]^2+fnT[2]^2)      #()
             fnT          = fnT .- D.*η.*sign.(vnT)      #(2,)
-            meD.an[n,:] .= fnT.*mnT.*meD.bc[n,:]
-            meD.vn[n,:] .= (meD.pn[n,:].+Δt.*fnT).*mnT.*meD.bc[n,:]
+            meD.a[n,:] .= fnT.*mnT.*meD.bc[n,:]
+            meD.v[n,:] .= (meD.p[n,:].+Δt.*fnT).*mnT.*meD.bc[n,:]
         end
     end
     return nothing

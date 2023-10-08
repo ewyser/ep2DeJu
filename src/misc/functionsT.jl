@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------------------------------------
 function meshSetup(nel,Lx,Lz,typeD)
-    dof = 2
+    nD  = 2
     # geometry                                               
     L   = [Lx,ceil(Lz)]
     h   = [L[1]/nel,L[1]/nel]
@@ -17,15 +17,15 @@ function meshSetup(nel,Lx,Lz,typeD)
     zn  = vec(zn)
     # nodal quantities
     mn  = zeros(typeD,nno[3],1) 
-    fen = zeros(typeD,nno[3],dof) 
-    fin = zeros(typeD,nno[3],dof)
-    fn  = zeros(typeD,nno[3],dof)
-    an  = zeros(typeD,nno[3],dof)
-    pn  = zeros(typeD,nno[3],dof)
-    vn  = zeros(typeD,nno[3],dof)
-    un  = zeros(typeD,nno[3],dof)
-    pel = zeros(typeD,nno[3],dof)
-    ΔJn = zeros(typeD,nno[3],dof)
+    fen = zeros(typeD,nno[3],nD) 
+    fin = zeros(typeD,nno[3],nD)
+    fn  = zeros(typeD,nno[3],nD)
+    an  = zeros(typeD,nno[3],nD)
+    pn  = zeros(typeD,nno[3],nD)
+    vn  = zeros(typeD,nno[3],nD)
+    un  = zeros(typeD,nno[3],nD)
+    pel = zeros(typeD,nno[3],nD)
+    ΔJn = zeros(typeD,nno[3],nD)
     # mesh-to-node topology
     e2n = e2N(nno,nel,nn)
     # boundary conditions
@@ -39,27 +39,27 @@ function meshSetup(nel,Lx,Lz,typeD)
     bc   = hcat(bcX,bcZ)
     # push to named-Tuple
     meD = (
-        nel = nel,
-        nno = nno,
-        nn  = nn,
-        dof = dof,
-        L   = L,
-        h   = h,
-        xn  = xn,
-        zn  = zn,
-        mn  = mn,
-        fen = fen,
-        fin = fin,
-        fn  = fn,
-        an  = an,
-        pn  = pn,
-        vn  = vn,
-        un  = un,
-        pel = pel,
-        ΔJn = ΔJn,
-        e2n = e2n,
-        xB  = xB,
-        bc  = bc,
+        nD   = nD,
+        nel  = nel,
+        nno  = nno,
+        nn   = nn,
+        L    = L,
+        h    = h,
+        x    = xn,
+        z    = zn,
+        m    = mn,
+        fext = fen,
+        fint = fin,
+        f    = fn,
+        a    = an,
+        p    = pn,
+        v    = vn,
+        u    = un,
+        pel  = pel,
+        ΔJ   = ΔJn,
+        e2n  = e2n,
+        xB   = xB,
+        bc   = bc,
     )
     bc = ()
     return meD
@@ -175,13 +175,13 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         nmp = nmp,
         l0  = l0,
         l   = l,
-        v0  = v0,
-        v   = v,
-        mp  = m,
-        xp  = xp,
-        up  = up,
-        vp  = vp,
-        pp  = pp,
+        V0  = v0,
+        V   = v,
+        m   = m,
+        x   = xp,
+        u   = up,
+        v   = vp,
+        p   = pp,
         coh = coh,
         cohr= cohr,
         phi = phi,
@@ -314,12 +314,17 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-function get_g(tw::Float64,tg::Float64)
+function get_g(tw::Float64,tg::Float64,nD::Int64)
     g = 0.0
     if(tw<=tg)
         g = 9.81*tw/tg
     else
         g = 9.81
+    end
+    if nD == 2
+        #g = [0.0 g]
+    elseif nD == 3
+        #g = [0.0 0.0 g]$
     end
     return g
 end
@@ -369,7 +374,7 @@ end
     gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.75,)#markerstrokecolor=:match,)
     if type == "P"
         p = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
-        scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=p,
+        scatter(mpD.x[:,1],mpD.x[:,2],zcolor=p,
             xlabel = xlab,
             ylabel = ylab,
             label=L"$p=-\dfrac{1}{3}\left(\sigma_{xx,p}+\sigma_{yy,p}+\sigma_{zz,p}\right)$",
@@ -380,7 +385,7 @@ end
             show=true,
             )  
     elseif type == "epII"
-        scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=mpD.ϵpII,
+        scatter(mpD.x[:,1],mpD.x[:,2],zcolor=mpD.ϵpII,
             xlabel = xlab,
             ylabel = ylab,    
             label=L"$\epsilon_{II}^{\mathrm{acc}}$",
@@ -392,7 +397,7 @@ end
             show=true,
             ) 
     elseif type == "du"
-        scatter(mpD.xp[:,1],mpD.xp[:,2],zcolor=sqrt.(mpD.up[:,1].^2+mpD.up[:,2].^2),
+        scatter(mpD.x[:,1],mpD.x[:,2],zcolor=sqrt.(mpD.u[:,1].^2+mpD.u[:,2].^2),
             markershape=:circle,
             xlabel = xlab,
             ylabel = ylab,

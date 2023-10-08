@@ -21,12 +21,12 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 function ϕ∂ϕ!(mpD,meD)
-    Threads.@threads for mp in 1:mpD.nmp
+    @threads for mp in 1:mpD.nmp
         for nn in 1:meD.nn
             # compute basis functions
             id     = mpD.p2n[mp,nn]
-            ξ      = mpD.xp[mp,1] - meD.xn[id] 
-            η      = mpD.xp[mp,2] - meD.zn[id]
+            ξ      = mpD.x[mp,1] - meD.x[id] 
+            η      = mpD.x[mp,2] - meD.z[id]
             ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l0[mp,1])
             ϕz,dϕz = NdN(η,meD.h[2],mpD.l0[mp,2])
             # convolution of basis function

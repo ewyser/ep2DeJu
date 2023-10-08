@@ -1,13 +1,13 @@
 @views function deform!(mpD,meD)
     # init mesh quantities to zero
-    meD.ΔJn .= 0.0
+    meD.ΔJ .= 0.0
     # set identity matrix
     ID   = Matrix(I,2,2)
     # action
     for p ∈ 1:mpD.nmp
         # get nodal incremental displacement
         iD            = mpD.p2n[p,:]
-        Δun           = meD.un[iD,:]
+        Δun           = meD.u[iD,:]
         # compute incremental deformation gradient
         mpD.ΔF[:,:,p].= ID+vcat(mpD.ϕ∂ϕ[p,:,2]'*Δun,mpD.ϕ∂ϕ[p,:,3]'*Δun)'
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
@@ -15,20 +15,20 @@
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
         # update material point's volume and domain length
         mpD.J[p]      = det(mpD.F[:,:,p])
-        mpD.v[p]      = mpD.J[p]*mpD.v0[p]
+        mpD.V[p]      = mpD.J[p]*mpD.V0[p]
         mpD.l[p,:]   .= mpD.J[p]^(1/2).*mpD.l0[p,:] 
         # accumulation
-        meD.ΔJn[iD] .+= mpD.ϕ∂ϕ[p,:].*mpD.mp[p].*mpD.ΔJ[p]  
+        meD.ΔJ[iD]  .+= mpD.ϕ∂ϕ[p,:].*mpD.m[p].*mpD.ΔJ[p]  
     end 
     # compute nodal deformation determinant
     @threads for no ∈ 1:meD.nno[3]
-        if meD.mn[no]>0.0 
-            meD.ΔJn[no] = meD.ΔJn[no]/meD.mn[no]
+        if meD.m[no]>0.0 
+            meD.ΔJ[no] = meD.ΔJ[no]/meD.m[no]
         end
     end
     # compute determinant Jbar 
     @threads for p ∈ 1:mpD.nmp
-        mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*(((mpD.ϕ∂ϕ[p,:,1]'*meD.ΔJn[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(1/2))
+        mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*(((mpD.ϕ∂ϕ[p,:,1]'*meD.ΔJ[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(1/2))
     end
     return nothing
 end
