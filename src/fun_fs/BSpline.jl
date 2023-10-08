@@ -1,4 +1,4 @@
-@views function topol!(mpD,meD)
+@views function topol!(mpD::NamedTuple,meD::NamedTuple)
     xmin = minimum(meD.x)
     zmin = minimum(meD.z)
     Δx::Float64 = 1.0/meD.h[1]
@@ -93,7 +93,7 @@ function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-@views function ϕ∂ϕ!(mpD,meD)
+@views function ϕ∂ϕ!(mpD::NamedTuple,meD::NamedTuple)
     topol!(mpD,meD)
     #preprocessing
     xb = copy(meD.xB[1:2])

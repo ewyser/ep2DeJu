@@ -1,4 +1,4 @@
-@views function accum!(mpD,meD,g)
+@views function accum!(mpD::NamedTuple,meD::NamedTuple,g::Matrix{Float64})
     # initialize nodal quantities
     meD.m   .= 0.0
     meD.p   .= 0.0
@@ -12,7 +12,6 @@
         iD             .= mpD.p2n[p,:]
         buff           .= mpD.ϕ∂ϕ[p,:,1].*mpD.m[p]
         # accumulation
-        mpD.σ[:,p]     .= mpD.τ[:,p]./mpD.J[p]
         meD.m[iD  ]   .+= buff
         meD.p[iD,:]   .+= repeat(buff,1,meD.nD).*repeat(mpD.v[p,:]',meD.nn,1) 
         meD.fext[iD,:].-= buff.*g
@@ -20,7 +19,7 @@
     end
     return nothing
 end
-@views function flipDM!(mpD,meD,Δt)
+@views function flipDM!(mpD::NamedTuple,meD::NamedTuple,Δt::Float64)
     # init.
     iD = zeros(Int64,meD.nn)
     # flip update
@@ -42,9 +41,9 @@ end
         meD.p[iD,:].+= repeat(mpD.ϕ∂ϕ[p,:,1].*mpD.m[p],1,meD.nD).*repeat(mpD.v[p,:]',meD.nn,1) 
     end    
     # solve for nodal incremental displacement
-    @threads for n ∈ 1:meD.nno[3]
+    @threads for n ∈ 1:meD.nno[meD.nD+1]
         if meD.m[n]>0.0
-            mnT        = [1.0/meD.m[n];1.0/meD.m[n]]
+            mnT        = fill(1.0/meD.m[n],meD.nD)
             meD.u[n,:].= Δt.*meD.p[n,:].*mnT.*meD.bc[n,:]
         end
     end
@@ -54,7 +53,7 @@ end
     end
     return nothing
 end
-@views function mapsto!(mpD,meD,g,Δt,to)
+@views function mapsto!(mpD::NamedTuple,meD::NamedTuple,g::Matrix{Float64},Δt::Float64,to::Bool)
     if to == "p->N"
         accum!(mpD,meD,g)
     elseif to == "p<-N"

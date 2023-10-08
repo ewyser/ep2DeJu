@@ -53,7 +53,7 @@ end
     end
     return nothing
 end
-@views function elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,cmType,plastOn)
+@views function elastoplast!(mpD::NamedTuple,meD::NamedTuple,K,Del,Hp,cr,isΔFbar,cmType,plastOn)
     # get def. & logarithmic strains
     deform!(mpD,meD)
     # update kirchoff stresses
