@@ -9,13 +9,13 @@
     buff= zeros(Float64,meD.nn)
     for p ∈ 1:mpD.nmp
         # index & buffer
-        iD            .= mpD.p2n[p,:]
-        buff          .= mpD.ϕ∂ϕ[p,:,1].*mpD.m[p]
+        iD             .= mpD.p2n[p,:]
+        buff           .= mpD.ϕ∂ϕ[p,:,1].*mpD.m[p]
         # accumulation
         mpD.σ[:,p]     .= mpD.τ[:,p]./mpD.J[p]
         meD.m[iD  ]   .+= buff
         meD.p[iD,:]   .+= repeat(buff,1,meD.nD).*repeat(mpD.v[p,:]',meD.nn,1) 
-        meD.fext[iD,2].-= buff.*g
+        meD.fext[iD,:].-= buff.*g
         meD.fint[iD,:].+= mpD.V[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],meD.nD,meD.nn)' 
     end
     return nothing

@@ -322,9 +322,9 @@ function get_g(tw::Float64,tg::Float64,nD::Int64)
         g = 9.81
     end
     if nD == 2
-        #g = [0.0 g]
+        g = [0.0 g]
     elseif nD == 3
-        #g = [0.0 0.0 g]$
+        g = [0.0 0.0 g]
     end
     return g
 end
