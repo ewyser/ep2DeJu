@@ -1,9 +1,10 @@
-@views function MCplast!(mpD,Del,Hp,cr)
+@views function MCplast!(mpD,Del,Hp)
     ftol,ηtol,ηmax = 1e-6,1e4,0
     ψ              = 0.5*pi/180.0
     @threads for p ∈ 1:mpD.nmp
         ϕ,H,ϵII0 = mpD.phi[p],cos(mpD.phi[p])*Hp,mpD.ϵpII[p]
         c0       = mpD.coh[p]+Hp*ϵII0
+        cr       = mpD.cohr[p]
         if c0<cr c0 = cr end
         σm       = 0.5*(mpD.τ[1,p]+mpD.τ[2,p])
         τII      = sqrt(0.25*(mpD.τ[1,p]-mpD.τ[2,p])^2+mpD.τ[4,p]^2)
@@ -47,11 +48,12 @@
     end
     return ηmax
 end
-@views function J2plast!(mpD,Del,Kc,Hp,cr) # Borja (1990); De Souza Neto (2008)
+@views function J2plast!(mpD,Del,Kc,Hp) # Borja (1990); De Souza Neto (2008)
     ftol,ηtol,ηit,ηmax = 1e-6,1e4,0,0
     Hp,χ = 0.35*Hp,3.0/2.0
     @threads for mp in 1:mpD.nmp
         κ = 2.5*mpD.coh[mp]+Hp*mpD.ϵpII[mp]
+        cr= mpD.cohr[mp]
         if κ <= cr κ = cr end
         p    = (mpD.τ[1,mp]+mpD.τ[2,mp]+mpD.τ[3,mp])/3.0
         ξ    = mpD.τ[:,mp].-[p;p;p;0.0]
@@ -88,13 +90,13 @@ end
     end
     return ηmax
 end
-function plast!(mpD,Kc,Del,Hp,cr,cmType)
+function plast!(mpD,cmParam,cmType)
     if cmType == "mohr"
-        ηmax = MCplast!(mpD,Del,Hp,cr)
+        ηmax = MCplast!(mpD,cmParam.Del,cmParam.Hp)
     elseif cmType == "J2"
-        ηmax = J2plast!(mpD,Del,Kc,Hp,cr)
+        ηmax = J2plast!(mpD,cmParam.Del,cmParam.Kc,cmParam.Hp)
     elseif cmType == "camC"
-
+        
     else
         @error "invalid plastic model --"*string(cmType)*"--"
         exit(1) 

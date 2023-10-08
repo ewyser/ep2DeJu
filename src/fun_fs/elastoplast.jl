@@ -53,14 +53,14 @@ end
     end
     return nothing
 end
-@views function elastoplast!(mpD::NamedTuple,meD::NamedTuple,K,Del,Hp,cr,isΔFbar,cmType,plastOn)
+@views function elastoplast!(mpD::NamedTuple,meD::NamedTuple,cmParam::NamedTuple,cmType::String,isΔFbar::Bool,plastOn::Bool)
     # get def. & logarithmic strains
     deform!(mpD,meD)
     # update kirchoff stresses
-    elast!(mpD,Del,isΔFbar)
+    elast!(mpD,cmParam.Del,isΔFbar)
     # plastic corrector
     if plastOn 
-        ηmax = plast!(mpD,K,Del,Hp,cr,cmType) 
+        ηmax = plast!(mpD,cmParam,cmType) 
     else 
         ηmax=0 
     end

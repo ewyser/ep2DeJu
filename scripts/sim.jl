@@ -27,6 +27,8 @@ if isdir(path_plot)==false mkdir(path_plot) end
     meD     = meshSetup(nel,lx,lz,typeD)                                        # mesh geometry setup
     mpD     = pointSetup(meD,ni,lz,c0,cr,ϕ0,ϕr,ρ0,nstr,typeD)                   # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
+    # constitutive model param.
+    cmParam = (Kc = K, Del = Del, Hp = Hp,)
     @info "mesh & mp feature(s):" nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
@@ -47,7 +49,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         mapsto!(mpD,meD,g,Δt,"p->N")                  
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,"p<-N")
-        ηmax = elastoplast!(mpD,meD,K,Del,Hp,cr,isΔFbar,cmType,tw>te)
+        ηmax = elastoplast!(mpD,meD,cmParam,cmType,isΔFbar,tw>te)
         if tw>te && flag == 0
             plot_coh(mpD.x,mpD.coh,mpD.phi,ϕ0)
             flag+=1
