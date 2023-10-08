@@ -13,7 +13,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
 @views function ϵp2De(nel::Int64,varPlot::String,cmType::String,isΔFbar::Bool)
     @info "** ϵp2-3De v1.0: finite strain formulation **"
     # non-dimensional constant                                                   
-    ni,nstr = 2,4                                                               # number of material point along 1d, number of stresses
+    ni,ndim,nstr = 2,2,4                                                        # number of material point along 1d, number of stresses
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
     K,G,Del = D(1.0e6,0.3)                                                      # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
@@ -24,7 +24,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     t,te,tg = 15.0,10.0,15.0/1.5                                                # simulation time [s], elastic loading [s], gravity load
     # mesh & mp setup
     lx,lz   = 64.1584,12.80                                                     # domain geometry
-    meD     = meshSetup(nel,lx,lz,typeD)                                        # mesh geometry setup
+    meD     = meshSetup(nel,(lx,lz),ndim,typeD)                                 # mesh geometry setup
     mpD     = pointSetup(meD,ni,lz,c0,cr,ϕ0,ϕr,ρ0,nstr,typeD)                   # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.

@@ -1,6 +1,6 @@
 @views function topol!(mpD::NamedTuple,meD::NamedTuple)
-    xmin = minimum(meD.x)
-    zmin = minimum(meD.z)
+    xmin = minimum(meD.x[:,1])
+    zmin = minimum(meD.x[:,2])
     Δx::Float64 = 1.0/meD.h[1]
     Δz::Float64 = 1.0/meD.h[2]
     nez::Int64  = meD.nel[2]
@@ -33,8 +33,6 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
-    ϕ = 0.0
-    ∂ϕ= 0.0
     if type==1 
         if -2<=ξ && ξ<=-1 
             ϕ = 1/6     *ξ^3+     ξ^2   +2*ξ    +4/3
@@ -75,19 +73,18 @@ function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
             ∂ϕ= -3/(6*Δx)*ξ^2+2/Δx*ξ  -2/Δx
         end
     elseif type==4
-        if -2<=ξ && ξ<=-1
+        if -2.0<=ξ && ξ<=-1.0
             ϕ =  1/6     *ξ^3+     ξ^2+2*ξ+4/3
             ∂ϕ=  3/(6*Δx)*ξ^2+2/Δx*ξ  +2/Δx 
-        elseif -1<=ξ && ξ<=0
+        elseif -1.0<=ξ && ξ<=0.0
             ϕ = -1/2     *ξ^3-     ξ^2    +2/3
             ∂ϕ= -3/(2*Δx)*ξ^2-2/Δx*ξ      
-        elseif 0<=ξ && ξ<=1
+        elseif 0.0<=ξ && ξ<=1.0
             ϕ =  1/3     *ξ^3-     ξ^2    +2/3
             ∂ϕ=  3/(3*Δx)*ξ^2-2/Δx*ξ      
         end
     else
-        ϕ = 0.0
-        ∂ϕ= 0.0
+        ϕ,∂ϕ = 0.0,0.0
     end    
     return ϕ,∂ϕ
 end
@@ -105,11 +102,11 @@ end
         for nn ∈ 1:meD.nn
             # compute basis functions
             id     = mpD.p2n[mp,nn]
-            ξ      = (mpD.x[mp,1] - meD.x[id])/Δx 
-            type   = whichType(meD.x[id],xb,Δx)
+            ξ      = (mpD.x[mp,1] - meD.x[id,1])/Δx 
+            type   = whichType(meD.x[id,1],xb,Δx)
             ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-            η      = (mpD.x[mp,2] - meD.z[id])/Δz
-            type   = whichType(meD.z[id],zb,Δz)
+            η      = (mpD.x[mp,2] - meD.x[id,2])/Δz
+            type   = whichType(meD.x[id,2],zb,Δz)
             ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
             # convolution of basis function
             mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
@@ -117,12 +114,68 @@ end
             mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
         end
         # B-matrix assembly
-        mpD.B[1,1:2:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-        mpD.B[2,2:2:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[4,1:2:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[4,2:2:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
     end
     return nothing
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
+@views function topol3D!(xmin,ymin,zmin,p2e,p2n,e2n,xn,yz,zn,xp,h,nel,nmp,nn)
+    xmin = minimum(meD.x[:,1])
+    ymin = minimum(meD.x[:,2])
+    zmin = minimum(meD.x[:,3])
+    Δx::Float64 = 1.0/meD.h[1]
+    Δy::Float64 = 1.0/meD.h[2]
+    Δz::Float64 = 1.0/meD.h[3]
+    nez::Int64  = meD.nel[3]
+    id::Int64   = 0
+    for p ∈ 1:mpD.nmp
+        id = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1::Int64)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
+        for n ∈ 1:nn
+            mpD.p2n[p,n] = mpD.e2n[id,n]
+        end
+        mpD.p2e[p] = id
+    end
+    return nothing
+end
+@views function ϕ∂ϕ3D!(mpD::NamedTuple,meD::NamedTuple)
+    #preprocessing
+    xb = copy(meD.xB[1:2])
+    yb = copy(meD.xB[3:4])
+    zb = copy(meD.xB[5:6])
+    Δx = meD.h[1]
+    Δy = meD.h[2]
+    Δz = meD.h[3]
+    #action
+    for n ∈ 1:nn
+        for p ∈ 1:nmp
+            # compute basis functions
+            id     = p2n[p,n]
+            ξ      = (mpD.x[p,1] - meD.x[id,1])/Δx 
+            type   = whichType(meD.x[id,1],xb,Δx)
+            ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
+            η      = (mpD.x[p,2] - meD.x[id,3])/Δy
+            type   = whichType(meD.x[id,2],yb,Δy)
+            ϕy,dϕy = ϕ∇ϕ(η,type,Δy)
+            ζ      = (mpD.x[p,3] - meD.x[id,3])/Δz
+            type   = whichType(meD.x[id,3],zb,Δz)
+            ϕz,dϕz = ϕ∇ϕ(ζ,type,Δz)
+            # convolution of basis function
+            mpD.ϕ∂ϕ[p,n,1] =  ϕx*  ϕy*  ϕz                                                                                
+            mpD.ϕ∂ϕ[p,n,2] = dϕx*  ϕy*  ϕz                                                                                
+            mpD.ϕ∂ϕ[p,n,3] =  ϕx* dϕy*  ϕz                                   
+            mpD.ϕ∂ϕ[p,n,4] =  ϕx*  ϕy* dϕz  
+        end
+        #=
+        # B-matrix assembly
+        mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[3,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
+        mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        =#
+    end
+end
