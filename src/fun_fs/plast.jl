@@ -98,7 +98,7 @@ function plast!(mpD,cmParam,cmType)
     elseif cmType == "camC"
 
     elseif cmType == "DP"        
-        
+        #ηmax = DPplast!(mpD.τ,mpD.ϵ,mpD.ϵpII,mpD.coh,mpD.phi,0.0,cmParam.Del,cmParam.Kc,cmParam.Gc,cmParam.Hp,mpD.cohr[1],mpD.nmp)
     else
         @error "invalid plastic model --"*string(cmType)*"--"
         exit(1) 
@@ -294,9 +294,9 @@ end
         ηB  = 6.0  *sin(psi   )/(sqrt(3.0)*(3.0+sin(psi   )))
         ξ   = 6.0*c*cos(phi[p])/(sqrt(3.0)*(3.0+sin(phi[p]))) 
 
-        η   = 3.0  *tan(phi[p])/(sqrt(9.0+12.0*tan(phi[p])*tan(phi[p])))
-        ηB  = 3.0  *tan(psi   )/(sqrt(9.0+12.0*tan(psi   )*tan(psi    )))
-        ξ   = 3.0*c            /(sqrt(9.0+12.0*tan(phi[p])*tan(phi[p])))
+        η   = 3.0*tan(phi[p])/(sqrt(9.0+12.0*tan(phi[p])*tan(phi[p])))
+        ηB  = 3.0*tan(psi   )/(sqrt(9.0+12.0*tan(psi   )*tan(psi    )))
+        ξ   = 3.0*c          /(sqrt(9.0+12.0*tan(phi[p])*tan(phi[p])))
 
 
         σm  = ξ/η
@@ -323,8 +323,9 @@ end
             σ[4,p]  = 0.0
             epII[p]+= sqrt(2.0)*Δλ/3.0
         end
-        #Δϵ  = Del\Δσ
-        #ϵ[:,p] .-= Δϵ
+        Δσ = [σxx-σ[1,p],σyy-σ[2,p],σzz-σ[3,p],σxy-σ[4,p]]
+        #println(size(Δσ))
+        ϵ[:,p] .-= Del\Δσ
     end
     ηmax = 0
     return ηmax
