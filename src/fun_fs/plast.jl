@@ -96,7 +96,9 @@ function plast!(mpD,cmParam,cmType)
     elseif cmType == "J2"
         ηmax = J2plast!(mpD,cmParam.Del,cmParam.Kc,cmParam.Hp)
     elseif cmType == "camC"
-        
+
+    elseif cmType == "DP"        
+        ηmax = DPplast!(mpD.τ,mpD.ϵ,mpD.ϵpII,mpD.coh,mpD.phi,0.0,cmParam.Del,cmParam.Kc,cmParam.Gc,cmParam.Hp,mpD.cohr[3],mpD.nmp)
     else
         @error "invalid plastic model --"*string(cmType)*"--"
         exit(1) 
@@ -251,4 +253,216 @@ function MCnoCPAplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
         ϵ[:,mp]  = ϵ[:,mp]+ϵp
         epII[mp]+= sqrt(2/3*(ϵp[1]^2+ϵp[2]^2+ϵp[3]^2)+2*ϵp[4]^2) 
     end
+end
+@views function DPplast!(σ,ϵ,epII,coh,phi,psi,Del,Kc,Gc,Hp,cr,nmp)
+    # pre-processor
+        σxx::Float64 = 0.0
+        σyy::Float64 = 0.0
+        σzz::Float64 = 0.0
+        σxy::Float64 = 0.0
+        P  ::Float64 = 0.0
+        τxx::Float64 = 0.0
+        τyy::Float64 = 0.0
+        τxy::Float64 = 0.0
+        τ  ::Float64 = 0.0
+        η  ::Float64 = 0.0
+        ηB ::Float64 = 0.0
+        ξ  ::Float64 = 0.0
+        σm ::Float64 = 0.0
+        fs ::Float64 = 0.0
+        ft ::Float64 = 0.0
+        τP ::Float64 = 0.0
+        αP ::Float64 = 0.0
+        h  ::Float64 = 0.0
+    # action
+    for p in 1:nmp
+        c   = coh[p]+Hp*epII[p]
+        if c<cr
+            c = cr
+        end
+        σxx = σ[1,p] 
+        σyy = σ[2,p]
+        σzz = σ[3,p]
+        σxy = σ[4,p]
+        P   = (σxx+σyy+σzz)/3.0
+        τxx = σxx - P 
+        τyy = σyy - P
+        τzz = σzz - P
+        τxy = σxy
+        τ   = sqrt(0.5*(τxx^2+τyy^2+τzz^2)+τxy^2)
+        η   = 6.0  *sin(phi[p])/(sqrt(3.0)*(3.0+sin(phi[p])))
+        ηB  = 6.0  *sin(psi   )/(sqrt(3.0)*(3.0+sin(psi   )))
+        ξ   = 6.0*c*cos(phi[p])/(sqrt(3.0)*(3.0+sin(phi[p]))) 
+
+        η   = 3.0  *tan(phi[p])/(sqrt(9.0+12.0*tan(phi[p])*tan(phi[p])))
+        ηB  = 3.0  *tan(psi   )/(sqrt(9.0+12.0*tan(psi   )*tan(psi    )))
+        ξ   = 3.0*c            /(sqrt(9.0+12.0*tan(phi[p])*tan(phi[p])))
+
+
+        σm  = ξ/η
+        fs  = τ+η*P-ξ
+        ft  = P-σm         
+        τP  = ξ-η*σm  
+        αP  = sqrt(1.0+η^2)-η
+        h   = τ-τP-αP*(P-σm)
+        if fs>0.0 && P<σm || h>0.0 && P>=σm
+            Δλ      = fs/(Gc+Kc*η*ηB)
+            Pn      = P-Kc*ηB*Δλ
+            τn      = ξ-η*Pn
+            σ[1,p]  = τxx*(τn/τ)+Pn
+            σ[2,p]  = τyy*(τn/τ)+Pn
+            σ[3,p]  = τzz*(τn/τ)+Pn
+            σ[4,p]  = τxy*(τn/τ)
+            epII[p]+= Δλ*sqrt(1/3+2/9*ηB^2)
+        end
+        if h<=0.0 && P>=σm
+            Δλ      = (P-σm)/Kc
+            σ[1,p]  = σm-P
+            σ[2,p]  = σm-P
+            σ[3,p]  = σm-P
+            σ[4,p]  = 0.0
+            epII[p]+= sqrt(2.0)*Δλ/3.0
+        end
+        #Δϵ  = Del\Δσ
+        #ϵ[:,p] .-= Δϵ
+    end
+    ηmax = 0
+    return ηmax
+end
+@views function MCC3plast!(σ,ϵ,epII,epV,coh,phi,nmp,Del,Kc,Hp,cr) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
+    ηmax = 20
+    ftol = 1.0e-12 
+    χ   = 3.0/2.0
+    pc0 = -Kc/6.0
+    pt  = -0.1*pc0
+    pc  = pc0
+    ϕcs = 20.0*pi/180.0
+    M   = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
+    ζ   = 1.0
+    γ   = -0.0
+    α   =  0.0
+    β   = 0.0
+
+    P  = zeros(Float64,nmp,1)
+    Q  = zeros(Float64,nmp,1)
+    Pit= zeros(Float64,nmp,ηmax)
+    Qit= zeros(Float64,nmp,ηmax)
+    F  = zeros(Float64,nmp,ηmax)
+    ηmp= zeros(Float64,nmp,1)
+
+
+
+    for mp in 1:nmp
+        pc   = pc0*(exp(-ζ*epV[mp]))
+        p    = (σ[1,mp]+σ[2,mp]+σ[3,mp])/3.0
+        ξ    = σ[:,mp].-[p;p;p;0.0]
+        J2   = 0.5*(ξ[1]^2+ξ[2]^2+ξ[3]^2+2.0*ξ[4]^2) # Borja (2013), p.33
+        ξn   = sqrt(2.0*J2) 
+        n    = ξ./ξn
+        q    = sqrt(χ)*ξn
+
+        A = ((pc-pt)/(2.0*pi))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+pi)
+        C = ((pc-pt)/(    pi))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
+        B = M*C*exp((α*(p-C))/(pc-pt))
+        f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1    
+
+        P[mp] = p
+        Q[mp] = q
+        Pit[mp,:].= p/pc
+        Qit[mp,:].= q/abs(pc)
+
+        if f>0.0 
+            ϵV = epV[mp]
+            ϵII= epII[mp]
+            Δλ = 0.0
+            η  = 1
+            σ0 = σ[:,mp] 
+            while abs(f)>ftol && η < ηmax
+                ∂A∂p = -γ/pi*(1.0+γ^2*(0.5-p/pc)^2)^(-1)
+                ∂B∂p = α*(β/pc)
+                As   = A*(p-C)-∂A∂p*(p-C)^2  
+                Bs   = β*B*(q-β*p)+∂B∂p*(q-β*p)^2
+                ∂f∂p = 2.0*((As/A^3)-(Bs/B^3))
+                ∂f∂q = (2.0*(q-β*p))/B^2
+                ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
+                        ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[2];
+                        ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[3];
+                        ∂f∂p*0.0/3.0+sqrt(χ)*∂f∂q*n[4]]    
+                Δλ   = f/(∂f∂σ'*Del*∂f∂σ)        
+                σ0 .-= (Δλ*Del*∂f∂σ)  
+                ϵV  += Δλ*∂f∂p
+                ϵII += Δλ*∂f∂q
+                pc   = pc0*(exp(-ζ*ϵV))
+
+                p    = (σ0[1]+σ0[2]+σ0[3])/3.0
+                ξ    = σ0[:].-[p;p;p;0.0]
+                J2   = 0.5*(ξ[1]^2+ξ[2]^2+ξ[3]^2+2.0*ξ[4]^2)
+                ξn   = sqrt(2.0*J2)
+                n    = ξ./ξn
+                q    = sqrt(χ)*ξn
+
+        A = ((pc-pt)/(2.0*pi))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+pi)
+        C = ((pc-pt)/(    pi))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
+        B = M*C*exp((α*(p-C))/(pc-pt))
+        f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1
+                
+                η   +=1
+                P[mp] = p
+                Q[mp] = q
+                Pit[mp,η:end].= p/pc
+                Qit[mp,η:end].= q/abs(pc)
+                
+            end
+            σ[:,mp]  = σ0
+            epV[mp]  = ϵV
+            epII[mp] = ϵII
+            ηmp[mp]  = η
+        end
+
+    end
+        
+        p = LinRange(-0.5*pc,1.5*pc,200)
+        qq= LinRange(-0.5*pc,1.5*pc,200)
+        q = LinRange(-0.5*pc,1.5*pc,200)'
+
+        A = ((pc.-pt)./(2.0.*pi)).*(2.0.*atan.((γ.*(pc.+pt.-2.0*p))./(2.0.*pc)).+pi)
+        C = ((pc.-pt)./(     pi)).*      atan.((γ                 )./(2.0    )).+0.5*(pc.+pt)
+        B = M.*C.*exp.((α.*(p.-C))./(pc.-pt))
+        f = (((p.-C).^2)./(A.^2)).+(((q.-β.*p).^2)./(B.^2)).-1
+#=
+        A = ((pc-pt)/(2.0*pi))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+pi)
+        C = ((pc-pt)/(    pi))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
+        B = M*C*exp((α*(p-C))/(pc-pt))
+        f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1
+=#
+#=
+        pc=pc0
+        p = LinRange(-0.5*pc,1.5*pc,200)
+        qq= LinRange(-0.5*pc,1.5*pc,200)
+        q = LinRange(-0.5*pc,1.5*pc,200)'
+        A = pc/(2*pi).*(2.0.*atan.((γ.*(pc.-2.0.*p))./(2.0.*pc)).+pi)
+        C = pc/(2*pi).*(2.0.*atan(γ/2.0)+pi)
+        B = M.*C*exp.((α.*(p.-C))./pc)
+        f = (((p.-C).^2)./(A.^2)).+(((q.-β.*p).^2)./(B.^2)).-1
+=#
+
+        elast = findall(x->x==0,ηmp)
+#=
+        gr() # We will continue onward using the GR backend
+        tit = "Golchin etal (2021)"
+        heatmap(p./pc,qq./pc, f',c=cgrad(:hot, rev=true),aspect_ratio=1,clims=(-1.0e-6,8.0),xlim=(-0.5,1.5),ylim=(0.0,1.5),colorbar_title=L"f(p,q) \geq 0",dpi=300)
+        contour!(p./pc,qq./pc, f', show = false, c=:black,levels=[0,0.1,0.2,0.4,0.8,1.6,3.2,6.4],xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)
+        plot!(P./pc, Q./abs(pc), show=false, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,labels=L"\theta(p,q)",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)       
+        plot!(p./pc, (M.*p)./pc, label="", show = true, title = tit,aspect_ratio=1,linestyle = :dot, color = :red,linewidth=1.5,labels=L"q=Mp",dpi=300)
+=#        
+#=
+        gr() # We will continue onward using the GR backend
+        tit = "Golchin etal (2021)"
+        heatmap(p./pc,qq./pc, f',c=cgrad(:hot, rev=true),aspect_ratio=1,clims=(-1.0e-6,2.0),xlim=(-0.5,1.5),ylim=(0.0,1.5),colorbar_title=L"f(p,q) \geq 0",dpi=300)
+        contour!(p./pc,qq./pc, f', show = false, c=:black,levels=[0,0.1,0.2,0.4,0.8,1.6,3.2,6.4],xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)
+        plot!(P[elast]./pc, Q[elast]./abs(pc), show=false, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,labels="",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,dpi=300)       
+        plot!(Pit', Qit', show=false, color = :black,linewidth=0.5, title = tit,labels="",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,xlim=(-0.25,1.25),ylim=(0.0,0.5),dpi=300)       
+        plot!(p./pc, (M.*p)./pc, label="", show = true, title = tit,aspect_ratio=1,linestyle = :dot, color = :red,linewidth=1.5,labels="",dpi=300)
+=#
+
 end
