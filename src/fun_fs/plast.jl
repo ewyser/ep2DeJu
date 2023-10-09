@@ -26,7 +26,7 @@
 
                 Δγ  = f/(H+∂σf'*Del*∂σg)
                 Δσ  = Δγ*Del*∂σg
-                Δϵ  = Δϵ+Del\Δσ
+                Δϵ.+= Del\Δσ
                 ϵII = ϵII0+sqrt(2/3*(Δϵ[1]^2+Δϵ[2]^2+Δϵ[3]^2+2*Δϵ[4]^2))
                 c0  = mpD.coh[p]+Hp*ϵII
                 if c0<cr c0 = cr end
@@ -42,8 +42,8 @@
                 end
                 ηmax = max(ηit,ηmax)
             end
-            mpD.ϵ[:,p] .-= Δϵ
-            mpD.ϵpII[p]  = ϵII 
+            mpD.ϵ[:,p].-= Δϵ
+            mpD.ϵpII[p] = ϵII 
         end        
     end
     return ηmax
@@ -52,7 +52,7 @@ end
     ftol,ηtol,ηit,ηmax = 1e-6,1e4,0,0
     Hp,χ = 0.35*Hp,3.0/2.0
     @threads for mp in 1:mpD.nmp
-        κ = 2.5*mpD.coh[mp]+Hp*mpD.ϵpII[mp]
+        κ = 3.0*mpD.coh[mp]+Hp*mpD.ϵpII[mp]
         cr= mpD.cohr[mp]
         if κ <= cr κ = cr end
         p    = (mpD.τ[1,mp]+mpD.τ[2,mp]+mpD.τ[3,mp])/3.0
@@ -63,31 +63,31 @@ end
         q    = sqrt(χ)*ξn
         f    = ξn - κ        
         if f>0.0 
-            γ  = mpD.ϵpII[mp]
-            Δλ = 0.0
-            ηit= 1
-            τ0 = mpD.τ[:,mp]
-            ϵp0 = mpD.ϵ[:,mp]
+            Δλ  = 0.0
+            γ   = copy(mpD.ϵpII[mp])
+            τ0  = copy(mpD.τ[:,mp])
+            ϵ0  = copy(mpD.ϵ[:,mp])
+            ηit = 1
             while abs(f)>1e-9 && ηit < 20
                 ∂f∂τ = n
                 Δλ   = f/(∂f∂τ'*Del*∂f∂τ)
                 Δτ   = (Δλ*Del*∂f∂τ)        
-                τ0 .-= Δτ
-                #ϵp0.-= Del\Δτ  
+                τ0 .-= Δτ 
+                ϵ0 .-= Del\Δτ
                 γ   += Δλ
                 p    = (τ0[1]+τ0[2]+τ0[3])/3.0
-                ξ    = τ0[:].-[p;p;p;0.0]
+                ξ    = τ0.-[p;p;p;0.0]
                 J2   = 0.5*(ξ[1]^2+ξ[2]^2+ξ[3]^2+2.0*ξ[4]^2)
                 ξn   = sqrt(2.0*J2)
                 n    = ξ./ξn
                 q    = sqrt(χ)*ξn
-                κ    = 2.5*mpD.coh[mp]+Hp*γ
+                κ    = 3.0*mpD.coh[mp]+Hp*γ
                 if κ <= cr κ = cr end
                 f    = ξn - κ
                 ηit +=1
             end
             mpD.τ[:,mp] .= τ0
-            #mpD.ϵ[:,mp] .= ϵ0
+            mpD.ϵ[:,mp] .= ϵ0
             mpD.ϵpII[mp] = γ
             ηmax         = max(ηit,ηmax)
         end
