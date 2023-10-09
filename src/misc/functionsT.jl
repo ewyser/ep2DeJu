@@ -497,7 +497,7 @@ end
         scatter(mpD.x[:,1],mpD.x[:,2],zcolor=mpD.ϵpII,
             xlabel = xlab,
             ylabel = ylab,    
-            label=L"$\epsilon_{II}^{\mathrm{acc}}$",
+            label=L"$\epsilon_{\mathrm{II}}^{\mathrm{acc}}$",
             aspect_ratio=1,
             c=:viridis,
             clims=(0.0,2.0),
