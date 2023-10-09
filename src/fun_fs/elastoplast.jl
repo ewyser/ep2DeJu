@@ -2,7 +2,7 @@
     # init mesh quantities to zero
     meD.ΔJ .= 0.0
     # set identity matrix
-    ID   = Matrix(I,2,2)
+    ID   = Matrix(I,meD.nD,meD.nD)
     # action
     for p ∈ 1:mpD.nmp
         # get nodal incremental displacement
@@ -21,7 +21,7 @@
         meD.ΔJ[iD]  .+= mpD.ϕ∂ϕ[p,:].*mpD.m[p].*mpD.ΔJ[p]  
     end 
     # compute nodal deformation determinant
-    @threads for no ∈ 1:meD.nno[3]
+    @threads for no ∈ 1:meD.nno[meD.nD+1]
         if meD.m[no]>0.0 
             meD.ΔJ[no] = meD.ΔJ[no]/meD.m[no]
         end
@@ -32,12 +32,20 @@
     end
     return nothing
 end
+@views function mutate(ϵ,dim,type)
+    if type == "tensor"
+        ϵ   = [     ϵ[1] 0.5*ϵ[4];
+                0.5*ϵ[4]     ϵ[2]]
+    elseif type == "voigt"
+        ϵ   = vcat(ϵ[1,1],ϵ[2,2],0.0,2*ϵ[1,2])
+    end
+    return ϵ
+end
 # For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
 @views function elast!(mpD,Del,isΔFbar)
     @threads for p ∈ 1:mpD.nmp
         # compute logarithmic strain tensor
-        ϵ          = [    mpD.ϵ[1,p] 0.5*mpD.ϵ[4,p];
-                      0.5*mpD.ϵ[4,p]     mpD.ϵ[2,p]]
+        ϵ          = mutate(mpD.ϵ[:,p],2,"tensor")
         λ,n        = eigvals(ϵ),eigvecs(ϵ)
         b          = n*diagm(exp.(2*λ))*n'
         if isΔFbar
@@ -47,7 +55,7 @@ end
         end
         λ,n        = eigvals(bt),eigvecs(bt)
         ϵt         = 0.5.*(n*diagm(log.(λ))*n')
-        mpD.ϵ[:,p].= vcat(ϵt[1,1],ϵt[2,2],0.0,2*ϵt[1,2])
+        mpD.ϵ[:,p].= mutate(ϵt,2,"voigt")
         # krichhoff stress tensor
         mpD.τ[:,p].= (Del*mpD.ϵ[:,p]) 
     end
@@ -62,7 +70,7 @@ end
     if plastOn 
         ηmax = plast!(mpD,cmParam,cmType) 
     else 
-        ηmax=0 
+        ηmax = 0 
     end
     # get cauchy stresses
     @threads for p ∈ 1:mpD.nmp
