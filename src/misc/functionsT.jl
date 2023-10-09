@@ -361,7 +361,12 @@ function e2N(nD,nno,nel,nn)
     end
 	return convert(Array{Int64},e2n)
 end
-
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
 @views function get_vals(meD,mpD,it,ηmax,ηtot,cmpl,symb)
     # completion [%]
     cmpl = round(100.0*cmpl,digits=1)
@@ -371,37 +376,6 @@ end
             ("ηmax,ηtot",(ηmax,ηtot)),
             (symb*" t/T",cmpl)]
     return vals
-end
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-function save2txt(meD,mpD,bc)
-    xn = [meD.xn meD.zn]
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/xn.txt",vec(xn))
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/e2n.txt",vec(meD.e2n.-1))
-    
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/cohp.txt",vec(mpD.coh))
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/phip.txt",vec(mpD.phi))
-
-    p = [mpD.nmp meD.nn meD.nno[3] meD.h[1] meD.h[2] minimum(meD.xn) minimum(meD.zn) meD.nno[1] meD.nno[2]]
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/param.txt",vec(p))    
-
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/mp.txt" ,vec(mpD.mp) )    
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/xp.txt" ,vec(mpD.xp))    
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/vol.txt",vec(mpD.v) )    
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/lp.txt" ,vec(mpD.l)) 
-
-
-    bcx = bc.x.+(0*meD.nno[3])
-    bcz = bc.z.+(1*meD.nno[3])
-    BC  = ones(Int64,meD.nno[3]*2,1)
-    BC[vcat(bcx,bcz)].= 0
-    writedlm("/Users/manuwyser/Dropbox/PhD_Thesis/git_local/work_mpm/C_code_2D/scripts/setting_Exp2b/bcs.txt" ,vec(BC)) 
-
-    return "done"
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
