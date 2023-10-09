@@ -1,6 +1,6 @@
 # julia -i -O3 -t auto --check-bounds=no --project=.
 # include("./scripts/sim.jl")
-# ϵp2De(80,"P","mohr",true)
+# ϵp2De(40,"P","bsmpm","mohr",true)
 
 # include dependencies
 include("../src/superInclude.jl")
@@ -10,7 +10,7 @@ typeD = Float64
 path_plot = "./out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
-@views function ϵp2De(nel::Int64,varPlot::String,cmType::String,isΔFbar::Bool)
+@views function ϵp2De(nel::Int64,varPlot::String,ϕ∂ϕType::String,cmType::String,isΔFbar::Bool)
     @info "** ϵp2-3De v1.0: finite strain formulation **"
     # non-dimensional constant                                                   
     ni,ndim,nstr = 2,2,4                                                        # number of material point along 1d, number of stresses
@@ -33,7 +33,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
-    @info "launch bsmpm calculation cycle..."
+    @info "launch "*ϕ∂ϕType*" calculation cycle..."
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<=t
         # plot/save
@@ -45,7 +45,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         # adaptative Δt & linear increase in gravity
         Δt,g  = get_Δt(mpD.v,meD.h,yd),get_g(tw,tg,meD.nD)
         # bsmpm cycle
-        ϕ∂ϕ!(mpD,meD)
+        ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
         mapsto!(mpD,meD,g,Δt,"p->N")                  
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,"p<-N")
@@ -60,7 +60,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✗) t/T",round(tw/t,digits=2))])
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✓) t/T",1.0)])
-    savefig(path_plot*varPlot*"_"*cmType*"_vollock_"*string(isΔFbar)*".png")
+    savefig(path_plot*varPlot*"_"*ϕ∂ϕType*"_"*cmType*"_vollock_"*string(isΔFbar)*".png")
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
     return nothing

@@ -16,6 +16,24 @@
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
+function NdN(δx::Float64,h::Float64,lp::Float64)                                                         
+    if     abs(δx) <    lp                       
+        ϕ  = 1.0-((4.0*δx^2+(2.0*lp)^2)/(8.0*h*lp))                                   
+        ∂ϕ = -((8.0*δx)/(8.0*h*lp))                                     
+    elseif (abs(δx)>=   lp ) && (abs(δx)<=(h-lp))
+        ϕ  = 1.0-(abs(δx)/h)                                                       
+        ∂ϕ = sign(δx)*(-1.0/h)                                                   
+    elseif (abs(δx)>=(h-lp)) && (abs(δx)< (h+lp))
+        ϕ  = ((h+lp-abs(δx))^2)/(4.0*h*lp)                                       
+        ∂ϕ = -sign(δx)*(h+lp-abs(δx))/(2.0*h*lp)
+    else
+        ϕ  = 0.0                                                                 
+        ∂ϕ = 0.0                                  
+    end
+    return ϕ,∂ϕ    
+end
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
 function whichType(xn::Float64,xB::Vector{Float64},Δx::Float64)
     if xn==xB[1] ||  xn==xB[2] 
         type = 1::Int64
@@ -30,8 +48,6 @@ function whichType(xn::Float64,xB::Vector{Float64},Δx::Float64)
     end
     return type::Int64
 end
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
 function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
     if type==1 
         if -2<=ξ && ξ<=-1 
@@ -90,7 +106,7 @@ function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-@views function ϕ∂ϕ!(mpD::NamedTuple,meD::NamedTuple)
+@views function ϕ∂ϕ!(mpD::NamedTuple,meD::NamedTuple,ϕ∂ϕType::String)
     topol!(mpD,meD)
     #preprocessing
     xb = copy(meD.xB[1:2])
@@ -98,26 +114,51 @@ end
     Δx = meD.h[1]
     Δz = meD.h[2]
     #action
-    @threads for mp ∈ 1:mpD.nmp
-        for nn ∈ 1:meD.nn
-            # compute basis functions
-            id     = mpD.p2n[mp,nn]
-            ξ      = (mpD.x[mp,1] - meD.x[id,1])/Δx 
-            type   = whichType(meD.x[id,1],xb,Δx)
-            ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-            η      = (mpD.x[mp,2] - meD.x[id,2])/Δz
-            type   = whichType(meD.x[id,2],zb,Δz)
-            ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
-            # convolution of basis function
-            mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
-            mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
-            mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
+    if ϕ∂ϕType == "bsmpm"
+        @threads for mp ∈ 1:mpD.nmp
+            for nn ∈ 1:meD.nn
+                # compute basis functions
+                id     = mpD.p2n[mp,nn]
+                ξ      = (mpD.x[mp,1] - meD.x[id,1])/Δx 
+                type   = whichType(meD.x[id,1],xb,Δx)
+                ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
+                η      = (mpD.x[mp,2] - meD.x[id,2])/Δz
+                type   = whichType(meD.x[id,2],zb,Δz)
+                ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
+                # convolution of basis function
+                mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
+            end
+            # B-matrix assembly
+            mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+            mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+            mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+            mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
         end
-        # B-matrix assembly
-        mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-        mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+    elseif ϕ∂ϕType == "gimpm"
+        @threads for mp in 1:mpD.nmp
+            for nn in 1:meD.nn
+                # compute basis functions
+                id     = mpD.p2n[mp,nn]
+                ξ      = (mpD.x[mp,1] - meD.x[id,1])
+                η      = (mpD.x[mp,2] - meD.x[id,2])
+                ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l0[mp,1])
+                ϕz,dϕz = NdN(η,meD.h[2],mpD.l0[mp,2])
+                # convolution of basis function
+                mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
+            end
+            # B-matrix assembly
+            mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+            mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+            mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+            mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        end
+    else
+        @error "shapefunction --"*string(type)*"-- not available"
+        exit(1)
     end
     return nothing
 end
