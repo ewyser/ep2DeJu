@@ -53,7 +53,7 @@ end
     end
     return nothing
 end
-@views function mapsto!(mpD::NamedTuple,meD::NamedTuple,g::Matrix{Float64},Δt::Float64,to::Bool)
+@views function mapsto!(mpD::NamedTuple,meD::NamedTuple,g::Matrix{Float64},Δt::Float64,to::String)
     if to == "p->N"
         accum!(mpD,meD,g)
     elseif to == "p<-N"
