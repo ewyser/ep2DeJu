@@ -25,7 +25,7 @@ end
     # flip update
     for p ∈ 1:mpD.nmp
         # index & buffer
-        iD          .= mpD.p2n[p,:]
+        iD         .= mpD.p2n[p,:]
         # mapping back to mp's
         mpD.v[p,:].+= Δt.*(mpD.ϕ∂ϕ[p,:,1]'*meD.a[iD,:])'
         mpD.x[p,:].+= Δt.*(mpD.ϕ∂ϕ[p,:,1]'*meD.v[iD,:])'
@@ -43,8 +43,8 @@ end
     # solve for nodal incremental displacement
     @threads for n ∈ 1:meD.nno[meD.nD+1]
         if meD.m[n]>0.0
-            mnT        = fill(1.0/meD.m[n],meD.nD)
-            meD.u[n,:].= Δt.*meD.p[n,:].*mnT.*meD.bc[n,:]
+            m          = fill(1.0/meD.m[n],meD.nD)
+            meD.u[n,:].= (Δt.*meD.p[n,:].*m).*meD.bc[n,:]
         end
     end
     # update material point's displacement
@@ -53,10 +53,10 @@ end
     end
     return nothing
 end
-@views function mapsto!(mpD::NamedTuple,meD::NamedTuple,g::Matrix{Float64},Δt::Float64,to::String)
-    if to == "p->N"
+@views function mapsto!(mpD::NamedTuple,meD::NamedTuple,g::Matrix{Float64},Δt::Float64,whereto::String)
+    if whereto == "p->N"
         accum!(mpD,meD,g)
-    elseif to == "p<-N"
+    elseif whereto == "p<-N"
         flipDM!(mpD,meD,Δt)
     end
     return nothing
