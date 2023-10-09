@@ -98,7 +98,7 @@ function plast!(mpD,cmParam,cmType)
     elseif cmType == "camC"
 
     elseif cmType == "DP"        
-        ηmax = DPplast!(mpD.τ,mpD.ϵ,mpD.ϵpII,mpD.coh,mpD.phi,0.0,cmParam.Del,cmParam.Kc,cmParam.Gc,cmParam.Hp,mpD.cohr[3],mpD.nmp)
+        
     else
         @error "invalid plastic model --"*string(cmType)*"--"
         exit(1) 
