@@ -57,9 +57,9 @@ if isdir(path_plot)==false mkdir(path_plot) end
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
         # update progress bas
-        next!(prog;showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✗) t/T",round(tw/t,digits=2))])
+        next!(prog;showvalues = get_vals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
-    ProgressMeter.finish!(prog, spinner = '✓',showvalues = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),("iteration(s)",it),("ηmax,ηtot",(ηmax,ηtot)),("(✓) t/T",1.0)])
+    ProgressMeter.finish!(prog, spinner = '✓',showvalues = get_vals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
     savefig(path_plot*varPlot*"_"*ϕ∂ϕType*"_"*cmType*"_vollock_"*string(isΔFbar)*".png")
     @info "Figs saved in" path_plot
     println("[=> done! exiting...")
