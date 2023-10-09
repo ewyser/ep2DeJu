@@ -343,15 +343,6 @@ end
     α   =  0.0
     β   = 0.0
 
-    P  = zeros(Float64,nmp,1)
-    Q  = zeros(Float64,nmp,1)
-    Pit= zeros(Float64,nmp,ηmax)
-    Qit= zeros(Float64,nmp,ηmax)
-    F  = zeros(Float64,nmp,ηmax)
-    ηmp= zeros(Float64,nmp,1)
-
-
-
     for mp in 1:nmp
         pc   = pc0*(exp(-ζ*epV[mp]))
         p    = (σ[1,mp]+σ[2,mp]+σ[3,mp])/3.0
@@ -365,11 +356,6 @@ end
         C = ((pc-pt)/(    pi))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
         B = M*C*exp((α*(p-C))/(pc-pt))
         f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1    
-
-        P[mp] = p
-        Q[mp] = q
-        Pit[mp,:].= p/pc
-        Qit[mp,:].= q/abs(pc)
 
         if f>0.0 
             ϵV = epV[mp]
@@ -410,59 +396,12 @@ end
                 P[mp] = p
                 Q[mp] = q
                 Pit[mp,η:end].= p/pc
-                Qit[mp,η:end].= q/abs(pc)
-                
+                Qit[mp,η:end].= q/abs(pc)     
             end
             σ[:,mp]  = σ0
             epV[mp]  = ϵV
             epII[mp] = ϵII
             ηmp[mp]  = η
         end
-
     end
-        
-        p = LinRange(-0.5*pc,1.5*pc,200)
-        qq= LinRange(-0.5*pc,1.5*pc,200)
-        q = LinRange(-0.5*pc,1.5*pc,200)'
-
-        A = ((pc.-pt)./(2.0.*pi)).*(2.0.*atan.((γ.*(pc.+pt.-2.0*p))./(2.0.*pc)).+pi)
-        C = ((pc.-pt)./(     pi)).*      atan.((γ                 )./(2.0    )).+0.5*(pc.+pt)
-        B = M.*C.*exp.((α.*(p.-C))./(pc.-pt))
-        f = (((p.-C).^2)./(A.^2)).+(((q.-β.*p).^2)./(B.^2)).-1
-#=
-        A = ((pc-pt)/(2.0*pi))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+pi)
-        C = ((pc-pt)/(    pi))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
-        B = M*C*exp((α*(p-C))/(pc-pt))
-        f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1
-=#
-#=
-        pc=pc0
-        p = LinRange(-0.5*pc,1.5*pc,200)
-        qq= LinRange(-0.5*pc,1.5*pc,200)
-        q = LinRange(-0.5*pc,1.5*pc,200)'
-        A = pc/(2*pi).*(2.0.*atan.((γ.*(pc.-2.0.*p))./(2.0.*pc)).+pi)
-        C = pc/(2*pi).*(2.0.*atan(γ/2.0)+pi)
-        B = M.*C*exp.((α.*(p.-C))./pc)
-        f = (((p.-C).^2)./(A.^2)).+(((q.-β.*p).^2)./(B.^2)).-1
-=#
-
-        elast = findall(x->x==0,ηmp)
-#=
-        gr() # We will continue onward using the GR backend
-        tit = "Golchin etal (2021)"
-        heatmap(p./pc,qq./pc, f',c=cgrad(:hot, rev=true),aspect_ratio=1,clims=(-1.0e-6,8.0),xlim=(-0.5,1.5),ylim=(0.0,1.5),colorbar_title=L"f(p,q) \geq 0",dpi=300)
-        contour!(p./pc,qq./pc, f', show = false, c=:black,levels=[0,0.1,0.2,0.4,0.8,1.6,3.2,6.4],xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)
-        plot!(P./pc, Q./abs(pc), show=false, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,labels=L"\theta(p,q)",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)       
-        plot!(p./pc, (M.*p)./pc, label="", show = true, title = tit,aspect_ratio=1,linestyle = :dot, color = :red,linewidth=1.5,labels=L"q=Mp",dpi=300)
-=#        
-#=
-        gr() # We will continue onward using the GR backend
-        tit = "Golchin etal (2021)"
-        heatmap(p./pc,qq./pc, f',c=cgrad(:hot, rev=true),aspect_ratio=1,clims=(-1.0e-6,2.0),xlim=(-0.5,1.5),ylim=(0.0,1.5),colorbar_title=L"f(p,q) \geq 0",dpi=300)
-        contour!(p./pc,qq./pc, f', show = false, c=:black,levels=[0,0.1,0.2,0.4,0.8,1.6,3.2,6.4],xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)
-        plot!(P[elast]./pc, Q[elast]./abs(pc), show=false, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,labels="",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,dpi=300)       
-        plot!(Pit', Qit', show=false, color = :black,linewidth=0.5, title = tit,labels="",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,xlim=(-0.25,1.25),ylim=(0.0,0.5),dpi=300)       
-        plot!(p./pc, (M.*p)./pc, label="", show = true, title = tit,aspect_ratio=1,linestyle = :dot, color = :red,linewidth=1.5,labels="",dpi=300)
-=#
-
 end
