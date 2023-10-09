@@ -5,8 +5,8 @@
     meD.fext.= 0.0
     meD.fint.= 0.0
     # accumulate material point contributions
-    iD  = zeros(Int64  ,meD.nn)
-    buff= zeros(Float64,meD.nn)
+    iD   = zeros(Int64  ,meD.nn)
+    buff = zeros(Float64,meD.nn)
     for p ∈ 1:mpD.nmp
         # index & buffer
         iD             .= mpD.p2n[p,:]
