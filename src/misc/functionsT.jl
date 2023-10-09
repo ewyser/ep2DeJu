@@ -59,6 +59,7 @@ function meshSetup(nel,L,nD,typeD)
         bcX[bcx] .= 0
         bcZ = ones(nno[nD+1],1)
         bcZ[bcz] .= 0
+        #bcX[bcz] .= 0
         bc   = hcat(bcX,bcZ)
     elseif nD == 3
         xB  = [minimum(xn)+2*h[1],maximum(xn)-2*h[1],minimum(yn)+2*h[1],maximum(yn)-2*h[1],0.0,Inf]                                    
