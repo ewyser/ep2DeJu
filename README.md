@@ -63,12 +63,12 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 (ep2DeJu) pkg> instantiate 
 (ep2DeJu) pkg> st
 ```
-4. Compile using ``include("...")`` and run method ``ϵp2De(nel,varPlot,cmType,isΔFbar)``
+4. Compile using ``include("...")`` and run method ``ϵp2De(nel,varPlot,ϕ∂ϕType,cmType,isΔFbar)``
 ```julia
 julia> include("./scripts/sim.jl")
-julia> ϵp2De(80,"P","mohr",true)
+julia> ϵp2De(40,"P","bsmpm","mohr",true)
 ```
-5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` is an option for selecting field for plot, ``cmType`` defines the constitutive model and ``isΔFbar`` is a boolean arg. (``true``/``false``) controlling volumetric locking corrections using $\Delta\bar{F}$ (see [1,2]). 
+5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` (``P`` for pressure, ``du`` for displacement or ``epII`` for plastic strain) is an option for selecting field for plot, ``ϕ∂ϕType`` defines shapefunctions (currently ``bsmpm`` or ``gimpm``), ``cmType`` defines the constitutive model being used and ``isΔFbar`` is a boolean arg. (``true``/``false``) controlling volumetric locking corrections using $\Delta\bar{F}$ (see [1,2]). 
 
 5. Outputs (figs, gif, etc.) are saved in the folder ``` ./out/ ```
 
