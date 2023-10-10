@@ -1,13 +1,19 @@
-@views function MCplast!(mpD,Del,Hp)
+@views function MCplast!(mpD,Del,Hp,fwrkDeform)
     ftol,ηtol,ηmax = 1e-6,1e4,0
     ψ              = 0.5*pi/180.0
+    # create an alias
+    if fwrkDeform == "finite"
+        σ = mpD.τ
+    elseif fwrkDeform == "infinitesimal"
+        σ = mpD.σ
+    end
     @threads for p ∈ 1:mpD.nmp
         ϕ,H,ϵII0 = mpD.phi[p],cos(mpD.phi[p])*Hp,mpD.ϵpII[p]
         c0       = mpD.coh[p]+Hp*ϵII0
         cr       = mpD.cohr[p]
         if c0<cr c0 = cr end
-        σm       = 0.5*(mpD.τ[1,p]+mpD.τ[2,p])
-        τII      = sqrt(0.25*(mpD.τ[1,p]-mpD.τ[2,p])^2+mpD.τ[4,p]^2)
+        σm       = 0.5*(σ[1,p]+σ[2,p])
+        τII      = sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
         f        = τII+σm*sin(ϕ)-c0*cos(ϕ)    
         if f>0.0
             ϵII = ϵII0
@@ -15,14 +21,14 @@
             ηit = 0
             while abs(f)>ftol
                 ηit+= 1
-                ∂σf = [ (mpD.τ[1,p]-mpD.τ[2,p])/(4*τII)+sin(ϕ)/2;
-                       -(mpD.τ[1,p]-mpD.τ[2,p])/(4*τII)+sin(ϕ)/2;
-                        0.0                                     ;
-                        mpD.τ[4,p]/τII                      ]
-                ∂σg = [ (mpD.τ[1,p]-mpD.τ[2,p])/(4*τII)+sin(ψ)/2;
-                       -(mpD.τ[1,p]-mpD.τ[2,p])/(4*τII)+sin(ψ)/2;
-                        0.0                                     ;
-                        mpD.τ[4,p]/τII                          ] 
+                ∂σf = [ (σ[1,p]-σ[2,p])/(4*τII)+sin(ϕ)/2;
+                       -(σ[1,p]-σ[2,p])/(4*τII)+sin(ϕ)/2;
+                        0.0                             ;
+                        σ[4,p]/τII                      ]
+                ∂σg = [ (σ[1,p]-σ[2,p])/(4*τII)+sin(ψ)/2;
+                       -(σ[1,p]-σ[2,p])/(4*τII)+sin(ψ)/2;
+                        0.0                             ;
+                        σ[4,p]/τII                      ] 
 
                 Δγ  = f/(H+∂σf'*Del*∂σg)
                 Δσ  = Δγ*Del*∂σg
@@ -30,9 +36,9 @@
                 ϵII = ϵII0+sqrt(2/3*(Δϵ[1]^2+Δϵ[2]^2+Δϵ[3]^2+2*Δϵ[4]^2))
                 c0  = mpD.coh[p]+Hp*ϵII
                 if c0<cr c0 = cr end
-                mpD.τ[:,p] .-= Δσ
-                σm           = 0.5*(mpD.τ[1,p]+mpD.τ[2,p])
-                τII          = sqrt(0.25*(mpD.τ[1,p]-mpD.τ[2,p])^2+mpD.τ[4,p]^2)
+                σ[:,p] .-= Δσ
+                σm           = 0.5*(σ[1,p]+σ[2,p])
+                τII          = sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
                 f            = τII+σm*sin(ϕ)-c0*cos(ϕ)
                 if ηit>ηtol
                     @printf("\nCPA: max(η_it)>%d",ηtol)
@@ -48,15 +54,21 @@
     end
     return ηmax
 end
-@views function J2plast!(mpD,Del,Kc,Hp) # Borja (1990); De Souza Neto (2008)
+@views function J2plast!(mpD,Del,Kc,Hp,fwrkDeform) # Borja (1990); De Souza Neto (2008)
     ftol,ηtol,ηit,ηmax = 1e-6,1e4,0,0
     Hp,χ = 0.35*Hp,3.0/2.0
+    # create an alias
+    if fwrkDeform == "finite"
+        σ = mpD.τ
+    elseif fwrkDeform == "infinitesimal"
+        σ = mpD.σ
+    end
     @threads for mp in 1:mpD.nmp
-        κ = 3.0*mpD.coh[mp]+Hp*mpD.ϵpII[mp]
+        κ = 2.5*mpD.coh[mp]+Hp*mpD.ϵpII[mp]
         cr= mpD.cohr[mp]
         if κ <= cr κ = cr end
-        p    = (mpD.τ[1,mp]+mpD.τ[2,mp]+mpD.τ[3,mp])/3.0
-        ξ    = mpD.τ[:,mp].-[p;p;p;0.0]
+        p    = (σ[1,mp]+σ[2,mp]+σ[3,mp])/3.0
+        ξ    = σ[:,mp].-[p;p;p;0.0]
         J2   = 0.5*(ξ[1]^2+ξ[2]^2+ξ[3]^2+2.0*ξ[4]^2) # Borja (2013), p.33
         ξn   = sqrt(2.0*J2) 
         n    = ξ./ξn
@@ -65,28 +77,28 @@ end
         if f>0.0 
             Δλ  = 0.0
             γ   = copy(mpD.ϵpII[mp])
-            τ0  = copy(mpD.τ[:,mp])
+            σ0  = copy(σ[:,mp])
             ϵ0  = copy(mpD.ϵ[:,mp])
             ηit = 1
             while abs(f)>1e-9 && ηit < 20
-                ∂f∂τ = n
-                Δλ   = f/(∂f∂τ'*Del*∂f∂τ)
-                Δτ   = (Δλ*Del*∂f∂τ)        
-                τ0 .-= Δτ 
-                ϵ0 .-= Del\Δτ
+                ∂f∂σ = n
+                Δλ   = f/(∂f∂σ'*Del*∂f∂σ)
+                Δσ   = (Δλ*Del*∂f∂σ)        
+                σ0 .-= Δσ 
+                ϵ0 .-= Del\Δσ
                 γ   += Δλ
-                p    = (τ0[1]+τ0[2]+τ0[3])/3.0
-                ξ    = τ0.-[p;p;p;0.0]
+                p    = (σ0[1]+σ0[2]+σ0[3])/3.0
+                ξ    = σ0.-[p;p;p;0.0]
                 J2   = 0.5*(ξ[1]^2+ξ[2]^2+ξ[3]^2+2.0*ξ[4]^2)
                 ξn   = sqrt(2.0*J2)
                 n    = ξ./ξn
                 q    = sqrt(χ)*ξn
-                κ    = 3.0*mpD.coh[mp]+Hp*γ
+                κ    = 2.5*mpD.coh[mp]+Hp*γ
                 if κ <= cr κ = cr end
                 f    = ξn - κ
                 ηit +=1
             end
-            mpD.τ[:,mp] .= τ0
+            σ[:,mp]     .= σ0
             mpD.ϵ[:,mp] .= ϵ0
             mpD.ϵpII[mp] = γ
             ηmax         = max(ηit,ηmax)
@@ -94,11 +106,11 @@ end
     end
     return ηmax
 end
-function plast!(mpD,cmParam,cmType)
+function plast!(mpD::NamedTuple,cmParam::NamedTuple,cmType::String,fwrkDeform::String)
     if cmType == "mohr"
-        ηmax = MCplast!(mpD,cmParam.Del,cmParam.Hp)
+        ηmax = MCplast!(mpD,cmParam.Del,cmParam.Hp,fwrkDeform)
     elseif cmType == "J2"
-        ηmax = J2plast!(mpD,cmParam.Del,cmParam.Kc,cmParam.Hp)
+        ηmax = J2plast!(mpD,cmParam.Del,cmParam.Kc,cmParam.Hp,fwrkDeform)
     elseif cmType == "camC"
 
     elseif cmType == "DP"        
