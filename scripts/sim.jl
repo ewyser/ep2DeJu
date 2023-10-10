@@ -9,9 +9,12 @@ typeD = Float64
 # relative path for figs & data
 path_plot = "./out/"
 if isdir(path_plot)==false mkdir(path_plot) end
+fwrkDeform = "finite"
+#fwrkDeform = "infinitesimal"
+
 
 @views function ϵp2De(nel::Int64,varPlot::String,ϕ∂ϕType::String,cmType::String,isΔFbar::Bool)
-    @info "** ϵp2-3De v1.0: finite strain formulation **"
+    @info "** ϵp2-3De v1.0: "*fwrkDeform*" strain formulation **"
     # non-dimensional constant                                                   
     ni,ndim,nstr = 2,2,4                                                        # number of material point along 1d, number of stresses
     # independant physical constant
@@ -49,7 +52,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         mapsto!(mpD,meD,g,Δt,"p->N")                  
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,"p<-N")
-        ηmax = elastoplast!(mpD,meD,cmParam,cmType,isΔFbar,tw>te)
+        ηmax = elastoplast!(mpD,meD,cmParam,cmType,isΔFbar,fwrkDeform,tw>te)
         if tw>te && flag == 0
             plot_coh(mpD.x,mpD.coh,mpD.phi,ϕ0)
             flag+=1
@@ -60,8 +63,8 @@ if isdir(path_plot)==false mkdir(path_plot) end
         next!(prog;showvalues = get_vals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = get_vals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
-    savefig(path_plot*varPlot*"_"*ϕ∂ϕType*"_"*cmType*"_vollock_"*string(isΔFbar)*".png")
+    figName = varPlot*"_"*ϕ∂ϕType*"_"*cmType*"_vollock_"*string(isΔFbar)*"_"*fwrkDeform*".png"
+    savefig(path_plot*figName)
     @info "Figs saved in" path_plot
-    println("[=> done! exiting...")
-    return nothing
+    return println("[=> done! exiting...")
 end

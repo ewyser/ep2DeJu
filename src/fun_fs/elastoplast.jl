@@ -42,39 +42,60 @@ end
     return ϵ
 end
 # For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
-@views function elast!(mpD,Del,isΔFbar)
-    @threads for p ∈ 1:mpD.nmp
-        # compute logarithmic strain tensor
-        ϵ          = mutate(mpD.ϵ[:,p],2,"tensor")
-        λ,n        = eigvals(ϵ),eigvecs(ϵ)
-        b          = n*diagm(exp.(2*λ))*n'
-        if isΔFbar
-            bt = mpD.ΔFbar[:,:,p]*b*mpD.ΔFbar[:,:,p]'
-        else
-            bt = mpD.ΔF[:,:,p]*b*mpD.ΔF[:,:,p]'
+@views function elast!(mpD,Del,isΔFbar,fwrkDeform)
+    if isΔFbar
+        ΔF = copy(mpD.ΔFbar)
+    else
+        ΔF = copy(mpD.ΔF)
+    end
+    if fwrkDeform == "finite"
+        @threads for p ∈ 1:mpD.nmp
+            # compute logarithmic strain tensor
+            ϵ          = mutate(mpD.ϵ[:,p],2,"tensor")
+            λ,n        = eigvals(ϵ),eigvecs(ϵ)
+            b          = n*diagm(exp.(2*λ))*n'
+            bt         = ΔF[:,:,p]*b*ΔF[:,:,p]'
+            λ,n        = eigvals(bt),eigvecs(bt)
+            ϵt         = 0.5.*(n*diagm(log.(λ))*n')
+            mpD.ϵ[:,p].= mutate(ϵt,2,"voigt")
+            # krichhoff stress tensor
+            mpD.τ[:,p].= (Del*mpD.ϵ[:,p]) 
         end
-        λ,n        = eigvals(bt),eigvecs(bt)
-        ϵt         = 0.5.*(n*diagm(log.(λ))*n')
-        mpD.ϵ[:,p].= mutate(ϵt,2,"voigt")
-        # krichhoff stress tensor
-        mpD.τ[:,p].= (Del*mpD.ϵ[:,p]) 
+    elseif fwrkDeform == "infinitesimal"
+        @threads for p ∈ 1:mpD.nmp
+            # calculate elastic strains
+            mpD.ϵ[1,p] = ΔF[1,1,p]-1.0
+            mpD.ϵ[2,p] = ΔF[2,2,p]-1.0
+            mpD.ϵ[4,p] = ΔF[1,2,p]+ΔF[2,1,p]
+            mpD.ω[p]   = 0.5*(ΔF[2,1,p]-ΔF[1,2,p])
+            # update stresses
+            σxx0       = mpD.σ[1,p]
+            σyy0       = mpD.σ[2,p]
+            σxy0       = mpD.σ[4,p]
+            mpD.σ[1,p]+= (Del[1,1]*mpD.ϵ[1,p]+Del[1,2]*mpD.ϵ[2,p]+Del[1,4]*mpD.ϵ[4,p])+2.0*σxy0*mpD.ω[p]
+            mpD.σ[2,p]+= (Del[2,1]*mpD.ϵ[1,p]+Del[2,2]*mpD.ϵ[2,p]+Del[2,4]*mpD.ϵ[4,p])-2.0*σxy0*mpD.ω[p]
+            mpD.σ[3,p]+= (Del[3,1]*mpD.ϵ[1,p]+Del[3,2]*mpD.ϵ[2,p]+Del[3,4]*mpD.ϵ[4,p])
+            mpD.σ[4,p]+= (Del[4,1]*mpD.ϵ[1,p]+Del[4,2]*mpD.ϵ[2,p]+Del[4,4]*mpD.ϵ[4,p])+(σyy0-σxx0)*mpD.ω[p]     
+        end        
     end
     return nothing
 end
-@views function elastoplast!(mpD::NamedTuple,meD::NamedTuple,cmParam::NamedTuple,cmType::String,isΔFbar::Bool,plastOn::Bool)
+@views function elastoplast!(mpD::NamedTuple,meD::NamedTuple,cmParam::NamedTuple,cmType::String,isΔFbar::Bool,fwrkDeform::String,plastOn::Bool)
     # get def. & logarithmic strains
     deform!(mpD,meD)
     # update kirchoff stresses
-    elast!(mpD,cmParam.Del,isΔFbar)
+    elast!(mpD,cmParam.Del,isΔFbar,fwrkDeform)
     # plastic corrector
     if plastOn 
-        ηmax = plast!(mpD,cmParam,cmType) 
+        ηmax = plast!(mpD,cmParam,cmType,fwrkDeform) 
     else 
         ηmax = 0 
     end
     # get cauchy stresses
-    @threads for p ∈ 1:mpD.nmp
-        mpD.σ[:,p] .= mpD.τ[:,p]./mpD.J[p]
+    if fwrkDeform == "finite"
+        @threads for p ∈ 1:mpD.nmp
+            mpD.σ[:,p] .= mpD.τ[:,p]./mpD.J[p]
+        end
     end
     return ηmax
 end
