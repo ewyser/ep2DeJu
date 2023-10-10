@@ -67,7 +67,7 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 ```julia
 julia> include("./scripts/sim.jl")
 ϵp2De (generic function with 1 method)
-julia> ϵp2De(40,"epII","mohr")
+julia> ϵp2De(40,"epII","MC")
 [ Info: ** ϵp2-3De v1.0: finite strain formulation **
 ┌ Info: mesh & mp feature(s):
 │   nel = 528
@@ -89,7 +89,7 @@ julia>
 
 6. Optional kwargs. are: ``shpfun="bsmpm"`` defining shapefunctions (currently ``bsmpm`` or ``gimpm``),``fwrk="finite"`` defining the deformation framework and ``vollock=true`` is a boolean arg. (*e.g.,* ``true``/``false``) controlling volumetric locking corrections using $\Delta\bar{F}$ (see [1,2]). An example with optional args. is given below
 ```julia
-ϵp2De(40,"P","mohr";shpfun="bsmpm",fwrk="finite",vollock=true)
+ϵp2De(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
 ```
 
 5. Outputs (figs, gif, etc.) are saved in the folder ``` ./out/ ```
