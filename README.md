@@ -8,13 +8,13 @@ This is a small Julia project and an implementation of the mechanical solver [ep
 
 * **Fig |** Slumping dynamics showing the accumulated plastic strain $\epsilon_p^{\mathrm{acc}}$ after an elastic load of 8 s and an additional elasto-plastic load of $\approx$ 7 s. 
 
-The solver relies on random gaussian fields to generate initial fields $\psi(\boldsymbol{x})$, such as the cohesion $c(\boldsymbol{x}_p)$ or the internal friction angle $\phi(\boldsymbol{x}_p)$, which are taken as spatial variables instead of constant parameters. 
+The solver relies on random gaussian fields to generate initial fields $\psi(\boldsymbol{x})$, *e.g.,* the cohesion $c(\boldsymbol{x}_p)$ or the internal friction angle $\phi(\boldsymbol{x}_p)$. 
 
 <p align="center">
   <img src="docs/saved/6_coh0.png" width="400"/>
 </p>
 
-* **Fig |** Initial cohesion field $c_0(\boldsymbol{x}_p)$ with average $\mu=20$ kPa with a variance $\sigma=5$ kPa. This corresponds to the initial condition for the result showed above. 
+* **Fig |** Initial cohesion field $c_0(\boldsymbol{x}_p)$ with average $\mu=20$ kPa with a variance $\sigma\pm5$ kPa.
 
 ## **Content**
 1. [Usage](#id-section2)
@@ -63,10 +63,27 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 (ep2DeJu) pkg> instantiate 
 (ep2DeJu) pkg> st
 ```
-4. Compile using ``include("...")`` and run method ``ϵp2De(nel,varPlot,ϕ∂ϕType,cmType,isΔFbar)``
+4. Compile using ``include("...")`` and run method ``ϵp2De(nel,varPlot,ϕ∂ϕType,cmType,isΔFbar)`` should result in the following:
 ```julia
 julia> include("./scripts/sim.jl")
-julia> ϵp2De(40,"P","bsmpm","mohr",true)
+ϵp2De (generic function with 1 method)
+julia> ϵp2De(40,"epII","bsmpm","mohr",true)
+[ Info: ** ϵp2-3De v1.0: finite strain formulation **
+┌ Info: mesh & mp feature(s):
+│   nel = 528
+│   nno = 585
+└   nmp = 591
+[ Info: launch bsmpm calculation cycle...
+✓ working hard: 	 Time: 0:00:06 (15.81 ms/it)
+  [nel,np]:      (528, 591)
+  iteration(s):  432
+  ηmax,ηtot:     (21, 852)
+  (✓) t/T:       100.0
+┌ Info: Figs saved in
+└   path_plot = "./out/"
+[=> done! exiting...
+
+julia> 
 ```
 5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` (``P`` for pressure, ``du`` for displacement or ``epII`` for plastic strain) is an option for selecting field for plot, ``ϕ∂ϕType`` defines shapefunctions (currently ``bsmpm`` or ``gimpm``), ``cmType`` defines the constitutive model being used and ``isΔFbar`` is a boolean arg. (``true``/``false``) controlling volumetric locking corrections using $\Delta\bar{F}$ (see [1,2]). 
 
