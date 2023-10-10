@@ -1,7 +1,7 @@
 # julia -i -O3 -t auto --check-bounds=no --project=.
 # include("./scripts/sim.jl")
-# ϵp2De(40,"P","bsmpm","mohr","finite",true)
-# ϵp2De(40,"P","bsmpm","mohr","finite",true;"bsmpm","finite","true)
+# ϵp2De(40,"P","MC")
+# ϵp2De(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
 
 # include dependencies
 include("../src/superInclude.jl")
@@ -62,7 +62,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         next!(prog;showvalues = get_vals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = get_vals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
-    figName = varPlot*"_"*ϕ∂ϕType*"_"*cmType*"_vollock_"*string(isΔFbar)*"_"*fwrkDeform*".png"
+    figName = varPlot*"_"*ϕ∂ϕType*"_"*fwrkDeform*"_"*string(isΔFbar)*"_"*cmType*".png"
     savefig(path_plot*figName)
     @info "Figs saved in" path_plot
     return println("[=> done! exiting...")
