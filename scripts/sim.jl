@@ -10,7 +10,7 @@ typeD = Float64
 path_plot = "./out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 fwrkDeform = "finite"
-#fwrkDeform = "infinitesimal"
+fwrkDeform = "infinitesimal"
 
 
 @views function ϵp2De(nel::Int64,varPlot::String,ϕ∂ϕType::String,cmType::String,isΔFbar::Bool)
