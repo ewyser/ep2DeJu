@@ -1,3 +1,14 @@
+function kwargOut(kwargs)
+    if isempty(kwargs)
+        # ϵp2De(40,"P","mohr")
+        ϕ∂ϕType,fwrkDeform,isΔFbar = "bsmpm","finite",true
+    else
+        #ϵp2De(40,"P","mohr";shpfun="bsmpm",fwrk="finite",vollock=true)
+        shpfun,fwrk,vollock = kwargs
+        ϕ∂ϕType,fwrkDeform,isΔFbar = shpfun[2],fwrk[2],vollock[2]
+    end
+    return ϕ∂ϕType,fwrkDeform,isΔFbar
+end
 #----------------------------------------------------------------------------------------------------------
 function meshSetup(nel,L,nD,typeD)
     # geometry                                               

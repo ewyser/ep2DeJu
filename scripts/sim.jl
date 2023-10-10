@@ -1,6 +1,7 @@
 # julia -i -O3 -t auto --check-bounds=no --project=.
 # include("./scripts/sim.jl")
 # ϵp2De(40,"P","bsmpm","mohr","finite",true)
+# ϵp2De(40,"P","bsmpm","mohr","finite",true;"bsmpm","finite","true)
 
 # include dependencies
 include("../src/superInclude.jl")
@@ -10,7 +11,8 @@ typeD = Float64
 path_plot = "./out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
-@views function ϵp2De(nel::Int64,varPlot::String,cmType::String;ϕ∂ϕType::String="bsmpm",fwrkDeform::String="finite",isΔFbar::Bool=true)
+@views function ϵp2De(nel::Int64,varPlot::String,cmType::String; kwargs...)
+    ϕ∂ϕType,fwrkDeform,isΔFbar = kwargOut(kwargs)
     @info "** ϵp2-3De v1.0: "*fwrkDeform*" strain formulation **"
     # non-dimensional constant                                                   
     ni,ndim,nstr = 2,2,4                                                        # number of material point along 1d, number of stresses
