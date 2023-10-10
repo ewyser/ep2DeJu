@@ -1,6 +1,6 @@
-@views function MCplast!(mpD,Del,Hp,fwrkDeform)
+@views function MCplast!(mpD,cmParam,fwrkDeform)
     ftol,ηtol,ηmax = 1e-6,1e4,0
-    ψ              = 0.5*pi/180.0
+    ψ              = 0.5*π/180.0
     # create an alias
     if fwrkDeform == "finite"
         σ = mpD.τ
@@ -8,12 +8,10 @@
         σ = mpD.σ
     end
     @threads for p ∈ 1:mpD.nmp
-        ϕ,H,ϵII0 = mpD.phi[p],cos(mpD.phi[p])*Hp,mpD.ϵpII[p]
-        c0       = mpD.coh[p]+Hp*ϵII0
-        cr       = mpD.cohr[p]
+        ϕ,H,ϵII0 = mpD.phi[p],cos(mpD.phi[p])*cmParam.Hp,mpD.ϵpII[p]
+        c0,cr    = mpD.coh[p]+cmParam.Hp*ϵII0,mpD.cohr[p]
         if c0<cr c0 = cr end
-        σm       = 0.5*(σ[1,p]+σ[2,p])
-        τII      = sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
+        σm,τII   = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
         f        = τII+σm*sin(ϕ)-c0*cos(ϕ)    
         if f>0.0
             ϵII = ϵII0
@@ -30,16 +28,15 @@
                         0.0                             ;
                         σ[4,p]/τII                      ] 
 
-                Δγ  = f/(H+∂σf'*Del*∂σg)
-                Δσ  = Δγ*Del*∂σg
-                Δϵ.+= Del\Δσ
+                Δγ  = f/(H+∂σf'*cmParam.Del*∂σg)
+                Δσ  = Δγ*cmParam.Del*∂σg
+                Δϵ.+= cmParam.Del\Δσ
                 ϵII = ϵII0+sqrt(2/3*(Δϵ[1]^2+Δϵ[2]^2+Δϵ[3]^2+2*Δϵ[4]^2))
-                c0  = mpD.coh[p]+Hp*ϵII
+                c0  = mpD.coh[p]+cmParam.Hp*ϵII
                 if c0<cr c0 = cr end
-                σ[:,p] .-= Δσ
-                σm           = 0.5*(σ[1,p]+σ[2,p])
-                τII          = sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
-                f            = τII+σm*sin(ϕ)-c0*cos(ϕ)
+                σ[:,p].-= Δσ
+                σm,τII  = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
+                f       = τII+σm*sin(ϕ)-c0*cos(ϕ)
                 if ηit>ηtol
                     @printf("\nCPA: max(η_it)>%d",ηtol)
                     @printf("\n     f = %.6f",f)
@@ -108,7 +105,7 @@ end
 end
 function plast!(mpD::NamedTuple,cmParam::NamedTuple,cmType::String,fwrkDeform::String)
     if cmType == "mohr"
-        ηmax = MCplast!(mpD,cmParam.Del,cmParam.Hp,fwrkDeform)
+        ηmax = MCplast!(mpD,cmParam,fwrkDeform)
     elseif cmType == "J2"
         ηmax = J2plast!(mpD,cmParam.Del,cmParam.Kc,cmParam.Hp,fwrkDeform)
     elseif cmType == "camC"
