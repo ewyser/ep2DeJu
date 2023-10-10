@@ -104,7 +104,7 @@ end
     return ηmax
 end
 function plast!(mpD::NamedTuple,cmParam::NamedTuple,cmType::String,fwrkDeform::String)
-    if cmType == "mohr"
+    if cmType == "MC"
         ηmax = MCplast!(mpD,cmParam,fwrkDeform)
     elseif cmType == "J2"
         ηmax = J2plast!(mpD,cmParam.Del,cmParam.Kc,cmParam.Hp,fwrkDeform)
