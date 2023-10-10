@@ -49,6 +49,7 @@ function whichType(xn::Float64,xB::Vector{Float64},Δx::Float64)
     return type::Int64
 end
 function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
+    ϕ,∂ϕ = 0.0,0.0
     if type==1 
         if -2<=ξ && ξ<=-1 
             ϕ = 1/6     *ξ^3+     ξ^2   +2*ξ    +4/3
