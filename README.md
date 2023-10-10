@@ -63,11 +63,11 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 (ep2DeJu) pkg> instantiate 
 (ep2DeJu) pkg> st
 ```
-4. Compile using ``include("...")`` and run method ``ϵp2De(nel,varPlot,ϕ∂ϕType,cmType,isΔFbar)`` should result in the following:
+4. Compile using ``include("...")`` and run method ``nel,varPlot,cmType;ϕ∂ϕType,fwrkDeform,isΔFbar`` should result in the following:
 ```julia
 julia> include("./scripts/sim.jl")
 ϵp2De (generic function with 1 method)
-julia> ϵp2De(40,"epII","bsmpm","mohr",true)
+julia> ϵp2De(40,"epII","mohr")
 [ Info: ** ϵp2-3De v1.0: finite strain formulation **
 ┌ Info: mesh & mp feature(s):
 │   nel = 528
@@ -85,7 +85,10 @@ julia> ϵp2De(40,"epII","bsmpm","mohr",true)
 
 julia> 
 ```
-5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` (``P`` for pressure, ``du`` for displacement or ``epII`` for plastic strain) is an option for selecting field for plot, ``ϕ∂ϕType`` defines shapefunctions (currently ``bsmpm`` or ``gimpm``), ``cmType`` defines the constitutive model being used and ``isΔFbar`` is a boolean arg. (``true``/``false``) controlling volumetric locking corrections using $\Delta\bar{F}$ (see [1,2]). 
+5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` (``P`` for pressure, ``du`` for displacement or ``epII`` for plastic strain) is an option for selecting field for plot, ``cmType`` defines the constitutive model being used. Optional args. are ``ϕ∂ϕType`` defining shapefunctions (currently ``bsmpm`` or ``gimpm``, ``ϕ∂ϕType="bsmpm"`` by default),``fwrkDeform`` defining the deformation framework (``fwrkDeform="finite"`` by default) and ``isΔFbar`` is a boolean arg. (*e.g.,* ``true``/``false``, ``isΔFbar=true`` by default) controlling volumetric locking corrections using $\Delta\bar{F}$ (see [1,2]). An example with optional args. is given below
+```julia
+julia> ϵp2De(40,"P","bsmpm","mohr","finite",true;"bsmpm","finite",true)
+```
 
 5. Outputs (figs, gif, etc.) are saved in the folder ``` ./out/ ```
 
