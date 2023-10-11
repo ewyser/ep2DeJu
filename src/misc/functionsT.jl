@@ -3,9 +3,20 @@ function kwargsOut(kwargs)
         # ϵp2De(40,"P","mohr")
         ϕ∂ϕType,fwrkDeform,isΔFbar = "bsmpm","finite",true
     else
-        #ϵp2De(40,"P","mohr";shpfun="bsmpm",fwrk="finite",vollock=true)
-        shpfun,fwrk,vollock = kwargs
-        ϕ∂ϕType,fwrkDeform,isΔFbar = shpfun[2],fwrk[2],vollock[2]
+        #ϵp2De(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
+        kwargs0 = (:shpfun => "bsmpm", :fwrk => "finite", :vollock => true)
+        arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2]]
+        for A in enumerate(kwargs0) 
+            NUM,FIELD = A
+            for a in enumerate(kwargs) 
+                num,field = a
+                if field[1]==FIELD[1]
+                    println(field)
+                    arg[NUM] = field[2]
+                end
+            end
+        end
+        ϕ∂ϕType,fwrkDeform,isΔFbar = arg
     end
     return ϕ∂ϕType,fwrkDeform,isΔFbar
 end
