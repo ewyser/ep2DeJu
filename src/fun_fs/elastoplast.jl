@@ -2,7 +2,7 @@
     # init mesh quantities to zero
     meD.ΔJ .= 0.0
     # set identity matrix
-    ID   = Matrix(I,meD.nD,meD.nD)
+    ID   = Matrix(1.0I,meD.nD,meD.nD)
     # action
     for p ∈ 1:mpD.nmp
         # get nodal incremental displacement
@@ -62,7 +62,7 @@ end
             mpD.τ[:,p].= (Del*mpD.ϵ[:,p]) 
         end
     elseif fwrkDeform == "infinitesimal"
-        ID = Matrix(I,size(mpD.ΔF,1),size(mpD.ΔF,2))
+        ID = Matrix(1.0I,size(mpD.ΔF,1),size(mpD.ΔF,2))
         @threads for p ∈ 1:mpD.nmp
             # calculate elastic strains
             ϵ           = 0.5.*(ΔF[:,:,p]+ΔF[:,:,p]').-ID
