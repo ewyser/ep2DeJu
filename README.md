@@ -79,7 +79,7 @@ julia> ϵp2De(40,"epII","MC")
   (✓) t/T:       100.0
 ┌ Info: Figs saved in
 └   path_plot = "./out/"
-=> Done! exiting...
+└ Done! exiting...
 
 julia> 
 ```
