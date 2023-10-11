@@ -80,7 +80,6 @@ julia> ϵp2De(40,"epII","MC")
 ┌ Info: Figs saved in
 └   path_plot = "./out/"
 └ Done! exiting...
-
 julia> 
 ```
 5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain) is an option for selecting field for plot, ``cmType`` defines the constitutive model being used. 
