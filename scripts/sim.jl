@@ -40,7 +40,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     while tw<=t
         # plot/save
         if tw >= ctr*tC
-            ctr = __plotStuff(mpD,varPlot,ctr)
+            ctr = __plotStuff(mpD,tw,varPlot,ctr)
         end
         # set clock on/off
         tic = time_ns()

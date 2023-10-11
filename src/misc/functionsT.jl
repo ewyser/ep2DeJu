@@ -19,6 +19,16 @@ function kwargsOut(kwargs)
     end
     return ϕ∂ϕType,fwrkDeform,isΔFbar
 end
+@views function get_vals(meD,mpD,it,ηmax,ηtot,cmpl,symb)
+    # completion [%]
+    cmpl = round(100.0*cmpl,digits=1)
+    # save vals
+    vals = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),
+            ("iteration(s)",it),
+            ("ηmax,ηtot",(ηmax,ηtot)),
+            (symb*" t/T",cmpl)]
+    return vals
+end
 function msg(message)
     try
         return printstyled(message,color=:red,blink=true)
@@ -159,8 +169,8 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     zlt = Float64[]
     clt = Float64[]
     pos = Float64 
-    for mp in 1:length(xp)
-        for p in 1:length(z)
+    for mp ∈ 1:length(xp)
+        for p ∈ 1:length(z)
             Δx = xp[mp]-x[p]
             Δz = zp[mp]-z[p]
             nx = a
@@ -275,9 +285,9 @@ function e2N(nD,nno,nel,nn)
     if nD == 2
         gnum = reverse(reshape(1:(nno[3]),nno[2],nno[1]),dims=1)
         iel  = 1
-        for i in 1:nel[1]#nelx
-            for j in 1:nel[2]#nelz
-                if(i>1 && i<nel[1] && j>1 && j<nel[2])
+        for i ∈ 1:nel[1]#nelx
+            for j ∈ 1:nel[2]#nelz
+                if i>1 && i<nel[1] && j>1 && j<nel[2]
                     e2n[iel,1 ] = gnum[j-1,i-1]
                     e2n[iel,2 ] = gnum[j-0,i-1]
                     e2n[iel,3 ] = gnum[j+1,i-1]
@@ -304,10 +314,10 @@ function e2N(nD,nno,nel,nn)
     elseif nD == 3
         gnum = reverse(reshape(1:(nno[4]),nno[3],nno[1],nno[2]),dims=1)
         iel  = 1
-        for k in 1:nel[2]#nely
-            for i in 1:nel[1]#nelx
-                for j in 1:nel[3]#nelz
-                    if(i>1 && i<nel[1] && j>1 && j<nel[3] && k>1 && k<nel[2])
+        for k ∈ 1:nel[2]#nely
+            for i ∈ 1:nel[1]#nelx
+                for j ∈ 1:nel[3]#nelz
+                    if i>1 && i<nel[1] && j>1 && j<nel[3] && k>1 && k<nel[2]
                         e2n[iel,1 ] = gnum[j-1,i-1,k-1]
                         e2n[iel,2 ] = gnum[j-0,i-1,k-1]
                         e2n[iel,3 ] = gnum[j+1,i-1,k-1]
@@ -389,52 +399,36 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-@views function get_vals(meD,mpD,it,ηmax,ηtot,cmpl,symb)
-    # completion [%]
-    cmpl = round(100.0*cmpl,digits=1)
-    # save vals
-    vals = [("[nel,np]",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),
-            ("iteration(s)",it),
-            ("ηmax,ηtot",(ηmax,ηtot)),
-            (symb*" t/T",cmpl)]
-    return vals
-end
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
 @views function D(E,ν)
     Gc = E/(2.0*(1.0+ν))                                                   # shear modulus               [Pa]
     Kc = E/(3.0*(1.0-2.0*ν))                                               # bulk modulus                [Pa]
     D  = [ Kc+4/3*Gc Kc-2/3*Gc Kc-2/3*Gc 0.0 ;
-             Kc-2/3*Gc Kc+4/3*Gc Kc-2/3*Gc 0.0 ;
-             Kc-2/3*Gc Kc-2/3*Gc Kc+4/3*Gc 0.0 ;
-             0.0       0.0       0.0       Gc  ]
+           Kc-2/3*Gc Kc+4/3*Gc Kc-2/3*Gc 0.0 ;
+           Kc-2/3*Gc Kc-2/3*Gc Kc+4/3*Gc 0.0 ;
+           0.0       0.0       0.0       Gc  ]
     return Kc,Gc,D
 end
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
 @views function get_Δt(vp,h,yd)
-    Δx   = h[1]
-    Δz   = h[2]
-    vmax = [abs.(vp[:,1]) abs.(vp[:,2])]
-    cmax = [maximum(vmax[:,1]) maximum(vmax[:,2])]
-    cmax = [Δx/(cmax[1]+yd) Δz/(cmax[2]+yd)]
-    Δt   = 0.5*maximum(cmax)
+    if length(h)==2
+        Δx   = h[1]
+        Δz   = h[2]
+        vmax = [abs.(vp[:,1]) abs.(vp[:,2])]
+        cmax = [maximum(vmax[:,1]) maximum(vmax[:,2])]
+        cmax = [Δx/(cmax[1]+yd) Δz/(cmax[2]+yd)]
+        Δt   = 0.5*maximum(cmax)
+    elseif length(h)==3
+        Δx   = h[1]
+        Δy   = h[2]
+        Δz   = h[2]
+        vmax = [abs.(vp[:,1]) abs.(vp[:,2]) abs.(vp[:,3])]
+        cmax = [maximum(vmax[:,1]) maximum(vmax[:,2]) maximum(vmax[:,3])]
+        cmax = [Δx/(cmax[1]+yd) Δy/(cmax[2]+yd) Δz/(cmax[3]+yd)]
+        Δt   = 0.5*maximum(cmax)
+    else
+        Δt = nothing    
+    end
     return Δt
 end
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
 function get_g(tw::Float64,tg::Float64,nD::Int64)
     g = 0.0
     if tw<=tg 
@@ -489,9 +483,10 @@ default(
     )
     savefig(path_plot*"phi0.png")
 end
-@views function __plotStuff(mpD,type,ctr)
+@views function __plotStuff(mpD,t,type,ctr)
     xlab,ylab = L"$x-$direction",L"$z-$direction"
     gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.75,)#markerstrokecolor=:match,)
+    temp = L"$t = "*string(round(t,digits=1))*" [s]"
     if type == "P"
         p = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
         scatter(mpD.x[:,1],mpD.x[:,2],zcolor=p,
@@ -501,7 +496,7 @@ end
             aspect_ratio=1,
             c=:viridis,
             ylim=(-10.0,20.0),
-            title="Pressure",
+            title="Pressure: "*temp,
             show=true,
             )  
     elseif type == "epII"
@@ -513,7 +508,7 @@ end
             c=:viridis,
             clims=(0.0,2.0),
             ylim=(-10.0,20.0),
-            title="Plastic strain",
+            title="Plastic strain: "*temp,
             show=true,
             ) 
     elseif type == "du"
@@ -525,7 +520,7 @@ end
             aspect_ratio=1,
             c=:viridis,
             ylim=(-10.0,20.0),
-            title="Displacement",
+            title="Displacement: "*temp,
             show=true,
             )
     else
