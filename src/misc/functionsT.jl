@@ -527,3 +527,10 @@ end
     end
     return ctr+=1
 end
+function msg()
+    try
+        return printstyled("└ (✓) Done! exiting...",color=:red,blink=true)
+    catch
+        return printstyled("└ (✓) Done! exiting...",color=:blink)
+    end
+end

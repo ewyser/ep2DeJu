@@ -1,5 +1,5 @@
 # include dependencies & function call(s) for svSolver.jl
-using Printf, LinearAlgebra, DelimitedFiles, Plots, LaTeXStrings, Base.Threads,ProgressMeter
+using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
 # include doc
 include("./misc/doc.jl")
 # include init
