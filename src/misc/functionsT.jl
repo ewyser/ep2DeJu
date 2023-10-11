@@ -11,7 +11,6 @@ function kwargsOut(kwargs)
             for a in enumerate(kwargs) 
                 num,field = a
                 if field[1]==FIELD[1]
-                    println(field)
                     arg[NUM] = field[2]
                 end
             end
