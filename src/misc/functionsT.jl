@@ -216,16 +216,13 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     epV  = zeros(typeD,nmp,1)
     ΔJ   = ones(typeD,nmp,1)
     J    = ones(typeD,nmp,1)
-    ΔJbar= ones(typeD,nmp,1)
-    Jbar = ones(typeD,nmp,1)
     # tensors
-    dF   = zeros(2,2,nmp)
-    dFbar= zeros(2,2,nmp)
-    F    = ones(2,2,nmp)
-    F[1,2,:] .= F[2,1,:] .= 0.0
-    Fbar = F
-    b    = zeros(2,2,nmp)
-    bT   = zeros(2,2,nmp)
+    dF   = zeros(meD.nD,meD.nD,nmp)
+    dFbar= zeros(meD.nD,meD.nD,nmp)
+    F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp)
+    Fbar = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp)
+    b    = zeros(meD.nD,meD.nD,nmp)
+    bT   = zeros(meD.nD,meD.nD,nmp)
     e    = zeros(typeD,nstr,nmp)
     ome  = zeros(typeD,1,nmp)
     s    = zeros(typeD,nstr,nmp)
@@ -233,15 +230,12 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     dev  = zeros(typeD,nstr,nmp)
     ep   = zeros(typeD,nstr,nmp)
     # additional quantities
-    nn   = convert(UInt64,meD.nn)
-    ϕ    = zeros(typeD,nmp ,nn       )
-    ∂ϕx  = zeros(typeD,nmp ,nn       )
-    ∂ϕz  = zeros(typeD,nmp ,nn       )
+    nn   = convert(Int64,meD.nn)
     ϕ∂ϕ  = zeros(typeD,nmp ,nn,3     )
     B    = zeros(typeD,nstr,nn.*2,nmp)
     # connectivity
-    p2e  = zeros(UInt64,nmp,1)
-    p2n  = zeros(UInt64,nmp,nn)
+    p2e  = zeros(Int64,nmp,1)
+    p2n  = zeros(Int64,nmp,nn)
     # push to named-Tuple
     mpD = (
         nmp = nmp,
@@ -264,9 +258,6 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         ΔF  = dF,
         ΔFbar= dFbar,
         F    = F,
-        Fbar = Fbar,
-        b    = b,
-        bT   = bT,
         ϵ    = e,
         ω    = ome,
         σ    = s,
