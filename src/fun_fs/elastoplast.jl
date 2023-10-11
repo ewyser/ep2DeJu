@@ -34,12 +34,12 @@
 end
 @views function mutate(ϵ,dim,type)
     if type == "tensor"
-        ϵ   = [     ϵ[1] 0.5*ϵ[4];
-                0.5*ϵ[4]     ϵ[2]]
+        ϵmut = [     ϵ[1] 0.5*ϵ[4];
+                 0.5*ϵ[4]     ϵ[2]]
     elseif type == "voigt"
-        ϵ   = vcat(ϵ[1,1],ϵ[2,2],0.0,2*ϵ[1,2])
+        ϵmut = vcat(ϵ[1,1],ϵ[2,2],0.0,2*ϵ[1,2])
     end
-    return ϵ
+    return ϵmut
 end
 # For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
 @views function elast!(mpD,Del,isΔFbar,fwrkDeform)
