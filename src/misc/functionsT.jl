@@ -19,6 +19,13 @@ function kwargsOut(kwargs)
     end
     return ϕ∂ϕType,fwrkDeform,isΔFbar
 end
+function msg(message)
+    try
+        return printstyled(message,color=:red,blink=true)
+    catch
+        return printstyled(message,color=:blink)
+    end
+end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -526,11 +533,4 @@ end
         exit(1)
     end
     return ctr+=1
-end
-function msg()
-    try
-        return printstyled("└ (✓) Done! exiting...",color=:red,blink=true)
-    catch
-        return printstyled("└ (✓) Done! exiting...",color=:blink)
-    end
 end
