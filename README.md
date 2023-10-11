@@ -42,8 +42,8 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 ### ``101`` - How to ```ϵp2De()```  
 
 0. (opt.) Get Julia [here](https://julialang.org/downloads/) and follow instructions
-1. Navigate to the local repo ``` ./ep2DeJu ``` 
-2. Launch Julia (on macOS, drag & drop ```start_macOS.sh``` in the terminal without navigating in terminal)
+1. ``cd`` to the local repo ``` ./ep2DeJu ``` 
+2. Launch Julia (on macOS, drag & drop ```start_macOS.sh``` in the terminal)
 ```julia
 % julia --project  
                _
@@ -61,7 +61,7 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 (ep2DeJu) pkg> instantiate 
 (ep2DeJu) pkg> st
 ```
-4. Compile using ``include("...")`` and run method ``nel,varPlot,cmType; kwargs...)`` should result in the following:
+4. Compile using ``include( )`` and run method ``ϵp2De(nel,varPlot,cmType; kwargs...)``. It should result in the following:
 ```julia
 julia> include("./scripts/sim.jl")
 ϵp2De (generic function with 1 method)
@@ -79,7 +79,7 @@ julia> ϵp2De(40,"epII","MC")
   (✓) t/T:       100.0
 ┌ Info: Figs saved in
 └   path_plot = "./out/"
-[=> done! exiting...
+=> Done! exiting...
 
 julia> 
 ```

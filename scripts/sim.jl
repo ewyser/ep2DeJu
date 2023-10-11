@@ -65,5 +65,5 @@ if isdir(path_plot)==false mkdir(path_plot) end
     figName = "$(varPlot)_$(ϕ∂ϕType)_$(fwrkDeform)_$(isΔFbar)_$(cmType).png"
     savefig(path_plot*figName)
     @info "Figs saved in" path_plot
-    return println("[=> done! exiting...")
+    return printstyled("└ Done! exiting...",color=:red,blink=true)
 end
