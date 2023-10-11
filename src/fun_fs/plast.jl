@@ -38,9 +38,7 @@
                 σm,τII  = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
                 f       = τII+σm*sin(ϕ)-c0*cos(ϕ)
                 if ηit>ηtol
-                    @printf("\nCPA: max(η_it)>%d",ηtol)
-                    @printf("\n     f = %.6f",f)
-                    @printf("\n     program killed...")
+                    @error "CPA: η_it>$(ηit): program killed..."
                     exit(1)
                 end
                 ηmax = max(ηit,ηmax)
