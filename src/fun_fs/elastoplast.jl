@@ -62,20 +62,15 @@ end
             mpD.τ[:,p].= (Del*mpD.ϵ[:,p]) 
         end
     elseif fwrkDeform == "infinitesimal"
+        ID = Matrix(I,size(mpD.ΔF,1),size(mpD.ΔF,2))
         @threads for p ∈ 1:mpD.nmp
             # calculate elastic strains
-            mpD.ϵ[1,p] = ΔF[1,1,p]-1.0
-            mpD.ϵ[2,p] = ΔF[2,2,p]-1.0
-            mpD.ϵ[4,p] = ΔF[1,2,p]+ΔF[2,1,p]
-            mpD.ω[p]   = 0.5*(ΔF[2,1,p]-ΔF[1,2,p])
-            # update stresses
-            σxx0       = mpD.σ[1,p]
-            σyy0       = mpD.σ[2,p]
-            σxy0       = mpD.σ[4,p]
-            mpD.σ[1,p]+= (Del[1,1]*mpD.ϵ[1,p]+Del[1,2]*mpD.ϵ[2,p]+Del[1,4]*mpD.ϵ[4,p])+2.0*σxy0*mpD.ω[p]
-            mpD.σ[2,p]+= (Del[2,1]*mpD.ϵ[1,p]+Del[2,2]*mpD.ϵ[2,p]+Del[2,4]*mpD.ϵ[4,p])-2.0*σxy0*mpD.ω[p]
-            mpD.σ[3,p]+= (Del[3,1]*mpD.ϵ[1,p]+Del[3,2]*mpD.ϵ[2,p]+Del[3,4]*mpD.ϵ[4,p])
-            mpD.σ[4,p]+= (Del[4,1]*mpD.ϵ[1,p]+Del[4,2]*mpD.ϵ[2,p]+Del[4,4]*mpD.ϵ[4,p])+(σyy0-σxx0)*mpD.ω[p]     
+            ϵ           = 0.5.*(ΔF[:,:,p]+ΔF[:,:,p]').-ID
+            mpD.ϵ[:,p]  = mutate(ϵ,2,"voigt")
+            mpD.ω[p]    = 0.5*(ΔF[2,1,p]-ΔF[1,2,p])
+            # update cauchy stress tensor
+            σ0          = [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
+            mpD.σ[:,p].+= Del*mpD.ϵ[:,p].+σ0
         end        
     end
     return nothing
