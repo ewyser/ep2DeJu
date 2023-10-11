@@ -22,7 +22,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     ρ0      = 2700.0                                                            # density [kg/m^3]
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
-    ϕ0,ϕr,ψ0= 20.0*pi/180,7.5*pi/180,0.0                                        # friction angle [Rad], dilation angle [Rad]                                                              
+    ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                        # friction angle [Rad], dilation angle [Rad]                                                              
     t,te,tg = 15.0,10.0,15.0/1.5                                                # simulation time [s], elastic loading [s], gravity load
     # mesh & mp setup
     lx,lz   = 64.1584,12.80                                                     # domain geometry
