@@ -5,7 +5,6 @@ include("./misc/doc.jl")
 # include init
 include("./misc/functionsT.jl")
 include("./misc/RFS.jl")
-include("./misc/GRFS_gauss.jl")
 # include core functions
 include("./fun_fs/shpfun.jl")
 include("./fun_fs/mapsto.jl")
