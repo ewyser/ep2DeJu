@@ -4,7 +4,7 @@ using Printf, LinearAlgebra, DelimitedFiles, Plots, LaTeXStrings, Base.Threads,P
 include("./misc/doc.jl")
 # include init
 include("./misc/functionsT.jl")
-include("./misc/RFS.jl")
+include("./misc/RFG.jl")
 # include core functions
 include("./fun_fs/shpfun.jl")
 include("./fun_fs/mapsto.jl")
