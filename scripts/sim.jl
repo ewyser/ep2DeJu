@@ -13,7 +13,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
 
 @views function ϵp2De(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,isΔFbar = kwargsOut(kwargs)
-    @info "** ϵp2-3De v1.0: "*fwrkDeform*" strain formulation **"
+    @info "** ϵp2-3De v1.0: $(fwrkDeform) strain formulation **"
     # non-dimensional constant                                                   
     ni,ndim,nstr = 2,2,4                                                        # number of material point along 1d, number of stresses
     # independant physical constant
@@ -35,7 +35,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
-    @info "launch "*ϕ∂ϕType*" calculation cycle..."
+    @info "launch $(ϕ∂ϕType) calculation cycle..."
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<=t
         # plot/save
@@ -62,7 +62,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         next!(prog;showvalues = get_vals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = get_vals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
-    figName = varPlot*"_"*ϕ∂ϕType*"_"*fwrkDeform*"_"*string(isΔFbar)*"_"*cmType*".png"
+    figName = "$(varPlot)_$(ϕ∂ϕType)_$(fwrkDeform)_$(isΔFbar)_$(cmType).png"
     savefig(path_plot*figName)
     @info "Figs saved in" path_plot
     return println("[=> done! exiting...")
