@@ -14,7 +14,7 @@
         # accumulation
         meD.m[iD  ]   .+= buff
         meD.p[iD,:]   .+= repeat(buff,1,meD.nD).*repeat(mpD.v[p,:]',meD.nn,1) 
-        meD.fext[iD,:].-= buff.*g
+        meD.fext[iD,:].+= buff.*g
         meD.fint[iD,:].+= mpD.V[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],meD.nD,meD.nn)' 
     end
     return nothing
