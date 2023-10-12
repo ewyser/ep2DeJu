@@ -30,6 +30,7 @@ end
     return vals
 end
 function msg(message)
+    message = "│\n└ "*message
     try
         return printstyled(message,color=:red,bold=true,blink=true)
     catch
