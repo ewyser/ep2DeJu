@@ -31,7 +31,7 @@ end
 end
 function msg(message)
     try
-        return printstyled(message,color=:red,blink=true)
+        return printstyled(message,color=:red,bold=true,blink=true)
     catch
         return printstyled(message,color=:blink)
     end
