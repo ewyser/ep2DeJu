@@ -43,20 +43,20 @@ end
 end
 # For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
 @views function elast!(mpD,Del,isΔFbar,fwrkDeform)
-    if isΔFbar
-        ΔF = copy(mpD.ΔFbar)
-    else
-        ΔF = copy(mpD.ΔF)
-    end
     if fwrkDeform == "finite"
         @threads for p ∈ 1:mpD.nmp
+            ϵ = ϵt = b = bt = zeros(size(mpD.ΔF,1),size(mpD.ΔF,2))
             # compute logarithmic strain tensor
-            ϵ          = mutate(mpD.ϵ[:,p],2,"tensor")
-            λ,n        = eigvals(ϵ),eigvecs(ϵ)
-            b          = n*diagm(exp.(2*λ))*n'
-            bt         = ΔF[:,:,p]*b*ΔF[:,:,p]'
-            λ,n        = eigvals(bt),eigvecs(bt)
-            ϵt         = 0.5.*(n*diagm(log.(λ))*n')
+            ϵ         .= mutate(mpD.ϵ[:,p],2,"tensor")
+            λ,n        = eigen(ϵ)
+            b         .= n*diagm(exp.(2*λ))*n'
+            if isΔFbar
+                bt .= mpD.ΔFbar[:,:,p]*b*mpD.ΔFbar[:,:,p]'
+            else
+                bt .= mpD.ΔF[:,:,p]*b*mpD.ΔF[:,:,p]'
+            end
+            λ,n        = eigen(bt)
+            ϵt        .= 0.5.*(n*diagm(log.(λ))*n')
             mpD.ϵ[:,p].= mutate(ϵt,2,"voigt")
             # krichhoff stress tensor
             mpD.τ[:,p].= (Del*mpD.ϵ[:,p]) 
@@ -64,12 +64,19 @@ end
     elseif fwrkDeform == "infinitesimal"
         ID = Matrix(1.0I,size(mpD.ΔF,1),size(mpD.ΔF,2))
         @threads for p ∈ 1:mpD.nmp
+            ϵ,σ0 = zeros(size(mpD.ΔF,1),size(mpD.ΔF,2)),zeros(4)
             # calculate elastic strains
-            ϵ           = 0.5.*(ΔF[:,:,p]+ΔF[:,:,p]').-ID
-            mpD.ϵ[:,p]  = mutate(ϵ,2,"voigt")
-            mpD.ω[p]    = 0.5*(ΔF[2,1,p]-ΔF[1,2,p])
+            if isΔFbar
+                ϵ         .= 0.5.*(mpD.ΔFbar[:,:,p]+mpD.ΔFbar[:,:,p]').-ID
+                mpD.ϵ[:,p].= mutate(ϵ,2,"voigt")
+                mpD.ω[p]   = 0.5*(mpD.ΔFbar[2,1,p]-mpD.ΔFbar[1,2,p])
+            else
+                ϵ         .= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-ID
+                mpD.ϵ[:,p].= mutate(ϵ,2,"voigt")
+                mpD.ω[p]   = 0.5*(mpD.ΔF[2,1,p]-mpD.ΔF[1,2,p])
+            end
             # update cauchy stress tensor
-            σ0          = [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
+            σ0         .= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
             mpD.σ[:,p].+= Del*mpD.ϵ[:,p].+σ0
         end        
     end
