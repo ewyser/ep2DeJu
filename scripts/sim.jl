@@ -13,7 +13,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
 
 @views function ϵp2De(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,isΔFbar = kwargsOut(kwargs)
-    @info "** ϵp2-3De v1.0: $(fwrkDeform) strain formulation **"
+    @info "** ϵp2-3De v$(getVersion()): $(fwrkDeform) strain formulation **"
     # non-dimensional constant                                                   
     ni,ndim,nstr = 2,2,4                                                        # number of material point along 1d, number of stresses
     # independant physical constant

@@ -19,6 +19,9 @@ function kwargsOut(kwargs)
     end
     return ϕ∂ϕType,fwrkDeform,isΔFbar
 end
+function getVersion()
+    return string(Pkg.project().version)
+end
 @views function get_vals(meD,mpD,it,ηmax,ηtot,cmpl,symb)
     # completion [%]
     cmpl = round(100.0*cmpl,digits=1)

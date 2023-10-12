@@ -1,5 +1,5 @@
 # include dependencies & function call(s) for svSolver.jl
-using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
+using Pkg, LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
 # include doc for: help?> ϵp2De()
 include("./misc/doc.jl")
 # include init

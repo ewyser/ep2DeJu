@@ -66,13 +66,13 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 julia> include("./scripts/sim.jl")
 ϵp2De (generic function with 1 method)
 julia> ϵp2De(40,"P","MC")
-[ Info: ** ϵp2-3De v1.0: finite strain formulation **
+[ Info: ** ϵp2-3De v0.1.0: finite strain formulation **
 ┌ Info: mesh & mp feature(s):
 │   nel = 528
 │   nno = 585
 └   nmp = 591
 [ Info: launch bsmpm calculation cycle...
-✓ working hard:          Time: 0:00:11 (27.41 ms/it)
+✓ working hard:          Time: 0:00:09 (22.83 ms/it)
   nel,np:        (528, 591)
   iteration(s):  432
   ηmax,ηtot:     (21, 849)
@@ -81,7 +81,7 @@ julia> ϵp2De(40,"P","MC")
 └   path_plot = "./out/"
 │
 └ (✓) Done! exiting...
-julia> 
+julia>
 ```
 5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain) is an option for selecting field for plot, ``cmType`` defines the constitutive model being used. 
 
