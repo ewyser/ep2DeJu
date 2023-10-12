@@ -176,16 +176,16 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
             nx = a
             nz = -1.0
             s  = Δx*nx+Δz*nz        
-            if(s>0)
+            if s>0
                 pos = 1
             else
                 pos = 0
             end
-            if(zp[mp]<wl) 
+            if zp[mp]<wl 
                 pos = 1
             end
         end
-        if(pos==1)
+        if pos==1
             push!(xlt, xp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
             push!(zlt, zp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
             push!(clt, c[mp])
