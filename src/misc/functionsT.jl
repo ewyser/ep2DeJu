@@ -200,10 +200,8 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     v0   =  ones(typeD,nmp,1).*(2.0.*l0[:,1].*2.0.*l0[:,2])
     v    =  ones(typeD,nmp,1).*(2.0.*l[:,1].*2.0.*l[:,2])
     m    = rho0.*v0
-    xp   = hcat(xlt,zlt)
-    up   = zeros(typeD,nmp,2) 
-    vp   = zeros(typeD,nmp,2)
-    pp   = zeros(typeD,nmp,2)
+    xp   = if meD.nD == 2 hcat(xlt,zlt) elseif meD.nD == 3 hcat(xlt,ylt,zlt) end
+
     coh  =  ones(typeD,nmp,1).*coh0#clt
     #coh  =  clt
     #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
@@ -211,63 +209,42 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     phi  =  ones(typeD,nmp,1).*phi0
     p    = findall(x->x<=2*wl, xp[:,2])
     phi[p] .= phir
-
-    epII = zeros(typeD,nmp,1)
-    epV  = zeros(typeD,nmp,1)
-    ΔJ   = ones(typeD,nmp,1)
-    J    = ones(typeD,nmp,1)
-    # tensors
-    dF   = zeros(meD.nD,meD.nD,nmp)
-    dFbar= zeros(meD.nD,meD.nD,nmp)
-    F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp)
-    Fbar = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp)
-    b    = zeros(meD.nD,meD.nD,nmp)
-    bT   = zeros(meD.nD,meD.nD,nmp)
-    e    = zeros(typeD,nstr,nmp)
-    ome  = zeros(typeD,1,nmp)
-    s    = zeros(typeD,nstr,nmp)
-    τ    = zeros(typeD,nstr,nmp)
-    dev  = zeros(typeD,nstr,nmp)
-    ep   = zeros(typeD,nstr,nmp)
-    # additional quantities
-    nn   = convert(Int64,meD.nn)
-    ϕ∂ϕ  = zeros(typeD,nmp ,nn,3     )
-    B    = zeros(typeD,nstr,nn.*2,nmp)
-    # connectivity
-    p2e  = zeros(Int64,nmp,1)
-    p2n  = zeros(Int64,nmp,nn)
-    # push to named-Tuple
+    # push/init. to mpD()::NamedTuple data structure 
     mpD = (
-        nmp = nmp,
-        l0  = l0,
-        l   = l,
-        V0  = v0,
-        V   = v,
-        m   = m,
-        x   = xp,
-        u   = up,
-        v   = vp,
-        p   = pp,
-        coh = coh,
-        cohr= cohr,
-        phi = phi,
-        ϵpII= epII,
-        ϵpV = epV, 
-        ΔJ  = ΔJ,
-        J   = J,
-        ΔF  = dF,
-        ΔFbar= dFbar,
-        F    = F,
-        ϵ    = e,
-        ω    = ome,
-        σ    = s,
-        τ    = τ,
-        dev  = dev,
-        ep   = ep,
-        ϕ∂ϕ  = ϕ∂ϕ,
-        B    = B,
-        p2e  = p2e,
-        p2n  = p2n,
+        nmp  = nmp,
+        x    = xp,
+        u    = zeros(typeD,nmp,meD.nD), 
+        v    = zeros(typeD,nmp,meD.nD),
+        p    = zeros(typeD,nmp,meD.nD),
+        l0   = l0,
+        l    = l,
+        V0   = v0,
+        V    = v,
+        m    = m,
+        coh  = coh,
+        cohr = cohr,
+        phi  = phi,
+        ϵpII = zeros(typeD,nmp,1),
+        ϵpV  = zeros(typeD,nmp,1), 
+        ΔJ   = ones(typeD,nmp,1),
+        J    = ones(typeD,nmp,1),
+        # tensor in matrix notation
+        ΔF   = zeros(meD.nD,meD.nD,nmp),
+        ΔFbar= zeros(meD.nD,meD.nD,nmp),
+        F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
+        # tensor in voigt notation
+        ϵ    = zeros(typeD,nstr,nmp),
+        ω    = zeros(typeD,1,nmp),
+        σ    = zeros(typeD,nstr,nmp),
+        τ    = zeros(typeD,nstr,nmp),
+        dev  = zeros(typeD,nstr,nmp),
+        ep   = zeros(typeD,nstr,nmp),
+        # additional quantities
+        ϕ∂ϕ  = zeros(typeD,nmp ,meD.nn,meD.nD+1   ),
+        B    = zeros(typeD,nstr,meD.nn.*meD.nD,nmp),
+        # connectivity
+        p2e  = zeros(Int64,nmp,1),
+        p2n  = zeros(Int64,nmp,meD.nn),
     )
     return mpD 
 end
