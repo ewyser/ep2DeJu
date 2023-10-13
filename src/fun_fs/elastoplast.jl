@@ -27,8 +27,8 @@
         end
     end
     # compute determinant Jbar 
-    @threads for p ∈ 1:mpD.nmp
-        mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*(((mpD.ϕ∂ϕ[p,:,1]'*meD.ΔJ[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(1/meD.nD))
+    for p ∈ 1:mpD.nmp
+        mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*((dot(mpD.ϕ∂ϕ[p,:,1],meD.ΔJ[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(1.0/meD.nD))
     end
     return nothing
 end
