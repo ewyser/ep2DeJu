@@ -84,20 +84,7 @@ function meshSetup(nel,L,nD,typeD)
         zn  = vec(zn)
         x   = hcat(xn,yn,zn)
     end
-    # nodal quantities
-    mn  = zeros(typeD,nno[nD+1],1) 
-    fen = zeros(typeD,nno[nD+1],nD) 
-    fin = zeros(typeD,nno[nD+1],nD)
-    Dn  = zeros(typeD,nno[nD+1],nD)
-    fn  = zeros(typeD,nno[nD+1],nD)
-    an  = zeros(typeD,nno[nD+1],nD)
-    pn  = zeros(typeD,nno[nD+1],nD)
-    vn  = zeros(typeD,nno[nD+1],nD)
-    un  = zeros(typeD,nno[nD+1],nD)
-    pel = zeros(typeD,nno[nD+1],nD)
-    ΔJn = zeros(typeD,nno[nD+1],nD)
-    # mesh-to-node topology
-    e2n = e2N(nD,nno,nel,nn)
+
     # boundary conditions
     if nD == 2
         xB  = [minimum(xn)+2*h[1],maximum(xn)-2*h[1],0.0,Inf]                                    
@@ -131,18 +118,20 @@ function meshSetup(nel,L,nD,typeD)
         L    = L,
         h    = h,
         x    = x,
-        m    = mn,
-        fext = fen,
-        fint = fin,
-        D    = Dn,
-        f    = fn,
-        a    = an,
-        p    = pn,
-        v    = vn,
-        u    = un,
-        pel  = pel,
-        ΔJ   = ΔJn,
-        e2n  = e2n,
+        # nodal quantities
+        m    = zeros(typeD,nno[nD+1],1), 
+        fext = zeros(typeD,nno[nD+1],nD), 
+        fint = zeros(typeD,nno[nD+1],nD),
+        D    = zeros(typeD,nno[nD+1],nD),
+        f    = zeros(typeD,nno[nD+1],nD),
+        a    = zeros(typeD,nno[nD+1],nD),
+        p    = zeros(typeD,nno[nD+1],nD),
+        v    = zeros(typeD,nno[nD+1],nD),
+        u    = zeros(typeD,nno[nD+1],nD),
+        pel  = zeros(typeD,nno[nD+1],nD),
+        ΔJ   = zeros(typeD,nno[nD+1],nD),
+        # mesh-to-node topology
+        e2n = e2N(nD,nno,nel,nn),
         xB   = xB,
         bc   = bc,
     )
