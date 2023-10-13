@@ -45,18 +45,15 @@ end
 @views function elast!(mpD,Del,isΔFbar,fwrkDeform)
     if fwrkDeform == "finite"
         @threads for p ∈ 1:mpD.nmp
-            ϵt = zeros(size(mpD.ΔF,1),size(mpD.ΔF,2)) 
-            b  = zeros(size(mpD.ΔF,1),size(mpD.ΔF,2)) 
-            bt = zeros(size(mpD.ΔF,1),size(mpD.ΔF,2))
             # compute logarithmic strain tensor
             λ,n          = eigen(mpD.ϵ[:,:,p])
-            b           .= n*diagm(exp.(2*λ))*n'
+            mpD.b[:,:,p].= n*diagm(exp.(2.0*λ))*n'
             if isΔFbar
-                bt .= mul!(bt,mpD.ΔFbar[:,:,p],b)*mpD.ΔFbar[:,:,p]'
+                mpD.bT[:,:,p].= mul!(mpD.bT[:,:,p],mpD.ΔFbar[:,:,p],mpD.b[:,:,p])*mpD.ΔFbar[:,:,p]'
             else
-                bt .= mul!(bt,mpD.ΔF[:,:,p],b)*mpD.ΔF[:,:,p]'
+                mpD.bT[:,:,p].= mul!(mpD.bT[:,:,p],mpD.ΔF[:,:,p],mpD.b[:,:,p])*mpD.ΔF[:,:,p]'
             end
-            λ,n          = eigen(bt)
+            λ,n          = eigen(mpD.bT[:,:,p])
             mpD.ϵ[:,:,p].= 0.5.*(n*diagm(log.(λ))*n')
             # krichhoff stress tensor
             mul!(mpD.τ[:,p],Del,mutate(mpD.ϵ[:,:,p],"voigt"))
@@ -64,7 +61,7 @@ end
     elseif fwrkDeform == "infinitesimal"
         ID = Matrix(1.0I,size(mpD.ΔF,1),size(mpD.ΔF,2))
         @threads for p ∈ 1:mpD.nmp
-            ϵ,σ0 = zeros(size(mpD.ΔF,1),size(mpD.ΔF,2)),zeros(4)
+            σ0 = zeros(4)
             # calculate elastic strains
             if isΔFbar
                 mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔFbar[:,:,p]+mpD.ΔFbar[:,:,p]').-ID
@@ -76,6 +73,7 @@ end
             # update cauchy stress tensor
             σ0         .= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
             mpD.σ[:,p].+= Del*mutate(mpD.ϵ[:,:,p],"voigt").+σ0
+            
         end        
     end
     return nothing

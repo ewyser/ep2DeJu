@@ -237,6 +237,8 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         ΔFbar= zeros(typeD,meD.nD,meD.nD,nmp),
         F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
         ϵ    = zeros(typeD,meD.nD,meD.nD,nmp),
+        b    = zeros(typeD,meD.nD,meD.nD,nmp),
+        bT   = zeros(typeD,meD.nD,meD.nD,nmp),
         # tensor in voigt notation
         ω    = zeros(typeD,1,nmp),
         σ    = zeros(typeD,nstr,nmp),
