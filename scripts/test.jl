@@ -37,7 +37,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
     @info "launch $(ϕ∂ϕType) calculation cycle..."
-    while it<10
+    for k in 1:2
         # plot/save
         if tw >= ctr*tC
             ctr = __plotStuff(mpD,tw,varPlot,ctr)
