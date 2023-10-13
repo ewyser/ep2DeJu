@@ -7,9 +7,8 @@
     for p ∈ 1:mpD.nmp
         # get nodal incremental displacement
         iD            = mpD.p2n[p,:]
-        Δun           = meD.u[iD,:]
         # compute incremental deformation gradient
-        mpD.ΔF[:,:,p].= ID+vcat(mpD.ϕ∂ϕ[p,:,2]'*Δun,mpD.ϕ∂ϕ[p,:,3]'*Δun)'
+        mpD.ΔF[:,:,p].= ID+(permutedims(mpD.ϕ∂ϕ[p,:,2:end],(2,1))*meD.u[iD,:])'
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
@@ -65,7 +64,7 @@ end
             # calculate elastic strains
             if isΔFbar
                 mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔFbar[:,:,p]+mpD.ΔFbar[:,:,p]').-ID
-                mpD.ω[p]     = 0.5*(mpD.ΔFbar[2,1,p]-mpD.ΔFbar[1,2,p])
+                mpD.ω[p]     = 0.5*(mpD.ΔFbar[1,2,p]-mpD.ΔFbar[2,1,p])
             else
                 mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-ID
                 mpD.ω[p]     = 0.5*(mpD.ΔF[1,2,p]-mpD.ΔF[2,1,p])
