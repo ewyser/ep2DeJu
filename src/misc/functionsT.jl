@@ -88,6 +88,7 @@ function meshSetup(nel,L,nD,typeD)
     mn  = zeros(typeD,nno[nD+1],1) 
     fen = zeros(typeD,nno[nD+1],nD) 
     fin = zeros(typeD,nno[nD+1],nD)
+    Dn  = zeros(typeD,nno[nD+1],nD)
     fn  = zeros(typeD,nno[nD+1],nD)
     an  = zeros(typeD,nno[nD+1],nD)
     pn  = zeros(typeD,nno[nD+1],nD)
@@ -133,6 +134,7 @@ function meshSetup(nel,L,nD,typeD)
         m    = mn,
         fext = fen,
         fint = fin,
+        D    = Dn,
         f    = fn,
         a    = an,
         p    = pn,
