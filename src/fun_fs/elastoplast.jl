@@ -96,5 +96,5 @@ end
             mpD.σ[:,p] .= mpD.τ[:,p]./mpD.J[p]
         end
     end
-    return ηmax
+    return ηmax::Int64
 end

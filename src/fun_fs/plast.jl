@@ -47,7 +47,7 @@
             mpD.ϵpII[p]   = ϵII 
         end        
     end
-    return ηmax
+    return ηmax::Int64
 end
 @views function J2plast!(mpD,Del,Kc,Hp,fwrkDeform) # Borja (1990); De Souza Neto (2008)
     ftol,ηtol,ηit,ηmax = 1e-6,1e4,0,0
@@ -99,7 +99,7 @@ end
             ηmax         = max(ηit,ηmax)
         end
     end
-    return ηmax
+    return ηmax::Int64
 end
 function plast!(mpD::NamedTuple,cmParam::NamedTuple,cmType::String,fwrkDeform::String)
     if cmType == "MC"
@@ -114,7 +114,7 @@ function plast!(mpD::NamedTuple,cmParam::NamedTuple,cmType::String,fwrkDeform::S
         @error "invalid plastic model --"*string(cmType)*"--"
         exit(1) 
     end
-    return ηmax
+    return ηmax::Int64
 end
 
 
