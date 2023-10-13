@@ -43,8 +43,8 @@
                 end
                 ηmax = max(ηit,ηmax)
             end
-            mpD.ϵ[:,p].-= Δϵ
-            mpD.ϵpII[p] = ϵII 
+            mpD.ϵ[:,:,p].-= mutate(Δϵ,"tensor")
+            mpD.ϵpII[p]   = ϵII 
         end        
     end
     return ηmax

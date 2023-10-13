@@ -233,11 +233,11 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         ΔJ   = ones(typeD,nmp,1),
         J    = ones(typeD,nmp,1),
         # tensor in matrix notation
-        ΔF   = zeros(meD.nD,meD.nD,nmp),
-        ΔFbar= zeros(meD.nD,meD.nD,nmp),
+        ΔF   = zeros(typeD,meD.nD,meD.nD,nmp),
+        ΔFbar= zeros(typeD,meD.nD,meD.nD,nmp),
         F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
+        ϵ    = zeros(typeD,meD.nD,meD.nD,nmp),
         # tensor in voigt notation
-        ϵ    = zeros(typeD,nstr,nmp),
         ω    = zeros(typeD,1,nmp),
         σ    = zeros(typeD,nstr,nmp),
         τ    = zeros(typeD,nstr,nmp),
