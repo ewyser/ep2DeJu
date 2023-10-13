@@ -3,6 +3,8 @@
     meD.ΔJ .= 0.0
     # set identity matrix
     ID   = Matrix(1.0I,meD.nD,meD.nD)
+    # calculate cst.
+    dim  = 1.0/meD.nD
     # action
     for p ∈ 1:mpD.nmp
         # get nodal incremental displacement
@@ -15,7 +17,7 @@
         # update material point's volume and domain length
         mpD.J[p]      = det(mpD.F[:,:,p])
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
-        mpD.l[p,:]   .= mpD.J[p]^(1/meD.nD).*mpD.l0[p,:] 
+        mpD.l[p,:]   .= mpD.J[p]^(dim).*mpD.l0[p,:] 
         # accumulation
         meD.ΔJ[iD]  .+= mpD.ϕ∂ϕ[p,:].*mpD.m[p].*mpD.ΔJ[p]  
     end 
@@ -27,7 +29,7 @@
     end
     # compute determinant Jbar 
     for p ∈ 1:mpD.nmp
-        mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*((dot(mpD.ϕ∂ϕ[p,:,1],meD.ΔJ[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(1.0/meD.nD))
+        mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*((dot(mpD.ϕ∂ϕ[p,:,1],meD.ΔJ[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(dim))
     end
     return nothing
 end
