@@ -1,3 +1,96 @@
+function kwargsOut(kwargs)
+    if isempty(kwargs)
+        # ϵp2De(40,"P","mohr")
+        ϕ∂ϕType,fwrkDeform,isΔFbar = "bsmpm","finite",true
+    else
+        #ϵp2De(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
+        kwargs0 = (:shpfun => "bsmpm", :fwrk => "finite", :vollock => true)
+        arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2]]
+        for A in enumerate(kwargs0) 
+            NUM,FIELD = A
+            for a in enumerate(kwargs) 
+                num,field = a
+                if field[1]==FIELD[1]
+                    arg[NUM] = field[2]
+                end
+            end
+        end
+        ϕ∂ϕType,fwrkDeform,isΔFbar = arg
+    end
+    return ϕ∂ϕType,fwrkDeform,isΔFbar
+end
+function getVersion()
+    return string(Pkg.project().version)
+end
+@views function get_vals(meD,mpD,it,ηmax,ηtot,cmpl,symb)
+    # completion [%]
+    cmpl = round(100.0*cmpl,digits=1)
+    # save vals
+    vals = [("nel,np",(round(Int64,meD.nel[1]*meD.nel[2]),mpD.nmp)),
+            ("iteration(s)",it),
+            ("ηmax,ηtot",(ηmax,ηtot)),
+            (symb*" t/T",cmpl)]
+    return vals
+end
+function msg(message)
+    message = "│\n└ "*message
+    try
+        return printstyled(message,color=:red,bold=true,blink=true)
+    catch
+        return printstyled(message,color=:blink)
+    end
+end
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+@views function D(E,ν)
+    Gc = E/(2.0*(1.0+ν))                                                   # shear modulus               [Pa]
+    Kc = E/(3.0*(1.0-2.0*ν))                                               # bulk modulus                [Pa]
+    D  = [ Kc+4/3*Gc Kc-2/3*Gc Kc-2/3*Gc 0.0 ;
+           Kc-2/3*Gc Kc+4/3*Gc Kc-2/3*Gc 0.0 ;
+           Kc-2/3*Gc Kc-2/3*Gc Kc+4/3*Gc 0.0 ;
+           0.0       0.0       0.0       Gc  ]
+    return Kc,Gc,D
+end
+@views function get_Δt(vp,h,yd)
+    if length(h)==2
+        Δx   = h[1]
+        Δz   = h[2]
+        vmax = [abs.(vp[:,1]) abs.(vp[:,2])]
+        cmax = [maximum(vmax[:,1]) maximum(vmax[:,2])]
+        cmax = [Δx/(cmax[1]+yd) Δz/(cmax[2]+yd)]
+        Δt   = 0.5*maximum(cmax)
+    elseif length(h)==3
+        Δx   = h[1]
+        Δy   = h[2]
+        Δz   = h[2]
+        vmax = [abs.(vp[:,1]) abs.(vp[:,2]) abs.(vp[:,3])]
+        cmax = [maximum(vmax[:,1]) maximum(vmax[:,2]) maximum(vmax[:,3])]
+        cmax = [Δx/(cmax[1]+yd) Δy/(cmax[2]+yd) Δz/(cmax[3]+yd)]
+        Δt   = 0.5*maximum(cmax)
+    else
+        Δt = nothing    
+    end
+    return Δt
+end
+function get_g(tw::Float64,tg::Float64,nD::Int64)
+    g = 0.0
+    if tw<=tg 
+        g = 9.81*tw/tg
+    else
+        g = 9.81
+    end
+    return if nD == 2 g = [0.0 -g] elseif nD == 3 g = [0.0 0.0 -g] end
+end
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
 function RFS(xp,zp,coh0,cohr,phi0,phir)
     # parameters
     θx,θz     = 20.0,2.0

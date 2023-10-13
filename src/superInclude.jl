@@ -3,8 +3,10 @@ using Pkg, LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
 # include doc for: help?> ϵp2De()
 include("./misc/doc.jl")
 # include init
-include("./misc/functionsT.jl")
-include("./misc/RFG.jl")
+include("./misc/doc.jl")
+include("./misc/setup.jl")
+include("./misc/utilities.jl")
+include("./misc/plot.jl")
 # include core functions
 include("./fun_fs/shpfun.jl")
 include("./fun_fs/mapsto.jl")
