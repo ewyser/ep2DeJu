@@ -241,6 +241,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         bT   = zeros(typeD,meD.nD,meD.nD,nmp),
         # tensor in voigt notation
         ω    = zeros(typeD,1,nmp),
+        σR   = zeros(typeD,nstr,nmp),
         σ    = zeros(typeD,nstr,nmp),
         τ    = zeros(typeD,nstr,nmp),
         dev  = zeros(typeD,nstr,nmp),
