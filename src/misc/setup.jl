@@ -190,7 +190,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     return mpD 
 end
 function e2N(nD,nno,nel,nn)
-	e2n  = zeros(nel[nD+1],nn)
+	e2n  = zeros(Int64,nel[nD+1],nn)
     if nD == 2
         gnum = reverse(reshape(1:(nno[3]),nno[2],nno[1]),dims=1)
         iel  = 1
@@ -300,5 +300,5 @@ function e2N(nD,nno,nel,nn)
             end
         end
     end
-	return convert(Array{Int64},e2n)
+	return e2n
 end
