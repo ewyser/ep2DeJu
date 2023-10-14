@@ -89,29 +89,7 @@ function meshSetup(nel,L,nD,typeD)
     )
     return meD
 end
-function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
-    # mpm initialization
-    xL  = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
-    zL  = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
-    npx = length(xL)
-    npz = length(zL)
-    xp  = ((xL'.*ones(npz,1  )      ))
-    zp  = ((     ones(npx,1  )'.*zL ))
-    c   = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])
-
-    xp  = vec(xp)
-    zp  = vec(zp)
-    c   = vec(c)
-
-    wl  = 0.15*lz
-    x   = LinRange(minimum(xp),maximum(xp),200)
-    a   = -1.25
-    z   = a.*x
-    x   = x.+0.5.*meD.L[1]
-
-    nx  = size(xp,2) 
-    nz  = size(zp,1)
-  
+function continuum(xp,zp,x,z,c,wl,a,nD)
     xlt = Float64[]
     zlt = Float64[]
     clt = Float64[]
@@ -138,24 +116,37 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
             push!(clt, c[mp])
         end
     end
-    #scatter!(xlt,zlt,markershape=:circle,label="",show=true,aspect_ratio=1)
+    xp = if nD == 2 hcat(xlt,zlt) elseif nD == 3 hcat(xlt,ylt,zlt) end
+    return xp,clt
+end
+function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
+    # mpm initialization
+    xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
+    zL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
+    npx,npz     = length(xL),length(zL)
+    xp,zp       = ((xL'.*ones(npz,1  )      )),((     ones(npx,1  )'.*zL )) 
+    c           = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])
+    xp,zp,c     = vec(xp),vec(zp),vec(c)
+    wl          = 0.15*lz
+    x           = LinRange(minimum(xp),maximum(xp),200)
+    a           = -1.25
+    x,z         = x.+0.5.*meD.L[1],a.*x
+    xp,clt      = continuum(xp,zp,x,z,c,wl,a,meD.nD)
     # material point's quantities
     # scalars & vectors
-    nmp  = length(xlt)
-    l0   =  ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
-    l    =  ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
-    v0   =  ones(typeD,nmp,1).*(2.0.*l0[:,1].*2.0.*l0[:,2])
-    v    =  ones(typeD,nmp,1).*(2.0.*l[:,1].*2.0.*l[:,2])
-    m    = rho0.*v0
-    xp   = if meD.nD == 2 hcat(xlt,zlt) elseif meD.nD == 3 hcat(xlt,ylt,zlt) end
-
-    coh  =  ones(typeD,nmp,1).*coh0#clt
+    nmp         = size(xp,1)
+    l0          = ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
+    l           = ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
+    v0          = ones(typeD,nmp,1).*(2.0.*l0[:,1].*2.0.*l0[:,2])
+    v           = ones(typeD,nmp,1).*(2.0.*l[:,1].*2.0.*l[:,2])
+    m           = rho0.*v0
+    coh         =  ones(typeD,nmp,1).*coh0#clt
     #coh  =  clt
     #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
-    cohr =  ones(typeD,nmp,1).*cohr
-    phi  =  ones(typeD,nmp,1).*phi0
-    p    = findall(x->x<=2*wl, xp[:,2])
-    phi[p] .= phir
+    cohr        =  ones(typeD,nmp,1).*cohr
+    phi         =  ones(typeD,nmp,1).*phi0
+    p           = findall(x->x<=2*wl, xp[:,2])
+    phi[p]     .= phir
     # push/init. to mpD()::NamedTuple data structure 
     mpD = (
         nmp  = nmp,

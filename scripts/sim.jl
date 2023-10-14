@@ -49,7 +49,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         # bsmpm cycle
         ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
         mapsto!(mpD,meD,g,Δt,"p->N")                  
-        @time solve!(meD,Δt)
+        solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,"p<-N")
         ηmax = elastoplast!(mpD,meD,cmParam,cmType,isΔFbar,fwrkDeform,tw>te)
         if tw>te && flag == 0
