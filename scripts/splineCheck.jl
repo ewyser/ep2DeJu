@@ -35,8 +35,8 @@ default(
     a  = zeros(Float64,length(xp),length(xn),5)
     @info "shape functions calculation(s)..."
     if ϕ∂ϕType == "bsmpm"
-        for mp in 1:length(xp)
-            for nn in 1:length(xn)
+        for mp ∈ eachindex(xp)
+            for nn ∈ eachindex(xn)
                 # compute basis functions
                 ξ      = (xp[mp] - xn[nn])/dx 
                 type   = whichType(xn[nn],xB,dx)
@@ -53,8 +53,8 @@ default(
             end
         end
     elseif ϕ∂ϕType == "gimpm"
-        for mp in 1:length(xp)
-            for nn in 1:length(xn)
+        for mp ∈ eachindex(xp)
+            for nn ∈ eachindex(xn)
                 # compute basis functions
                 ξ      = xp[mp] - xn[nn]
                 η      = (xp[mp] - xn[nn])

@@ -94,8 +94,8 @@ function continuum(xp,zp,x,z,c,wl,a,nD)
     zlt = Float64[]
     clt = Float64[]
     pos = Float64 
-    for mp ∈ 1:length(xp)
-        for p ∈ 1:length(z)
+    for mp ∈ eachindex(xp)
+        for p ∈ eachindex(z)
             Δx = xp[mp]-x[p]
             Δz = zp[mp]-z[p]
             nx = a
