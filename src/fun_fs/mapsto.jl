@@ -20,35 +20,27 @@
     return nothing
 end
 @views function flipDM!(mpD::NamedTuple,meD::NamedTuple,Δt::Float64)
-    # init.
-    iD = zeros(Int64,meD.nn)
     # flip update
-    for p ∈ 1:mpD.nmp
-        # index & buffer
-        iD         .= mpD.p2n[p,:]
+    @threads for p ∈ 1:mpD.nmp
         # mapping back to mp's
-        mpD.v[p,:].+= Δt.*(mpD.ϕ∂ϕ[p,:,1]'*meD.a[iD,:])'
-        mpD.x[p,:].+= Δt.*(mpD.ϕ∂ϕ[p,:,1]'*meD.v[iD,:])'
+        mpD.v[p,:].+= Δt.*(mpD.ϕ∂ϕ[p,:,1]'*meD.a[mpD.p2n[p,:],:])'
+        mpD.x[p,:].+= Δt.*(mpD.ϕ∂ϕ[p,:,1]'*meD.v[mpD.p2n[p,:],:])'
     end
     # initialize for DM + BCs procedure
     meD.p.= 0.0
     meD.u.= 0.0
     # accumulate material point contributions
     for p ∈ 1:mpD.nmp
-        # index & buffer
-        iD          .= mpD.p2n[p,:]
-        # accumulation
-        meD.p[iD,:].+= repeat(mpD.ϕ∂ϕ[p,:,1].*mpD.m[p],1,meD.nD).*repeat(mpD.v[p,:]',meD.nn,1) 
+        meD.p[mpD.p2n[p,:],:].+= repeat(mpD.ϕ∂ϕ[p,:,1].*mpD.m[p],1,meD.nD).*repeat(mpD.v[p,:]',meD.nn,1) 
     end    
     # solve for nodal incremental displacement
     @threads for n ∈ 1:meD.nno[meD.nD+1]
         if meD.m[n]>0.0
-            m          = fill(1.0/meD.m[n],meD.nD)
-            meD.u[n,:].= (Δt.*meD.p[n,:].*m).*meD.bc[n,:]
+            meD.u[n,:].= (Δt.*meD.p[n,:].*(1.0/meD.m[n]).*meD.bc[n,:])
         end
     end
     # update material point's displacement
-    for p ∈ 1:mpD.nmp
+    @threads for p ∈ 1:mpD.nmp
         mpD.u[p,:].+= (mpD.ϕ∂ϕ[p,:,1]'*meD.u[mpD.p2n[p,:],:])'
     end
     return nothing
@@ -57,7 +49,7 @@ end
     if whereto == "p->N"
         accum!(mpD,meD,g)
     elseif whereto == "p<-N"
-        flipDM!(mpD,meD,Δt)
+        @time flipDM!(mpD,meD,Δt)
     end
     return nothing
 end
