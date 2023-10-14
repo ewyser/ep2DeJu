@@ -49,7 +49,7 @@ end
     if whereto == "p->N"
         accum!(mpD,meD,g)
     elseif whereto == "p<-N"
-        @time flipDM!(mpD,meD,Δt)
+        flipDM!(mpD,meD,Δt)
     end
     return nothing
 end
