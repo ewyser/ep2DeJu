@@ -12,14 +12,13 @@
             buff           = mpD.ϕ∂ϕ[p,n,1]*mpD.m[p]
             # accumulation
             meD.m[iD  ]   += buff
-            meD.p[iD,:]   += buff*mpD.v[p,:]
-            meD.p[iD,:]   += buff*mpD.v[p,:]
-            meD.fext[iD,1]+= g[1]
-            meD.fext[iD,2]+= g[2]
-            meD.fint[iD,1]+= mpD.V[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],meD.nD,meD.nn)' 
-            meD.fint[iD,2]+= mpD.V[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],meD.nD,meD.nn)' 
-            meD.fint[iD,1]+= mpD.V[p]*(mpD.∂ϕx[p,n,2]*mpD.σ[1,p]+mpD.∂ϕz[p,n,3]*mpD.σ[4,p])
-            meD.fint[iD,2]+= mpD.V[p]*(mpD.∂ϕx[p,n,2]*mpD.σ[4,p]+mpD.∂ϕz[p,n,3]*mpD.σ[2,p])
+            for dim ∈ 1:meD.nD
+                meD.p[iD,dim]   += buff*mpD.v[p,dim]
+                meD.p[iD,dim]   += buff*mpD.v[p,dim]
+                meD.fext[iD,dim]+= g[1]
+                meD.fint[iD,dim]+= mpD.V[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],meD.nD,meD.nn)' 
+                meD.fint[iD,dim]+= mpD.V[p]*(mpD.∂ϕx[p,n,meD.nD]*mpD.σ[1,p]+mpD.∂ϕz[p,n,meD.nD+1]*mpD.σ[4,p])
+            end
         end
     end
     return nothing
