@@ -12,8 +12,8 @@ function meshSetup(nel,L,nD,typeD)
         xn  = (0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])
         zn  = (0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])
         zn  = reverse(zn)
-        nno = [length(xn) length(zn) length(xn)*length(zn)] 
-        nel = [nno[1]-1 nno[2]-1 (nno[1]-1)*(nno[2]-1)]
+        nno = [length(xn),length(zn),length(xn)*length(zn)] 
+        nel = [nno[1]-1,nno[2]-1,(nno[1]-1)*(nno[2]-1)]
         nn  = 16
         xn  = (xn'.*ones(typeD,nno[2],1     ))     
         zn  = (     ones(typeD,nno[1],1     )'.*zn)
@@ -71,7 +71,7 @@ function meshSetup(nel,L,nD,typeD)
         h    = h,
         x    = x,
         # nodal quantities
-        m    = zeros(typeD,nno[nD+1],1), 
+        m    = zeros(typeD,nno[nD+1]), 
         fext = zeros(typeD,nno[nD+1],nD), 
         fint = zeros(typeD,nno[nD+1],nD),
         D    = zeros(typeD,nno[nD+1],nD),
@@ -80,7 +80,6 @@ function meshSetup(nel,L,nD,typeD)
         p    = zeros(typeD,nno[nD+1],nD),
         v    = zeros(typeD,nno[nD+1],nD),
         u    = zeros(typeD,nno[nD+1],nD),
-        pel  = zeros(typeD,nno[nD+1],nD),
         ΔJ   = zeros(typeD,nno[nD+1],nD),
         # mesh-to-node topology
         e2n = e2N(nD,nno,nel,nn),
@@ -156,16 +155,16 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         p    = zeros(typeD,nmp,meD.nD),
         l0   = l0,
         l    = l,
-        V0   = v0,
-        V    = v,
-        m    = m,
-        coh  = coh,
-        cohr = cohr,
-        phi  = phi,
-        ϵpII = zeros(typeD,nmp,1),
-        ϵpV  = zeros(typeD,nmp,1), 
-        ΔJ   = ones(typeD,nmp,1),
-        J    = ones(typeD,nmp,1),
+        V0   = vec(v0),
+        V    = vec(v),
+        m    = vec(m),
+        coh  = vec(coh),
+        cohr = vec(cohr),
+        phi  = vec(phi),
+        ϵpII = zeros(typeD,nmp),
+        ϵpV  = zeros(typeD,nmp), 
+        ΔJ   = ones(typeD,nmp),
+        J    = ones(typeD,nmp),
         # tensor in matrix notation
         ΔF   = zeros(typeD,meD.nD,meD.nD,nmp),
         ΔFbar= zeros(typeD,meD.nD,meD.nD,nmp),
@@ -174,7 +173,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         b    = zeros(typeD,meD.nD,meD.nD,nmp),
         bT   = zeros(typeD,meD.nD,meD.nD,nmp),
         # tensor in voigt notation
-        ω    = zeros(typeD,1,nmp),
+        ω    = zeros(typeD,nmp),
         σR   = zeros(typeD,nstr,nmp),
         σ    = zeros(typeD,nstr,nmp),
         τ    = zeros(typeD,nstr,nmp),
@@ -184,9 +183,10 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         ϕ∂ϕ  = zeros(typeD,nmp ,meD.nn,meD.nD+1   ),
         B    = zeros(typeD,nstr,meD.nn.*meD.nD,nmp),
         # connectivity
-        p2e  = zeros(Int64,nmp,1),
+        p2e  = zeros(Int64,nmp),
         p2n  = zeros(Int64,nmp,meD.nn),
     )
+    println("done mps")
     return mpD 
 end
 function e2N(nD,nno,nel,nn)

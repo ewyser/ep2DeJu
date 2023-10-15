@@ -101,7 +101,7 @@ end
     end
     return ηmax::Int64
 end
-function plast!(mpD::NamedTuple,cmParam::NamedTuple,cmType::String,fwrkDeform::String)
+function plast!(mpD,cmParam,cmType,fwrkDeform)
     if cmType == "MC"
         ηmax = MCplast!(mpD,cmParam,fwrkDeform)
     elseif cmType == "J2"
@@ -111,7 +111,7 @@ function plast!(mpD::NamedTuple,cmParam::NamedTuple,cmType::String,fwrkDeform::S
     elseif cmType == "DP"        
         ηmax = DPplast!(mpD.σ,mpD.ϵ,mpD.ϵpII,mpD.coh,mpD.phi,0.0,cmParam.Del,cmParam.Kc,cmParam.Gc,cmParam.Hp,mpD.cohr[1],mpD.nmp)
     else
-        @error "invalid plastic model --"*string(cmType)*"--"
+        @error "invalid plastic model --$(cmType)--"
         exit(1) 
     end
     return ηmax::Int64

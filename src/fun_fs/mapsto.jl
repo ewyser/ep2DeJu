@@ -1,4 +1,4 @@
-@views function accum!(mpD::NamedTuple,meD::NamedTuple,g::Matrix{Float64})
+@views function accum!(mpD,meD,g)
     # initialize nodal quantities
     meD.m   .= 0.0
     meD.p   .= 0.0
@@ -19,7 +19,7 @@
     end
     return nothing
 end
-@views function flipDM!(mpD::NamedTuple,meD::NamedTuple,Δt::Float64)
+@views function flipDM!(mpD,meD,Δt)
     # flip update
     @threads for p ∈ 1:mpD.nmp
         # mapping back to mp's
@@ -45,7 +45,7 @@ end
     end
     return nothing
 end
-@views function mapsto!(mpD::NamedTuple,meD::NamedTuple,g::Matrix{Float64},Δt::Float64,whereto::String)
+@views function mapsto!(mpD,meD,g,Δt,whereto)
     if whereto == "p->N"
         accum!(mpD,meD,g)
     elseif whereto == "p<-N"

@@ -3,6 +3,7 @@ using Pkg, LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter, LoopV
 # include doc for: help?> ϵp2De()
 include("./misc/doc.jl")
 # include init
+include("./misc/types.jl")
 include("./misc/setup.jl")
 include("./misc/utilities.jl")
 include("./misc/plot.jl")
