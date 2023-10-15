@@ -158,7 +158,7 @@ end
             mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
         end
     else
-        @error "shapefunction --"*string(type)*"-- not available"
+        @error "shapefunction --$(type)-- not available"
         exit(1)
     end
     return nothing
