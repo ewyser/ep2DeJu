@@ -22,7 +22,7 @@ Base.@kwdef struct mesh
     xB   ::Vector{Float64} 
     bc   ::Matrix{Float64}
 end
-Base.@kwdef struct points
+Base.@kwdef struct point
     nmp  ::Int64
     x    ::Matrix{Float64}
     u    ::Matrix{Float64}
