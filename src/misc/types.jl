@@ -1,7 +1,7 @@
 Base.@kwdef struct mesh
     nD   ::Int64
-    nel  ::Int64
-    nno  ::Int64
+    nel  ::Vector{Int64}
+    nno  ::Vector{Int64}
     nn   ::Int64
     L    ::Vector{Float64}
     h    ::Vector{Float64}
@@ -16,7 +16,6 @@ Base.@kwdef struct mesh
     p    ::Matrix{Float64}
     v    ::Matrix{Float64}
     u    ::Matrix{Float64}
-    pel  ::Matrix{Float64}
     ΔJ   ::Matrix{Float64}
     # mesh-to-node topology
     e2n  ::Matrix{Int64}
@@ -33,6 +32,7 @@ Base.@kwdef struct points
     l    ::Matrix{Float64}
     V0   ::Vector{Float64}
     V    ::Vector{Float64}
+    
     m    ::Vector{Float64}
     coh  ::Vector{Float64}
     cohr ::Vector{Float64}
@@ -61,13 +61,4 @@ Base.@kwdef struct points
     # connectivity
     p2e  ::Vector{Int64}
     p2n  ::Matrix{Int64}
-end
-
-Base.@kwdef struct Point
-    x ::Matrix{Float64}
-    #test
-    a ::Matrix{Float64}
-    b ::Matrix{Float64}
-    c ::Matrix{Float64}
-    d ::Matrix{Float64}
 end
