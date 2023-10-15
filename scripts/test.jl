@@ -5,6 +5,7 @@
 
 # include dependencies
 include("../src/superInclude.jl")
+using BenchmarkTools
 # arithmetic precision (double=Float64 or single=Float32)
 typeD = Float64  
 # relative path for figs & data
@@ -62,3 +63,4 @@ if isdir(path_plot)==false mkdir(path_plot) end
     end
     return msg("(✓) Done! exiting...")
 end
+test(40,"P","MC")
