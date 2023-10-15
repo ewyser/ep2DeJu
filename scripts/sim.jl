@@ -6,9 +6,9 @@
 # include dependencies
 include("../src/superInclude.jl")
 # arithmetic precision (double=Float64 or single=Float32)
-typeD = Float64  
+const typeD = Float64  
 # relative path for figs & data
-path_plot = "./out/"
+const path_plot = "./out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
 @views function ϵp2De(nel::Int64,varPlot::String,cmType::String; kwargs...)

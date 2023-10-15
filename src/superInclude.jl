@@ -7,9 +7,22 @@ include("./misc/setup.jl")
 include("./misc/utilities.jl")
 include("./misc/plot.jl")
 # include core functions
-include("./fun_fs/shpfun.jl")
-include("./fun_fs/mapsto.jl")
-include("./fun_fs/solve.jl")
-include("./fun_fs/elastoplast.jl")
-include("./fun_fs/plast.jl")
-
+if @isdefined perf 
+    if perf
+        @info "performance mode on: perf = $(perf)"
+    else
+        @info "performance mode off: perf = $(perf)"
+        include("./fun_fs/shpfun.jl")
+        include("./fun_fs/mapsto.jl")
+        include("./fun_fs/solve.jl")
+        include("./fun_fs/elastoplast.jl")
+        include("./fun_fs/plast.jl")
+    end
+else
+    @info "performance mode off: perf not existing"
+    include("./fun_fs/shpfun.jl")
+    include("./fun_fs/mapsto.jl")
+    include("./fun_fs/solve.jl")
+    include("./fun_fs/elastoplast.jl")
+    include("./fun_fs/plast.jl")
+end
