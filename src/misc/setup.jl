@@ -61,7 +61,7 @@ function meshSetup(nel,L,nD,typeD)
         bcZ[bcz] .= 0
         bc   = hcat(bcX,bcY,bcZ)
     end
-    # push to named-Tuple
+    # push to named-Tuple or struct
     meD = (
         nD   = nD,
         nel  = nel,
@@ -146,7 +146,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     phi         =  ones(typeD,nmp,1).*phi0
     p           = findall(x->x<=2*wl, xp[:,2])
     phi[p]     .= phir
-    # push/init. to mpD()::NamedTuple data structure 
+    # push to named-Tuple or struct
     mpD = (
         nmp  = nmp,
         x    = xp,
@@ -186,7 +186,6 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         p2e  = zeros(Int64,nmp),
         p2n  = zeros(Int64,nmp,meD.nn),
     )
-    println("done mps")
     return mpD 
 end
 function e2N(nD,nno,nel,nn)
