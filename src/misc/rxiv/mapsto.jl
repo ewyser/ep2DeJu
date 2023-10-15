@@ -14,8 +14,8 @@
             meD.m[iD  ]   += buff
             meD.p[iD,:]   += buff*mpD.v[p,:]
             meD.p[iD,:]   += buff*mpD.v[p,:]
-            meD.fext[iD,1]-= g[1]
-            meD.fext[iD,2]-= g[2]
+            meD.fext[iD,1]+= g[1]
+            meD.fext[iD,2]+= g[2]
             meD.fint[iD,1]+= mpD.V[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],meD.nD,meD.nn)' 
             meD.fint[iD,2]+= mpD.V[p].*reshape(mpD.B[:,:,p]'*mpD.σ[:,p],meD.nD,meD.nn)' 
             meD.fint[iD,1]+= mpD.V[p]*(mpD.∂ϕx[p,n,2]*mpD.σ[1,p]+mpD.∂ϕz[p,n,3]*mpD.σ[4,p])
