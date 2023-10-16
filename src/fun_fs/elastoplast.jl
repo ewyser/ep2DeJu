@@ -1,6 +1,6 @@
 @views function deform!(mpD,meD)
     # init mesh quantities to zero
-    meD.ΔJ .= 0.0
+    meD.ΔJn .= 0.0
     # set identity matrix
     ID   = Matrix(1.0I,meD.nD,meD.nD)
     # calculate cst.
@@ -11,7 +11,7 @@
         # get nodal incremental displacement
         iD           .= mpD.p2n[p,:]
         # compute incremental deformation gradient
-        mpD.ΔF[:,:,p].= ID.+(permutedims(mpD.ϕ∂ϕ[p,:,2:end],(2,1))*meD.u[iD,:])'
+        mpD.ΔF[:,:,p].= ID.+(permutedims(mpD.ϕ∂ϕ[p,:,2:end],(2,1))*meD.Δun[iD,:])'
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
@@ -20,17 +20,17 @@
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
         mpD.l[p,:]   .= mpD.J[p]^(dim).*mpD.l0[p,:] 
         # accumulation
-        meD.ΔJ[iD]  .+= mpD.ϕ∂ϕ[p,:].*mpD.m[p].*mpD.ΔJ[p]  
+        meD.ΔJn[iD] .+= mpD.ϕ∂ϕ[p,:].*mpD.m[p].*mpD.ΔJ[p]  
     end 
     # compute nodal deformation determinant
     @threads for n ∈ 1:meD.nno[meD.nD+1]
-        if meD.m[n]>0.0 
-            meD.ΔJ[n] = meD.ΔJ[n]/meD.m[n]
+        if meD.mn[n]>0.0 
+            meD.ΔJn[n] = meD.ΔJn[n]/meD.mn[n]
         end
     end
     # compute determinant Jbar 
     @threads for p ∈ 1:mpD.nmp
-        mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*((dot(mpD.ϕ∂ϕ[p,:,1],meD.ΔJ[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(dim))
+        mpD.ΔFbar[:,:,p].= mpD.ΔF[:,:,p].*((dot(mpD.ϕ∂ϕ[p,:,1],meD.ΔJn[mpD.p2n[p,:]])/mpD.ΔJ[p]).^(dim))
     end
     return nothing
 end

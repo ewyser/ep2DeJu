@@ -1,5 +1,5 @@
 @views function topol!(mpD,meD)
-    xmin,zmin = minimum(meD.x[:,1]),minimum(meD.x[:,2])
+    xmin,zmin = minimum(meD.xn[:,1]),minimum(meD.xn[:,2])
     Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
     nez       = meD.nel[2]
     @threads for p ∈ 1:mpD.nmp
@@ -105,11 +105,11 @@ end
             @simd for nn ∈ 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[mp,nn]
-                ξ      = (mpD.x[mp,1]-meD.x[id,1])/Δx 
-                type   = whichType(meD.x[id,1],xb,Δx)
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])/Δx 
+                type   = whichType(meD.xn[id,1],xb,Δx)
                 ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-                η      = (mpD.x[mp,2]-meD.x[id,2])/Δz
-                type   = whichType(meD.x[id,2],zb,Δz)
+                η      = (mpD.x[mp,2]-meD.xn[id,2])/Δz
+                type   = whichType(meD.xn[id,2],zb,Δz)
                 ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
                 # convolution of basis function
                 mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        

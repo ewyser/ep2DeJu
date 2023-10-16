@@ -1,13 +1,15 @@
-function meshSetup(nel,L,nD,typeD)
-    # geometry                                               
+function meshGeom(L,nel)
+    nD = length(L)
     if nD == 2
         L   = [L[1],ceil(L[2])]
         h   = [L[1]/nel,L[1]/nel]
     elseif nD == 3
-        L   = [Lx,Ly,ceil(Lz)]
+        L   = [L[1],L[2y],ceil(L[3])]
         h   = [L[1]/nel[1],L[1]/nel[1],L[1]/nel[1]]
     end
-    # mesh 
+    return L,h,nD
+end
+function meshCoord(nD,L,h)
     if nD == 2
         xn  = (0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])
         zn  = (0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])
@@ -36,12 +38,13 @@ function meshSetup(nel,L,nD,typeD)
         zn  = vec(zn)
         x   = hcat(xn,yn,zn)
     end
-
-    # boundary conditions
+    return x,nn,nel,nno
+end
+function meshBCs(xn,h,nno,nD)
     if nD == 2
-        xB  = [minimum(xn)+2*h[1],maximum(xn)-2*h[1],0.0,Inf]                                    
-        bcx = vcat(findall(x->x<=xB[1], xn),findall(x->x>=xB[2], xn))
-        bcz = findall(x->x<=xB[3], zn)
+        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],0.0,Inf]                                    
+        bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
+        bcz = findall(x->x<=xB[3], xn[:,2])
         bcX = ones(Int64,nno[nD+1],1)
         bcX[bcx] .= 0
         bcZ = ones(nno[nD+1],1)
@@ -49,10 +52,10 @@ function meshSetup(nel,L,nD,typeD)
         #bcX[bcz] .= 0
         bc   = hcat(bcX,bcZ)
     elseif nD == 3
-        xB  = [minimum(xn)+2*h[1],maximum(xn)-2*h[1],minimum(yn)+2*h[1],maximum(yn)-2*h[1],0.0,Inf]                                    
-        bcx = vcat(findall(x->x<=xB[1], xn),findall(x->x>=xB[2], xn))
-        bcy = vcat(findall(x->x<=xB[3], yn),findall(x->x>=xB[4], yn))
-        bcz = findall(x->x<=xB[5], zn)
+        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],minimum(xn[:,2])+2*h[1],maximum(xn[:,2])-2*h[1],0.0,Inf]                                    
+        bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
+        bcy = vcat(findall(x->x<=xB[3], xn[:,2]),findall(x->x>=xB[4], xn[:,2]))
+        bcz = findall(x->x<=xB[5], xn[:,3])
         bcX = ones(Int64,nno[nD+1],1)
         bcX[bcx] .= 0
         bcY = ones(nno[nD+1],1)
@@ -61,132 +64,7 @@ function meshSetup(nel,L,nD,typeD)
         bcZ[bcz] .= 0
         bc   = hcat(bcX,bcY,bcZ)
     end
-    # push to named-Tuple or struct
-    meD = (
-        nD   = nD,
-        nel  = nel,
-        nno  = nno,
-        nn   = nn,
-        L    = L,
-        h    = h,
-        x    = x,
-        # nodal quantities
-        m    = zeros(typeD,nno[nD+1]), 
-        fext = zeros(typeD,nno[nD+1],nD), 
-        fint = zeros(typeD,nno[nD+1],nD),
-        D    = zeros(typeD,nno[nD+1],nD),
-        f    = zeros(typeD,nno[nD+1],nD),
-        a    = zeros(typeD,nno[nD+1],nD),
-        p    = zeros(typeD,nno[nD+1],nD),
-        v    = zeros(typeD,nno[nD+1],nD),
-        u    = zeros(typeD,nno[nD+1],nD),
-        ΔJ   = zeros(typeD,nno[nD+1],nD),
-        # mesh-to-node topology
-        e2n = e2N(nD,nno,nel,nn),
-        xB   = xB,
-        bc   = bc,
-    )
-    return meD
-end
-function continuum(xp,zp,x,z,c,wl,a,nD)
-    xlt = Float64[]
-    zlt = Float64[]
-    clt = Float64[]
-    pos = Float64 
-    for mp ∈ eachindex(xp)
-        for p ∈ eachindex(z)
-            Δx = xp[mp]-x[p]
-            Δz = zp[mp]-z[p]
-            nx = a
-            nz = -1.0
-            s  = Δx*nx+Δz*nz        
-            if s>0
-                pos = 1
-            else
-                pos = 0
-            end
-            if zp[mp]<wl 
-                pos = 1
-            end
-        end
-        if pos==1
-            push!(xlt, xp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
-            push!(zlt, zp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
-            push!(clt, c[mp])
-        end
-    end
-    xp = if nD == 2 hcat(xlt,zlt) elseif nD == 3 hcat(xlt,ylt,zlt) end
-    return xp,clt
-end
-function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
-    # mpm initialization
-    xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
-    zL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
-    npx,npz     = length(xL),length(zL)
-    xp,zp       = ((xL'.*ones(npz,1  )      )),((     ones(npx,1  )'.*zL )) 
-    c           = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])
-    xp,zp,c     = vec(xp),vec(zp),vec(c)
-    wl          = 0.15*lz
-    x           = LinRange(minimum(xp),maximum(xp),200)
-    a           = -1.25
-    x,z         = x.+0.5.*meD.L[1],a.*x
-    xp,clt      = continuum(xp,zp,x,z,c,wl,a,meD.nD)
-    # material point's quantities
-    # scalars & vectors
-    nmp         = size(xp,1)
-    l0          = ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
-    l           = ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
-    v0          = ones(typeD,nmp,1).*(2.0.*l0[:,1].*2.0.*l0[:,2])
-    v           = ones(typeD,nmp,1).*(2.0.*l[:,1].*2.0.*l[:,2])
-    m           = rho0.*v0
-    coh         =  ones(typeD,nmp,1).*coh0#clt
-    #coh  =  clt
-    #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
-    cohr        =  ones(typeD,nmp,1).*cohr
-    phi         =  ones(typeD,nmp,1).*phi0
-    p           = findall(x->x<=2*wl, xp[:,2])
-    phi[p]     .= phir
-    # push to named-Tuple or struct
-    mpD = (
-        nmp  = nmp,
-        x    = xp,
-        u    = zeros(typeD,nmp,meD.nD), 
-        v    = zeros(typeD,nmp,meD.nD),
-        p    = zeros(typeD,nmp,meD.nD),
-        l0   = l0,
-        l    = l,
-        V0   = vec(v0),
-        V    = vec(v),
-        m    = vec(m),
-        coh  = vec(coh),
-        cohr = vec(cohr),
-        phi  = vec(phi),
-        ϵpII = zeros(typeD,nmp),
-        ϵpV  = zeros(typeD,nmp), 
-        ΔJ   = ones(typeD,nmp),
-        J    = ones(typeD,nmp),
-        # tensor in matrix notation
-        ΔF   = zeros(typeD,meD.nD,meD.nD,nmp),
-        ΔFbar= zeros(typeD,meD.nD,meD.nD,nmp),
-        F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
-        ϵ    = zeros(typeD,meD.nD,meD.nD,nmp),
-        b    = zeros(typeD,meD.nD,meD.nD,nmp),
-        bT   = zeros(typeD,meD.nD,meD.nD,nmp),
-        # tensor in voigt notation
-        ω    = zeros(typeD,nmp),
-        σR   = zeros(typeD,nstr,nmp),
-        σ    = zeros(typeD,nstr,nmp),
-        τ    = zeros(typeD,nstr,nmp),
-        dev  = zeros(typeD,nstr,nmp),
-        ep   = zeros(typeD,nstr,nmp),
-        # additional quantities
-        ϕ∂ϕ  = zeros(typeD,nmp ,meD.nn,meD.nD+1   ),
-        B    = zeros(typeD,nstr,meD.nn.*meD.nD,nmp),
-        # connectivity
-        p2e  = zeros(Int64,nmp),
-        p2n  = zeros(Int64,nmp,meD.nn),
-    )
-    return mpD 
+    return bc,xB
 end
 function e2N(nD,nno,nel,nn)
 	e2n  = zeros(Int64,nel[nD+1],nn)
@@ -300,4 +178,135 @@ function e2N(nD,nno,nel,nn)
         end
     end
 	return e2n
+end
+function materialGeom(meD,lz,wl,coh0,cohr,ni)
+    xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
+    zL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
+    npx,npz     = length(xL),length(zL)
+    xp,zp       = ((xL'.*ones(npz,1  )      )),((     ones(npx,1  )'.*zL )) 
+    c           = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])
+    xp,zp,c     = vec(xp),vec(zp),vec(c)
+    x           = LinRange(minimum(xp),maximum(xp),200)
+    a           = -1.25
+    x,z         = x.+0.5.*meD.L[1],a.*x
+    xlt = Float64[]
+    zlt = Float64[]
+    clt = Float64[]
+    pos = Float64 
+    for mp ∈ eachindex(xp)
+        for p ∈ eachindex(z)
+            Δx = xp[mp]-x[p]
+            Δz = zp[mp]-z[p]
+            nx = a
+            nz = -1.0
+            s  = Δx*nx+Δz*nz        
+            if s>0
+                pos = 1
+            else
+                pos = 0
+            end
+            if zp[mp]<wl 
+                pos = 1
+            end
+        end
+        if pos==1
+            push!(xlt, xp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
+            push!(zlt, zp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
+            push!(clt, c[mp])
+        end
+    end
+    xp = if meD.nD == 2 hcat(xlt,zlt) elseif meD.nD == 3 hcat(xlt,ylt,zlt) end
+    return xp,clt
+end
+function meshSetup(nel,L,typeD)
+    # geometry                                               
+    L,h,nD       = meshGeom(L,nel)
+    # mesh 
+    x,nn,nel,nno = meshCoord(nD,L,h)
+    # boundary conditions
+    bc,xB        = meshBCs(x,h,nno,nD)
+    # push to named-Tuple or struct
+    meD = (
+        nD   = nD,
+        nel  = nel,
+        nno  = nno,
+        nn   = nn,
+        L    = L,
+        h    = h,
+        # nodal quantities
+        xn   = x,
+        mn   = zeros(typeD,nno[nD+1]), 
+        fext = zeros(typeD,nno[nD+1],nD), 
+        fint = zeros(typeD,nno[nD+1],nD),
+        Dn   = zeros(typeD,nno[nD+1],nD),
+        fn   = zeros(typeD,nno[nD+1],nD),
+        an   = zeros(typeD,nno[nD+1],nD),
+        pn   = zeros(typeD,nno[nD+1],nD),
+        vn   = zeros(typeD,nno[nD+1],nD),
+        Δun  = zeros(typeD,nno[nD+1],nD),
+        ΔJn  = zeros(typeD,nno[nD+1],nD),
+        # mesh-to-node topology
+        e2n  = e2N(nD,nno,nel,nn),
+        xB   = xB,
+        # mesh boundary conditions
+        bc   = bc,
+    )
+    return meD
+end
+function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
+    # material geometry
+    wl     = 0.15*lz
+    xp,clt = materialGeom(meD,lz,wl,coh0,cohr,ni)
+    # scalars & vectors
+    nmp    = size(xp,1)
+    l0,l   = ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni),ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
+    v0,v   = ones(typeD,nmp  ).*(2.0.*l0[:,1].*2.0.*l0[:,2]),ones(typeD,nmp  ).*(2.0.*l[:,1].*2.0.*l[:,2])
+    m      = rho0.*v0
+    coh    = ones(typeD,nmp ).*coh0#clt
+    #coh  =  clt
+    #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
+    cohr   = ones(typeD,nmp).*cohr
+    phi    = ones(typeD,nmp).*phi0
+    phi[xp[:,2].<=2*wl] .= phir
+    # push to named-Tuple or struct
+    mpD = (
+        nmp  = nmp,
+        x    = xp,
+        u    = zeros(typeD,nmp,meD.nD), 
+        v    = zeros(typeD,nmp,meD.nD),
+        p    = zeros(typeD,nmp,meD.nD),
+        l0   = l0,
+        l    = l,
+        V0   = v0,
+        V    = v,
+        m    = m,
+        coh  = coh,
+        cohr = cohr,
+        phi  = phi,
+        ϵpII = zeros(typeD,nmp),
+        ϵpV  = zeros(typeD,nmp), 
+        ΔJ   = ones(typeD,nmp),
+        J    = ones(typeD,nmp),
+        # tensor in matrix notation
+        ΔF   = zeros(typeD,meD.nD,meD.nD,nmp),
+        ΔFbar= zeros(typeD,meD.nD,meD.nD,nmp),
+        F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
+        ϵ    = zeros(typeD,meD.nD,meD.nD,nmp),
+        b    = zeros(typeD,meD.nD,meD.nD,nmp),
+        bT   = zeros(typeD,meD.nD,meD.nD,nmp),
+        # tensor in voigt notation
+        ω    = zeros(typeD,nmp),
+        σR   = zeros(typeD,nstr,nmp),
+        σ    = zeros(typeD,nstr,nmp),
+        τ    = zeros(typeD,nstr,nmp),
+        dev  = zeros(typeD,nstr,nmp),
+        ep   = zeros(typeD,nstr,nmp),
+        # additional quantities
+        ϕ∂ϕ  = zeros(typeD,nmp ,meD.nn,meD.nD+1   ),
+        B    = zeros(typeD,nstr,meD.nn.*meD.nD,nmp),
+        # connectivity
+        p2e  = zeros(Int64,nmp),
+        p2n  = zeros(Int64,nmp,meD.nn),
+    )
+    return mpD 
 end
