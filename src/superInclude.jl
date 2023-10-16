@@ -11,6 +11,11 @@ include("./misc/plot.jl")
 if @isdefined perf 
     if perf
         @info "performance mode on: perf = $(perf)"
+        include("./misc/rxiv/shpfun.jl")
+        include("./misc/rxiv/mapsto.jl")
+        include("./fun_fs/solve.jl")
+        include("./fun_fs/elastoplast.jl")
+        include("./fun_fs/plast.jl")
     else
         @info "performance mode off: perf = $(perf)"
         include("./fun_fs/shpfun.jl")

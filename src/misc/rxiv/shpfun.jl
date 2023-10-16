@@ -1,6 +1,6 @@
 @views function topol!(mpD::NamedTuple,meD::NamedTuple)
-    xmin = minimum(meD.x[:,1])
-    zmin = minimum(meD.x[:,2])
+    xmin = minimum(meD.xn[:,1])
+    zmin = minimum(meD.xn[:,2])
     Δx::Float64 = 1.0/meD.h[1]
     Δz::Float64 = 1.0/meD.h[2]
     nez::Int64  = meD.nel[2]
@@ -120,11 +120,11 @@ end
             for nn ∈ 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[mp,nn]
-                ξ      = (mpD.x[mp,1] - meD.x[id,1])/Δx 
-                type   = whichType(meD.x[id,1],xb,Δx)
+                ξ      = (mpD.x[mp,1] - meD.xn[id,1])/Δx 
+                type   = whichType(meD.xn[id,1],xb,Δx)
                 ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-                η      = (mpD.x[mp,2] - meD.x[id,2])/Δz
-                type   = whichType(meD.x[id,2],zb,Δz)
+                η      = (mpD.x[mp,2] - meD.xn[id,2])/Δz
+                type   = whichType(meD.xn[id,2],zb,Δz)
                 ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
                 # convolution of basis function
                 mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
