@@ -1,16 +1,10 @@
 @views function topol!(mpD,meD)
-    xmin = minimum(meD.x[:,1])
-    zmin = minimum(meD.x[:,2])
-    Δx::Float64 = 1.0/meD.h[1]
-    Δz::Float64 = 1.0/meD.h[2]
-    nez::Int64  = meD.nel[2]
-    id::Int64   = 0
+    xmin,zmin = minimum(meD.x[:,1]),minimum(meD.x[:,2])
+    Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
+    nez       = meD.nel[2]
     @threads for p ∈ 1:mpD.nmp
-        id = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1::Int64)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
-        for n ∈ 1:meD.nn
-            mpD.p2n[p,n] = meD.e2n[id,n]
-        end
-        mpD.p2e[p] = id
+        mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
+        mpD.p2n[p,:].= meD.e2n[mpD.p2e[p],:]
     end
     return nothing
 end
@@ -34,74 +28,71 @@ function NdN(δx::Float64,h::Float64,lp::Float64)
 end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-function whichType(xn::Float64,xB::Vector{Float64},Δx::Float64)
-    if xn==xB[1] ||  xn==xB[2] 
-        type = 1::Int64
-    elseif xn<(xB[1]+1.1*Δx) && xn>(xB[1]+0.9*Δx) 
-        type = 2::Int64
-    elseif xn>(xB[1]+1.5*Δx) && xn<(xB[2]-1.5*Δx) 
-        type = 3::Int64
-    elseif xn<(xB[2]-0.9*Δx) && xn>(xB[2]-1.1*Δx)
-        type = 4::Int64
-    else
-        type = 0::Int64
+@views function whichType(xn,xB,Δx)
+    type = 0
+    if xn==xB[1] || xn==xB[2] 
+        type = 1
+    elseif (xB[1]+0.9*Δx)<xn<(xB[1]+1.1*Δx)
+        type = 2
+    elseif (xB[1]+1.5*Δx)<xn<(xB[2]-1.5*Δx) 
+        type = 3
+    elseif (xB[2]-1.1*Δx)<xn<(xB[2]-0.9*Δx)
+        type = 4
     end
-    return type::Int64
+    return type
 end
-function ϕ∇ϕ(ξ::Float64,type::Int64,Δx::Float64)
+function ϕ∇ϕ(ξ,type,Δx)
     ϕ,∂ϕ = 0.0,0.0
     if type==1 
-        if -2<=ξ && ξ<=-1 
-            ϕ = 1/6     *ξ^3+     ξ^2   +2*ξ    +4/3
-            ∂ϕ= 3/(6*Δx)*ξ^2+2/Δx*ξ     +2/Δx
-        elseif -1<=ξ && ξ<=-0 
-            ϕ = -1/6     *ξ^3           +  ξ    +1
-            ∂ϕ= -3/(6*Δx)*ξ^2           +  1/Δx
-        elseif  0<=ξ && ξ<= 1 
-            ϕ =  1/6     *ξ^3           -  ξ    +1
-            ∂ϕ=  3/(6*Δx)*ξ^2           -  1/Δx
-        elseif  1<=ξ && ξ<= 2 
-            ϕ = -1/6     *ξ^3+     ξ^2  -2*ξ    +4/3
-            ∂ϕ= -3/(6*Δx)*ξ^2+2/Δx*ξ    -2/Δx
+        if -2.0<=ξ<=-1.0 
+            ϕ = 1.0/6.0     *ξ^3+     ξ^2   +2.0*ξ    +4.0/3.0
+            ∂ϕ= 3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ     +2.0/Δx
+        elseif -1.0<=ξ<=-0.0 
+            ϕ = -1.0/6.0     *ξ^3           +  ξ    +1.0
+            ∂ϕ= -3.0/(6.0*Δx)*ξ^2           +  1.0/Δx
+        elseif  0.0<=ξ<= 1.0 
+            ϕ =  1.0/6.0     *ξ^3           -  ξ    +1.0
+            ∂ϕ=  3.0/(6.0*Δx)*ξ^2           -  1.0/Δx
+        elseif  1.0<=ξ<= 2.0 
+            ϕ = -1.0/6.0     *ξ^3+     ξ^2  -2.0*ξ    +4.0/3.0
+            ∂ϕ= -3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ    -2.0/Δx
         end    
     elseif type==2 
-        if -1<=ξ && ξ<=0 
-            ϕ = -1/3 *ξ^3-     ξ^2    +2/3
-            ∂ϕ= -1/Δx*ξ^2-2/Δx*ξ
-        elseif 0<=ξ && ξ<=1 
-            ϕ =  1/2     *ξ^3-     ξ^2    +2/3
-            ∂ϕ=  3/(2*Δx)*ξ^2-2/Δx*ξ
-        elseif 1<=ξ && ξ<=2 
-            ϕ = -1/6     *ξ^3+     ξ^2-2*ξ+4/3
-            ∂ϕ= -3/(6*Δx)*ξ^2+2/Δx*ξ  -2/Δx
+        if -1.0<=ξ<=0.0 
+            ϕ = -1.0/3.0 *ξ^3-     ξ^2    +2.0/3.0
+            ∂ϕ= -1.0/Δx*ξ^2-2.0/Δx*ξ
+        elseif 0.0<=ξ<=1.0 
+            ϕ =  1.0/2.0     *ξ^3-     ξ^2    +2.0/3.0
+            ∂ϕ=  3.0/(2.0*Δx)*ξ^2-2.0/Δx*ξ
+        elseif 1.0<=ξ<=2.0 
+            ϕ = -1.0/6.0     *ξ^3+     ξ^2-2.0*ξ+4.0/3.0
+            ∂ϕ= -3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ  -2.0/Δx
         end
     elseif type==3 
-        if -2<=ξ && ξ <=-1 
-            ϕ =  1/6     *ξ^3+     ξ^2+2*ξ+4/3
-            ∂ϕ=  3/(6*Δx)*ξ^2+2/Δx*ξ  +2/Δx
-        elseif -1<=ξ && ξ<=0 
-            ϕ = -1/2     *ξ^3-     ξ^2    +2/3
-            ∂ϕ= -3/(2*Δx)*ξ^2-2/Δx*ξ
-        elseif  0<=ξ && ξ<=1
-            ϕ =  1/2     *ξ^3-     ξ^2    +2/3
-            ∂ϕ=  3/(2*Δx)*ξ^2-2/Δx*ξ
-        elseif  1<=ξ && ξ<=2    
-            ϕ = -1/6     *ξ^3+     ξ^2-2*ξ+4/3
-            ∂ϕ= -3/(6*Δx)*ξ^2+2/Δx*ξ  -2/Δx
+        if -2.0<=ξ<=-1.0 
+            ϕ =  1.0/6.0     *ξ^3+     ξ^2+2.0*ξ+4.0/3.0
+            ∂ϕ=  3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ  +2.0/Δx
+        elseif -1.0<=ξ<=0.0 
+            ϕ = -1.0/2.0     *ξ^3-     ξ^2    +2.0/3.0
+            ∂ϕ= -3.0/(2.0*Δx)*ξ^2-2.0/Δx*ξ
+        elseif  0.0<=ξ<=1.0
+            ϕ =  1.0/2.0     *ξ^3-     ξ^2    +2.0/3.0
+            ∂ϕ=  3.0/(2.0*Δx)*ξ^2-2.0/Δx*ξ
+        elseif  1.0<=ξ<=2.0    
+            ϕ = -1.0/6.0     *ξ^3+     ξ^2-2.0*ξ+4.0/3.0
+            ∂ϕ= -3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ  -2.0/Δx
         end
     elseif type==4
-        if -2.0<=ξ && ξ<=-1.0
-            ϕ =  1/6     *ξ^3+     ξ^2+2*ξ+4/3
-            ∂ϕ=  3/(6*Δx)*ξ^2+2/Δx*ξ  +2/Δx 
-        elseif -1.0<=ξ && ξ<=0.0
-            ϕ = -1/2     *ξ^3-     ξ^2    +2/3
-            ∂ϕ= -3/(2*Δx)*ξ^2-2/Δx*ξ      
-        elseif 0.0<=ξ && ξ<=1.0
-            ϕ =  1/3     *ξ^3-     ξ^2    +2/3
-            ∂ϕ=  3/(3*Δx)*ξ^2-2/Δx*ξ      
+        if -2.0<=ξ<=-1.0
+            ϕ =  1.0/6.0     *ξ^3+     ξ^2+2.0*ξ+4.0/3.0
+            ∂ϕ=  3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ  +2.0/Δx 
+        elseif -1.0<=ξ<=0.0
+            ϕ = -1.0/2.0     *ξ^3-     ξ^2    +2.0/3.0
+            ∂ϕ= -3.0/(2.0*Δx)*ξ^2-2.0/Δx*ξ      
+        elseif 0.0<=ξ<=1.0
+            ϕ =  1.0/3.0     *ξ^3-     ξ^2    +2.0/3.0
+            ∂ϕ=  3.0/(3.0*Δx)*ξ^2-2.0/Δx*ξ      
         end
-    else
-        ϕ,∂ϕ = 0.0,0.0
     end    
     return ϕ,∂ϕ
 end
@@ -110,20 +101,18 @@ end
 @views function ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
     topol!(mpD,meD)
     #preprocessing
-    xb = copy(meD.xB[1:2])
-    zb = copy(meD.xB[3:4])
-    Δx = meD.h[1]
-    Δz = meD.h[2]
+    xb,zb = meD.xB[1:2],meD.xB[3:4]
+    Δx,Δz = meD.h[1],meD.h[2]
     #action
     if ϕ∂ϕType == "bsmpm"
         @threads for mp ∈ 1:mpD.nmp
             for nn ∈ 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[mp,nn]
-                ξ      = (mpD.x[mp,1] - meD.x[id,1])/Δx 
+                ξ      = (mpD.x[mp,1]-meD.x[id,1])/Δx 
                 type   = whichType(meD.x[id,1],xb,Δx)
                 ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-                η      = (mpD.x[mp,2] - meD.x[id,2])/Δz
+                η      = (mpD.x[mp,2]-meD.x[id,2])/Δz
                 type   = whichType(meD.x[id,2],zb,Δz)
                 ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
                 # convolution of basis function
