@@ -8,8 +8,6 @@
     end
     return nothing
 end
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
 function NdN(δx::Float64,h::Float64,lp::Float64)                                                         
     if     abs(δx) <    lp                       
         ϕ  = 1.0-((4.0*δx^2+(2.0*lp)^2)/(8.0*h*lp))                                   
@@ -26,8 +24,6 @@ function NdN(δx::Float64,h::Float64,lp::Float64)
     end
     return ϕ,∂ϕ    
 end
-#----------------------------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------------------------
 @views function whichType(xn,xB,Δx)
     type = 0
     if xn==xB[1] || xn==xB[2] 
@@ -43,7 +39,7 @@ end
 end
 function ϕ∇ϕ(ξ,type,Δx)
     ϕ,∂ϕ = 0.0,0.0
-    if type==1 
+    if type == 1 
         if -2.0<=ξ<=-1.0 
             ϕ = 1.0/6.0     *ξ^3+     ξ^2   +2.0*ξ    +4.0/3.0
             ∂ϕ= 3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ     +2.0/Δx
@@ -57,7 +53,7 @@ function ϕ∇ϕ(ξ,type,Δx)
             ϕ = -1.0/6.0     *ξ^3+     ξ^2  -2.0*ξ    +4.0/3.0
             ∂ϕ= -3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ    -2.0/Δx
         end    
-    elseif type==2 
+    elseif type == 2 
         if -1.0<=ξ<=0.0 
             ϕ = -1.0/3.0 *ξ^3-     ξ^2    +2.0/3.0
             ∂ϕ= -1.0/Δx*ξ^2-2.0/Δx*ξ
@@ -68,7 +64,7 @@ function ϕ∇ϕ(ξ,type,Δx)
             ϕ = -1.0/6.0     *ξ^3+     ξ^2-2.0*ξ+4.0/3.0
             ∂ϕ= -3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ  -2.0/Δx
         end
-    elseif type==3 
+    elseif type == 3 
         if -2.0<=ξ<=-1.0 
             ϕ =  1.0/6.0     *ξ^3+     ξ^2+2.0*ξ+4.0/3.0
             ∂ϕ=  3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ  +2.0/Δx
@@ -82,7 +78,7 @@ function ϕ∇ϕ(ξ,type,Δx)
             ϕ = -1.0/6.0     *ξ^3+     ξ^2-2.0*ξ+4.0/3.0
             ∂ϕ= -3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ  -2.0/Δx
         end
-    elseif type==4
+    elseif type == 4
         if -2.0<=ξ<=-1.0
             ϕ =  1.0/6.0     *ξ^3+     ξ^2+2.0*ξ+4.0/3.0
             ∂ϕ=  3.0/(6.0*Δx)*ξ^2+2.0/Δx*ξ  +2.0/Δx 
@@ -106,7 +102,7 @@ end
     #action
     if ϕ∂ϕType == "bsmpm"
         @threads for mp ∈ 1:mpD.nmp
-            for nn ∈ 1:meD.nn
+            @simd for nn ∈ 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[mp,nn]
                 ξ      = (mpD.x[mp,1]-meD.x[id,1])/Δx 
@@ -119,12 +115,12 @@ end
                 mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
+                # B-matrix assembly
+                mpD.B[1,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[mp,nn,2]
+                mpD.B[2,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[mp,nn,3]
+                mpD.B[4,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[mp,nn,3]
+                mpD.B[4,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[mp,nn,2]                
             end
-            # B-matrix assembly
-            mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-            mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-            mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-            mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
         end
     elseif ϕ∂ϕType == "gimpm"
         @threads for mp in 1:mpD.nmp
