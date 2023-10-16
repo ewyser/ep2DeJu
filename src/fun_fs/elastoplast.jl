@@ -6,11 +6,12 @@
     # calculate cst.
     dim  = 1.0/meD.nD
     # action
-    for p ∈ 1:mpD.nmp
+    iD   = zeros(Int64,meD.nn)
+    @simd for p ∈ 1:mpD.nmp
         # get nodal incremental displacement
-        iD            = mpD.p2n[p,:]
+        iD           .= mpD.p2n[p,:]
         # compute incremental deformation gradient
-        mpD.ΔF[:,:,p].= ID+(permutedims(mpD.ϕ∂ϕ[p,:,2:end],(2,1))*meD.u[iD,:])'
+        mpD.ΔF[:,:,p].= ID.+(permutedims(mpD.ϕ∂ϕ[p,:,2:end],(2,1))*meD.u[iD,:])'
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
@@ -22,9 +23,9 @@
         meD.ΔJ[iD]  .+= mpD.ϕ∂ϕ[p,:].*mpD.m[p].*mpD.ΔJ[p]  
     end 
     # compute nodal deformation determinant
-    @threads for no ∈ 1:meD.nno[meD.nD+1]
-        if meD.m[no]>0.0 
-            meD.ΔJ[no] = meD.ΔJ[no]/meD.m[no]
+    @threads for n ∈ 1:meD.nno[meD.nD+1]
+        if meD.m[n]>0.0 
+            meD.ΔJ[n] = meD.ΔJ[n]/meD.m[n]
         end
     end
     # compute determinant Jbar 
@@ -62,7 +63,6 @@ end
     elseif fwrkDeform == "infinitesimal"
         ID = Matrix(1.0I,size(mpD.ΔF,1),size(mpD.ΔF,2))
         @threads for p ∈ 1:mpD.nmp
-            σ0 = zeros(4)
             # calculate elastic strains
             if isΔFbar
                 mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔFbar[:,:,p]+mpD.ΔFbar[:,:,p]').-ID
