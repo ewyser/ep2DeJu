@@ -62,7 +62,7 @@ function meshSetup(nel,L,nD,typeD)
         bc   = hcat(bcX,bcY,bcZ)
     end
     # push to named-Tuple or struct
-    meD = (
+    meD = Mesh(
         nD   = nD,
         nel  = nel,
         nno  = nno,

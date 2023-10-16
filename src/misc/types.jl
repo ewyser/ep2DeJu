@@ -1,63 +1,63 @@
-Base.@kwdef struct mesh
+Base.@kwdef struct Mesh{typeD<:Real}
     nD   ::Int64
     nel  ::Vector{Int64}
     nno  ::Vector{Int64}
     nn   ::Int64
-    L    ::Vector{Float64}
-    h    ::Vector{Float64}
-    x    ::Matrix{Float64}
+    L    ::Vector{typeD}
+    h    ::Vector{typeD}
+    x    ::Matrix{typeD}
     # nodal quantities
-    m    ::Vector{Float64} 
-    fext ::Matrix{Float64}
-    fint ::Matrix{Float64}
-    D    ::Matrix{Float64}
-    f    ::Matrix{Float64}
-    a    ::Matrix{Float64}
-    p    ::Matrix{Float64}
-    v    ::Matrix{Float64}
-    u    ::Matrix{Float64}
-    ΔJ   ::Matrix{Float64}
+    m    ::Vector{typeD} 
+    fext ::Matrix{typeD}
+    fint ::Matrix{typeD}
+    D    ::Matrix{typeD}
+    f    ::Matrix{typeD}
+    a    ::Matrix{typeD}
+    p    ::Matrix{typeD}
+    v    ::Matrix{typeD}
+    u    ::Matrix{typeD}
+    ΔJ   ::Matrix{typeD}
     # mesh-to-node topology
     e2n  ::Matrix{Int64}
-    xB   ::Vector{Float64} 
-    bc   ::Matrix{Float64}
+    xB   ::Vector{typeD} 
+    bc   ::Matrix{typeD}
 end
-Base.@kwdef struct point
+Base.@kwdef struct Point{typeD<:Real}
     nmp  ::Int64
-    x    ::Matrix{Float64}
-    u    ::Matrix{Float64}
-    v    ::Matrix{Float64}
-    p    ::Matrix{Float64}
-    l0   ::Matrix{Float64}
-    l    ::Matrix{Float64}
-    V0   ::Vector{Float64}
-    V    ::Vector{Float64}
+    x    ::Matrix{typeD}
+    u    ::Matrix{typeD}
+    v    ::Matrix{typeD}
+    p    ::Matrix{typeD}
+    l0   ::Matrix{typeD}
+    l    ::Matrix{typeD}
+    V0   ::Vector{typeD}
+    V    ::Vector{typeD}
     
-    m    ::Vector{Float64}
-    coh  ::Vector{Float64}
-    cohr ::Vector{Float64}
-    phi  ::Vector{Float64}
-    ϵpII ::Vector{Float64}
-    ϵpV  ::Vector{Float64}
-    ΔJ   ::Vector{Float64}
-    J    ::Vector{Float64}
+    m    ::Vector{typeD}
+    coh  ::Vector{typeD}
+    cohr ::Vector{typeD}
+    phi  ::Vector{typeD}
+    ϵpII ::Vector{typeD}
+    ϵpV  ::Vector{typeD}
+    ΔJ   ::Vector{typeD}
+    J    ::Vector{typeD}
     # tensor in matrix notation
-    ΔF   ::Array{Float64}
-    ΔFbar::Array{Float64}
-    F    ::Array{Float64}
-    ϵ    ::Array{Float64}
-    b    ::Array{Float64}
-    bT   ::Array{Float64}
+    ΔF   ::Array{typeD}
+    ΔFbar::Array{typeD}
+    F    ::Array{typeD}
+    ϵ    ::Array{typeD}
+    b    ::Array{typeD}
+    bT   ::Array{typeD}
     # tensor in voigt notation
-    ω    ::Vector{Float64}
-    σR   ::Matrix{Float64}
-    σ    ::Matrix{Float64}
-    τ    ::Matrix{Float64}
-    dev  ::Matrix{Float64}
-    ep   ::Matrix{Float64}
+    ω    ::Vector{typeD}
+    σR   ::Matrix{typeD}
+    σ    ::Matrix{typeD}
+    τ    ::Matrix{typeD}
+    dev  ::Matrix{typeD}
+    ep   ::Matrix{typeD}
     # additional quantities
-    ϕ∂ϕ  ::Array{Float64}
-    B    ::Array{Float64}
+    ϕ∂ϕ  ::Array{typeD}
+    B    ::Array{typeD}
     # connectivity
     p2e  ::Vector{Int64}
     p2n  ::Matrix{Int64}
