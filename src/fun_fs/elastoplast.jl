@@ -70,10 +70,10 @@ end
         # calculate elastic strains
         if isΔFbar
             mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔFbar[:,:,p]+mpD.ΔFbar[:,:,p]')-mpD.I
-            mpD.ω[p]     = 0.5*(mpD.ΔFbar[1,2,p]-mpD.ΔFbar[2,1,p])
+            mpD.ω[p]     = 0.5.*(mpD.ΔFbar[1,2,p]-mpD.ΔFbar[2,1,p])
         else
             mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]')-mpD.I
-            mpD.ω[p]     = 0.5*(mpD.ΔF[1,2,p]-mpD.ΔF[2,1,p])
+            mpD.ω[p]     = 0.5.*(mpD.ΔF[1,2,p]-mpD.ΔF[2,1,p])
         end
         # update cauchy stress tensor
         mpD.σR[:,p].= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
