@@ -9,7 +9,7 @@ using BenchmarkTools
 # arithmetic precision (double=Float64 or single=Float32)
 typeD = Float64  
 # relative path for figs & data
-path_plot = "./out/"
+path_plot = "./docs/out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
 @views function test(nel::Int64,varPlot::String,cmType::String; kwargs...)

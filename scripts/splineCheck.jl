@@ -7,7 +7,7 @@ using LaTeXStrings
 typeD = Float64  # Precision (double=Float64 or single=Float32)
 include("../src/fun_fs/shpfun.jl")
 
-path_plot = "./out/"
+path_plot = "./docs/out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
 default(
