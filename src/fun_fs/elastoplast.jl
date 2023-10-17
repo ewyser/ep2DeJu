@@ -66,19 +66,25 @@ end
     return nothing
 end
 @views function inifinitesimal!(mpD,Del,isΔFbar)
-    @threads for p ∈ 1:mpD.nmp
-        # calculate elastic strains
-        if isΔFbar
+    if isΔFbar
+        @threads for p ∈ 1:mpD.nmp
+            # calculate elastic strains
             mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔFbar[:,:,p]+mpD.ΔFbar[:,:,p]')-mpD.I
             mpD.ω[p]     = 0.5.*(mpD.ΔFbar[1,2,p]-mpD.ΔFbar[2,1,p])
-        else
+            # update cauchy stress tensor
+            mpD.σR[:,p].= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
+            mpD.σ[:,p].+= Del*mutate(mpD.ϵ[:,:,p],"voigt").+mpD.σR[:,p]
+        end   
+    else
+        @threads for p ∈ 1:mpD.nmp
+            # calculate elastic strains
             mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]')-mpD.I
             mpD.ω[p]     = 0.5.*(mpD.ΔF[1,2,p]-mpD.ΔF[2,1,p])
-        end
-        # update cauchy stress tensor
-        mpD.σR[:,p].= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
-        mpD.σ[:,p].+= Del*mutate(mpD.ϵ[:,:,p],"voigt").+mpD.σR[:,p]
-    end   
+            # update cauchy stress tensor
+            mpD.σR[:,p].= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
+            mpD.σ[:,p].+= Del*mutate(mpD.ϵ[:,:,p],"voigt").+mpD.σR[:,p]
+        end   
+    end
     return nothing
 end
 # For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
