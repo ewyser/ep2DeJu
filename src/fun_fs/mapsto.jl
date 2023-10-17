@@ -5,16 +5,15 @@
     meD.fext.= 0.0
     meD.fint.= 0.0 
     # accumulate material point contributions
-    iD  = zeros(Int64,meD.nn)
-    @simd for dim ∈ 1:meD.nD
+    @threads for dim ∈ 1:meD.nD
         @simd for p ∈ 1:mpD.nmp
-            # index & buffer
-            iD .= mpD.p2n[:,p]
             # accumulation
-            if dim == 1 meD.mn[iD].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] end
-            meD.pn[  iD,dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*mpD.v[p,dim])
-            meD.fext[iD,dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
-            meD.fint[iD,dim].+= (mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p]))
+            if dim == 1 
+                meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] 
+            end
+            meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*mpD.v[p,dim])
+            meD.fext[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
+            meD.fint[mpD.p2n[:,p],dim].+= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
         end
     end
     return nothing
