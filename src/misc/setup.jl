@@ -173,7 +173,7 @@ function e2N(nD,nno,nel,nn)
             end
         end
     end
-	return e2n
+	return permutedims(e2n,(2,1))
 end
 function materialGeom(meD,lz,wl,coh0,cohr,ni)
     xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
@@ -299,7 +299,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         ep   = zeros(typeD,nstr,nmp),
         # additional quantities
         ϕ∂ϕ  = zeros(typeD,meD.nn,nmp ,meD.nD+1   ),
-        B    = zeros(typeD,nstr,meD.nn.*meD.nD,nmp),
+        B    = zeros(typeD,meD.nn.*meD.nD,nstr,nmp),
         # connectivity
         p2e  = zeros(Int64,nmp),
         p2n  = zeros(Int64,meD.nn,nmp),

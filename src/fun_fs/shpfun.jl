@@ -4,7 +4,7 @@
     nez       = meD.nel[2]
     @threads for p ∈ 1:mpD.nmp
         mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
-        mpD.p2n[:,p].= meD.e2n[mpD.p2e[p],:]
+        mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
     end
     return nothing
 end
@@ -115,13 +115,13 @@ end
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
-                # B-matrix assembly
-                mpD.B[1,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[nn,mp,2]
-                mpD.B[2,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[nn,mp,3]
-                mpD.B[4,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[nn,mp,3]
-                mpD.B[4,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[nn,mp,2]                
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz        
             end
+            # B-matrix assembly
+            mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
+            mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
         end
     elseif ϕ∂ϕType == "gimpm"
         @threads for mp in 1:mpD.nmp
@@ -138,10 +138,10 @@ end
                 mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
             end
             # B-matrix assembly
-            mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[:,mp,2]
-            mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[:,mp,3]
-            mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[:,mp,3]
-            mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[:,mp,2]
+            mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
+            mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
         end
     else
         @error "shapefunction --$(type)-- not available"

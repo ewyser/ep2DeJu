@@ -14,7 +14,7 @@
             if dim == 1 meD.mn[iD].+= mpD.ϕ∂ϕ[:,p,1]*mpD.m[p] end
             meD.pn[  iD,dim].+= mpD.ϕ∂ϕ[:,p,1]*(mpD.m[p]*mpD.v[p,dim])
             meD.fext[iD,dim].+= mpD.ϕ∂ϕ[:,p,1]*(mpD.m[p]*g[dim]      )
-            meD.fint[iD,dim].+= (mpD.V[p].*(mpD.B[:,dim:meD.nD:end,p]'*mpD.σ[:,p]))
+            meD.fint[iD,dim].+= (mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p]))
         end
     end
     return nothing
