@@ -11,9 +11,9 @@
             # index & buffer
             iD .= mpD.p2n[:,p]
             # accumulation
-            if dim == 1 meD.mn[iD].+= mpD.ϕ∂ϕ[:,p,1]*mpD.m[p] end
-            meD.pn[  iD,dim].+= mpD.ϕ∂ϕ[:,p,1]*(mpD.m[p]*mpD.v[p,dim])
-            meD.fext[iD,dim].+= mpD.ϕ∂ϕ[:,p,1]*(mpD.m[p]*g[dim]      )
+            if dim == 1 meD.mn[iD].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] end
+            meD.pn[  iD,dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*mpD.v[p,dim])
+            meD.fext[iD,dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
             meD.fint[iD,dim].+= (mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p]))
         end
     end
@@ -45,7 +45,7 @@ end
     @simd for dim ∈ 1:meD.nD
         @threads for n ∈ 1:meD.nno[meD.nD+1]
             if meD.mn[n]>0.0
-                meD.Δun[n,dim]= (Δt*meD.pn[n,dim]*(1.0/meD.mn[n])*meD.bc[n,dim])
+                meD.Δun[n,dim] = (Δt*meD.pn[n,dim]*(1.0/meD.mn[n])*meD.bc[n,dim])
             end    
         end
     end

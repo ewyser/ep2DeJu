@@ -26,14 +26,14 @@ end
     # action
     @threads for p ∈ 1:mpD.nmp
         # compute incremental deformation gradient
-        mpD.ΔF[:,:,p].= mpD.I+(permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
+        mpD.ΔF[:,:,p].= mpD.I.+(permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
         # update material point's volume and domain length
         mpD.J[p]      = det(mpD.F[:,:,p])
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
-        mpD.l[p,:]   .= mpD.J[p]^(dim).*mpD.l0[p,:]  
+        mpD.l[p,:]   .= mpD.J[p].^(dim).*mpD.l0[p,:]  
     end
     if isΔFbar ΔFbar!(mpD,meD) end
     return nothing
@@ -62,7 +62,7 @@ end
 @views function inifinitesimal!(mpD,Del)
     @threads for p ∈ 1:mpD.nmp
         # calculate elastic strains
-        mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]')-mpD.I
+        mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-mpD.I
         mpD.ω[p]     = 0.5.*(mpD.ΔF[1,2,p]-mpD.ΔF[2,1,p])
         # update cauchy stress tensor
         mpD.σR[:,p].= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
