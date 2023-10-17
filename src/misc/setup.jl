@@ -225,7 +225,7 @@ function meshSetup(nel,L,typeD)
     x,nn,nel,nno = meshCoord(nD,L,h)
     # boundary conditions
     bc,xB        = meshBCs(x,h,nno,nD)
-    # push to named-Tuple or struct
+    # constructor
     meD = (
         nD   = nD,
         nel  = nel,
@@ -269,7 +269,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
     cohr   = ones(typeD,nmp).*cohr
     phi    = ones(typeD,nmp).*phi0
     phi[xp[:,2].<=2*wl] .= phir
-    # push to named-Tuple or struct
+    # constructor
     mpD = (
         nmp  = nmp,
         x    = xp,
