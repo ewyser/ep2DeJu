@@ -7,16 +7,17 @@ Base.@kwdef struct Mesh{typeD<:Real}
     h    ::Vector{typeD}
     x    ::Matrix{typeD}
     # nodal quantities
-    m    ::Vector{typeD} 
+    mnn  ::Vector{typeD} 
     fext ::Matrix{typeD}
     fint ::Matrix{typeD}
-    D    ::Matrix{typeD}
-    f    ::Matrix{typeD}
-    a    ::Matrix{typeD}
-    p    ::Matrix{typeD}
-    v    ::Matrix{typeD}
-    u    ::Matrix{typeD}
-    ΔJ   ::Matrix{typeD}
+    Dn   ::Matrix{typeD}
+    fn   ::Matrix{typeD}
+    an   ::Matrix{typeD}
+    pn   ::Matrix{typeD}
+    vn   ::Matrix{typeD}
+    Δun  ::Matrix{typeD}
+    ΔJn  ::Matrix{typeD}
+    bn   ::Matrix{typeD}
     # mesh-to-node topology
     e2n  ::Matrix{Int64}
     xB   ::Vector{typeD} 
@@ -43,11 +44,9 @@ Base.@kwdef struct Point{typeD<:Real}
     J    ::Vector{typeD}
     # tensor in matrix notation
     ΔF   ::Array{typeD}
-    ΔFbar::Array{typeD}
     F    ::Array{typeD}
     ϵ    ::Array{typeD}
     b    ::Array{typeD}
-    bT   ::Array{typeD}
     # tensor in voigt notation
     ω    ::Vector{typeD}
     σR   ::Matrix{typeD}
