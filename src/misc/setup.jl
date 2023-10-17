@@ -11,22 +11,18 @@ function meshGeom(L,nel)
 end
 function meshCoord(nD,L,h)
     if nD == 2
-        xn  = (0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])
-        zn  = (0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])
-        zn  = reverse(zn)
+        xn  =         Array(range(0.0-2*h[1],L[1]+2.0*h[1],step=h[1]))
+        zn  = reverse(Array(range(0.0-2*h[2],L[2]+2.0*h[2],step=h[2])))
         nno = [length(xn),length(zn),length(xn)*length(zn)] 
         nel = [nno[1]-1,nno[2]-1,(nno[1]-1)*(nno[2]-1)]
         nn  = 16
         xn  = (xn'.*ones(typeD,nno[2],1     ))     
         zn  = (     ones(typeD,nno[1],1     )'.*zn)
-        xn  = vec(xn)
-        zn  = vec(zn)
-        x   = hcat(xn,zn)
+        x   = hcat(vec(xn),vec(zn))
     elseif nD == 3
-        xn  = (0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])
-        yn  = (0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])
-        zn  = (0.0-2*h[3]):h[3]:(L[3]+2.0*h[3])
-        zn  = reverse(zn)
+        xn  =         Array(range(0.0-2*h[1],L[1]+2.0*h[1],step=h[1]))
+        yn  =         Array(range(0.0-2*h[2],L[2]+2.0*h[2],step=h[2]))
+        zn  = reverse(Array(range(0.0-2*h[3],L[3]+2.0*h[3],step=h[3])))        
         nno = [length(xn),length(yn),length(zn),length(xn)*length(yn)*length(zn)] 
         nel = [nno[1]-1,nno[2]-1,nno[3]-1,(nno[1]-1)*(nno[2]-1)*(nno[3]-1)]
         nn  = 64
