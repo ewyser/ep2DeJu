@@ -1,8 +1,6 @@
 @views function deform!(mpD,meD)
     # init mesh quantities to zero
     meD.ΔJn .= 0.0
-    # set identity matrix
-    ID   = Matrix(1.0I,meD.nD,meD.nD)
     # calculate cst.
     dim  = 1.0/meD.nD
     # action
@@ -11,7 +9,7 @@
         # get nodal incremental displacement
         iD           .= mpD.p2n[p,:]
         # compute incremental deformation gradient
-        mpD.ΔF[:,:,p].= ID.+(permutedims(mpD.ϕ∂ϕ[p,:,2:end],(2,1))*meD.Δun[iD,:])'
+        mpD.ΔF[:,:,p].= mpD.I+(permutedims(mpD.ϕ∂ϕ[p,:,2:end],(2,1))*meD.Δun[iD,:])'
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
@@ -43,38 +41,52 @@ end
     end
     return ϵmut
 end
-# For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
-@views function elast!(mpD,Del,isΔFbar,fwrkDeform)
-    if fwrkDeform == "finite"
+@views function finite!(mpD,Del,isΔFbar)
+    if isΔFbar
         @threads for p ∈ 1:mpD.nmp
+            # update left cauchy-green tensor
+            mpD.b[:,:,p].= mpD.ΔFbar[:,:,p]*mpD.b[:,:,p]*mpD.ΔFbar[:,:,p]'
             # compute logarithmic strain tensor
-            λ,n          = eigen(mpD.ϵ[:,:,p])
-            mpD.b[:,:,p].= n*diagm(exp.(2.0*λ))*n'
-            if isΔFbar
-                mpD.bT[:,:,p].= mul!(mpD.bT[:,:,p],mpD.ΔFbar[:,:,p],mpD.b[:,:,p])*mpD.ΔFbar[:,:,p]'
-            else
-                mpD.bT[:,:,p].= mul!(mpD.bT[:,:,p],mpD.ΔF[:,:,p],mpD.b[:,:,p])*mpD.ΔF[:,:,p]'
-            end
-            λ,n          = eigen(mpD.bT[:,:,p])
+            λ,n          = eigen(mpD.b[:,:,p])
             mpD.ϵ[:,:,p].= 0.5.*(n*diagm(log.(λ))*n')
             # krichhoff stress tensor
             mul!(mpD.τ[:,p],Del,mutate(mpD.ϵ[:,:,p],"voigt"))
         end
-    elseif fwrkDeform == "infinitesimal"
-        ID = Matrix(1.0I,size(mpD.ΔF,1),size(mpD.ΔF,2))
+    else
         @threads for p ∈ 1:mpD.nmp
-            # calculate elastic strains
-            if isΔFbar
-                mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔFbar[:,:,p]+mpD.ΔFbar[:,:,p]').-ID
-                mpD.ω[p]     = 0.5*(mpD.ΔFbar[1,2,p]-mpD.ΔFbar[2,1,p])
-            else
-                mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-ID
-                mpD.ω[p]     = 0.5*(mpD.ΔF[1,2,p]-mpD.ΔF[2,1,p])
-            end
-            # update cauchy stress tensor
-            mpD.σR[:,p].= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
-            mpD.σ[:,p].+= Del*mutate(mpD.ϵ[:,:,p],"voigt").+mpD.σR[:,p]
-        end        
+            # update left cauchy-green tensor
+            mpD.b[:,:,p].= mpD.ΔF[:,:,p]*mpD.b[:,:,p]*mpD.ΔF[:,:,p]'
+            # compute logarithmic strain tensor
+            λ,n          = eigen(mpD.b[:,:,p])
+            mpD.ϵ[:,:,p].= 0.5.*(n*diagm(log.(λ))*n')
+            # krichhoff stress tensor
+            mul!(mpD.τ[:,p],Del,mutate(mpD.ϵ[:,:,p],"voigt"))
+        end
+    end
+    return nothing
+end
+@views function inifinitesimal!(mpD,Del,isΔFbar)
+    @threads for p ∈ 1:mpD.nmp
+        # calculate elastic strains
+        if isΔFbar
+            mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔFbar[:,:,p]+mpD.ΔFbar[:,:,p]')-mpD.I
+            mpD.ω[p]     = 0.5*(mpD.ΔFbar[1,2,p]-mpD.ΔFbar[2,1,p])
+        else
+            mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]')-mpD.I
+            mpD.ω[p]     = 0.5*(mpD.ΔF[1,2,p]-mpD.ΔF[2,1,p])
+        end
+        # update cauchy stress tensor
+        mpD.σR[:,p].= [2.0*mpD.σ[4,p]*mpD.ω[p],-2.0*mpD.σ[4,p]*mpD.ω[p],0.0,(mpD.σ[2,p]-mpD.σ[1,p])*mpD.ω[p]]
+        mpD.σ[:,p].+= Del*mutate(mpD.ϵ[:,:,p],"voigt").+mpD.σR[:,p]
+    end   
+    return nothing
+end
+# For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
+@views function elast!(mpD,Del,isΔFbar,fwrkDeform)
+    if fwrkDeform == "finite"
+        finite!(mpD,Del,isΔFbar) 
+    elseif fwrkDeform == "infinitesimal"
+        inifinitesimal!(mpD,Del,isΔFbar)
     end
     return nothing
 end
