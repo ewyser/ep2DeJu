@@ -173,7 +173,8 @@ function e2N(nD,nno,nel,nn)
             end
         end
     end
-	return permutedims(e2n,(2,1))
+    e2n = permutedims(e2n,(2,1))
+	return e2n
 end
 function materialGeom(meD,lz,wl,coh0,cohr,ni)
     xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
