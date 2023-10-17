@@ -19,7 +19,7 @@
     end
     return nothing
 end
-@views function flipDM!(mpD,meD,Δt)
+@views function flip!(mpD,meD,Δt)
     # flip update
     @simd for dim ∈ 1:meD.nD
         # mapping back to mp's
@@ -28,7 +28,10 @@ end
             mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[p,:,1]'*meD.vn[mpD.p2n[p,:],dim])
         end          
     end
-    # initialize for DM + BCs procedure
+    return nothing
+end
+@views function DM!(mpD,meD,Δt)
+    # initialize for DM
     meD.pn .= 0.0
     meD.Δun.= 0.0
     # accumulate material point contributions
@@ -58,7 +61,8 @@ end
     if whereto == "p->N"
         accum!(mpD,meD,g)
     elseif whereto == "p<-N"
-        flipDM!(mpD,meD,Δt)
+        flip!(mpD,meD,Δt)
+        DM!(  mpD,meD,Δt)
     end
     return nothing
 end
