@@ -4,7 +4,7 @@
     nez       = meD.nel[2]
     @threads for p ∈ 1:mpD.nmp
         mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
-        mpD.p2n[p,:].= meD.e2n[mpD.p2e[p],:]
+        mpD.p2n[:,p].= meD.e2n[mpD.p2e[p],:]
     end
     return nothing
 end
@@ -105,7 +105,7 @@ end
         @threads for mp ∈ 1:mpD.nmp
             @simd for nn ∈ 1:meD.nn
                 # compute basis functions
-                id     = mpD.p2n[mp,nn]
+                id     = mpD.p2n[nn,mp]
                 ξ      = (mpD.x[mp,1]-meD.xn[id,1])/Δx 
                 type   = whichType(meD.xn[id,1],xb,Δx)
                 ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
@@ -125,9 +125,9 @@ end
         end
     elseif ϕ∂ϕType == "gimpm"
         @threads for mp in 1:mpD.nmp
-            for nn in 1:meD.nn
+            @simd for nn in 1:meD.nn
                 # compute basis functions
-                id     = mpD.p2n[mp,nn]
+                id     = mpD.p2n[nn,mp]
                 ξ      = (mpD.x[mp,1] - meD.x[id,1])
                 η      = (mpD.x[mp,2] - meD.x[id,2])
                 ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l0[mp,1])

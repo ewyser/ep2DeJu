@@ -302,7 +302,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         B    = zeros(typeD,nstr,meD.nn.*meD.nD,nmp),
         # connectivity
         p2e  = zeros(Int64,nmp),
-        p2n  = zeros(Int64,nmp,meD.nn),
+        p2n  = zeros(Int64,meD.nn,nmp),
     )
     return mpD 
 end
