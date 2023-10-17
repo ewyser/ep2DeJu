@@ -6,7 +6,7 @@
     # action
     @simd for p ∈ 1:mpD.nmp
         # accumulation
-        meD.ΔJn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[p,:].*(mpD.m[p].*mpD.ΔJ[p])  
+        meD.ΔJn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p].*mpD.ΔJ[p])  
     end 
     # compute nodal determinant of incremental deformation 
     @threads for n ∈ 1:meD.nno[meD.nD+1]
@@ -16,7 +16,7 @@
     end
     # compute determinant Jbar 
     @threads for p ∈ 1:mpD.nmp
-        mpD.ΔF[:,:,p].= mpD.ΔF[:,:,p].*((dot(mpD.ϕ∂ϕ[p,:,1],meD.ΔJn[mpD.p2n[:,p]])/mpD.ΔJ[p]).^(dim))
+        mpD.ΔF[:,:,p].= mpD.ΔF[:,:,p].*((dot(mpD.ϕ∂ϕ[:,p,1],meD.ΔJn[mpD.p2n[:,p]])/mpD.ΔJ[p]).^(dim))
     end
     return nothing
 end
@@ -26,7 +26,7 @@ end
     # action
     @threads for p ∈ 1:mpD.nmp
         # compute incremental deformation gradient
-        mpD.ΔF[:,:,p].= mpD.I+(permutedims(mpD.ϕ∂ϕ[p,:,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
+        mpD.ΔF[:,:,p].= mpD.I+(permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]

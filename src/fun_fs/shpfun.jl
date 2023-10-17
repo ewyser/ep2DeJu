@@ -113,14 +113,14 @@ end
                 type   = whichType(meD.xn[id,2],zb,Δz)
                 ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
                 # convolution of basis function
-                mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
                 # B-matrix assembly
-                mpD.B[1,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[mp,nn,2]
-                mpD.B[2,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[mp,nn,3]
-                mpD.B[4,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[mp,nn,3]
-                mpD.B[4,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[mp,nn,2]                
+                mpD.B[1,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[nn,mp,2]
+                mpD.B[2,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[nn,mp,3]
+                mpD.B[4,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[nn,mp,3]
+                mpD.B[4,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[nn,mp,2]                
             end
         end
     elseif ϕ∂ϕType == "gimpm"
@@ -133,15 +133,15 @@ end
                 ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l0[mp,1])
                 ϕz,dϕz = NdN(η,meD.h[2],mpD.l0[mp,2])
                 # convolution of basis function
-                mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
             end
             # B-matrix assembly
-            mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-            mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-            mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-            mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+            mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[:,mp,2]
+            mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[:,mp,2]
         end
     else
         @error "shapefunction --$(type)-- not available"

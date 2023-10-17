@@ -298,7 +298,7 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         dev  = zeros(typeD,nstr,nmp),
         ep   = zeros(typeD,nstr,nmp),
         # additional quantities
-        ϕ∂ϕ  = zeros(typeD,nmp ,meD.nn,meD.nD+1   ),
+        ϕ∂ϕ  = zeros(typeD,meD.nn,nmp ,meD.nD+1   ),
         B    = zeros(typeD,nstr,meD.nn.*meD.nD,nmp),
         # connectivity
         p2e  = zeros(Int64,nmp),
