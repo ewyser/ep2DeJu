@@ -128,8 +128,8 @@ end
             @simd for nn in 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[nn,mp]
-                ξ      = (mpD.x[mp,1] - meD.x[id,1])
-                η      = (mpD.x[mp,2] - meD.x[id,2])
+                ξ      = (mpD.x[mp,1] - meD.xn[id,1])
+                η      = (mpD.x[mp,2] - meD.xn[id,2])
                 ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l0[mp,1])
                 ϕz,dϕz = NdN(η,meD.h[2],mpD.l0[mp,2])
                 # convolution of basis function
