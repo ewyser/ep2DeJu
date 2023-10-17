@@ -1,12 +1,14 @@
 @views function ΔFbar!(mpD,meD)
     # init mesh quantities to zero
+    meD.mn .= 0.0
     meD.ΔJn.= 0.0
     # calculate dimensional cst.
     dim     = 1.0/meD.nD
     # action
     @simd for p ∈ 1:mpD.nmp
         # accumulation
-        meD.ΔJn[mpD.p2n[p,:]].+= mpD.ϕ∂ϕ[p,:].*(mpD.m[p].*mpD.ΔJ[p])  
+        meD.mn[ mpD.p2n[p,:]].+= mpD.ϕ∂ϕ[p,:,1]*(mpD.m[p]           )
+        meD.ΔJn[mpD.p2n[p,:]].+= mpD.ϕ∂ϕ[p,:,1]*(mpD.m[p].*mpD.ΔJ[p])  
     end 
     # compute nodal determinant of incremental deformation 
     @threads for n ∈ 1:meD.nno[meD.nD+1]
