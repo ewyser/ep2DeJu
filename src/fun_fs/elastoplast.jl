@@ -72,9 +72,9 @@ end
 end
 # For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
 @views function elast!(mpD,Del,fwrkDeform)
-    if fwrkDeform == "finite"
+    if fwrkDeform == :finite
         finite!(mpD,Del) 
-    elseif fwrkDeform == "infinitesimal"
+    elseif fwrkDeform == :infinitesimal
         inifinitesimal!(mpD,Del)
     end
     return nothing
@@ -91,7 +91,7 @@ end
         ηmax = 0 
     end
     # get cauchy stresses
-    if fwrkDeform == "finite"
+    if fwrkDeform == :finite
         @threads for p ∈ 1:mpD.nmp
             mpD.σ[:,p] .= mpD.τ[:,p]./mpD.J[p]
         end

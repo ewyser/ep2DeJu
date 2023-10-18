@@ -1,10 +1,10 @@
 function kwargsOut(kwargs)
     if isempty(kwargs)
         # ϵp2De(40,"P","mohr")
-        ϕ∂ϕType,fwrkDeform,isΔFbar = "bsmpm","finite",true
+        ϕ∂ϕType,fwrkDeform,isΔFbar = :bsmpm,:finite,true
     else
         #ϵp2De(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
-        kwargs0 = (:shpfun => "bsmpm", :fwrk => "finite", :vollock => true)
+        kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :vollock => true)
         arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2]]
         for A in enumerate(kwargs0) 
             NUM,FIELD = A
@@ -79,7 +79,7 @@ end
 function get_g(tw::Float64,tg::Float64,nD::Int64)
     g = 0.0
     if tw<=tg 
-        g = 9.81*tw/tg
+        g = 9.81*tw/tg 
     else
         g = 9.81
     end

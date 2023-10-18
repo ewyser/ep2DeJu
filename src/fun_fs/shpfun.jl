@@ -101,7 +101,7 @@ end
     xb,zb = meD.xB[1:2],meD.xB[3:4]
     Δx,Δz = meD.h[1],meD.h[2]
     #action
-    if ϕ∂ϕType == "bsmpm"
+    if ϕ∂ϕType == :bsmpm
         @threads for mp ∈ 1:mpD.nmp
             @simd for nn ∈ 1:meD.nn
                 # compute basis functions
@@ -123,7 +123,7 @@ end
             mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
             mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
         end
-    elseif ϕ∂ϕType == "gimpm"
+    elseif ϕ∂ϕType == :gimpm
         @threads for mp in 1:mpD.nmp
             @simd for nn in 1:meD.nn
                 # compute basis functions
