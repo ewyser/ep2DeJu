@@ -1,5 +1,5 @@
 @views function topol!(mpD,meD)
-    xmin,zmin = minimum(meD.xn[:,1]),minimum(meD.xn[:,2])
+    xmin,zmin = meD.minC[1],meD.minC[2]
     Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
     nez       = meD.nel[2]
     @threads for p ∈ 1:mpD.nmp

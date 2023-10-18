@@ -230,6 +230,7 @@ function meshSetup(nel,L,typeD)
         nn   = nn,
         L    = L,
         h    = h,
+        minC = minimum(x,dims=2),
         # nodal quantities
         xn   = x,
         mn   = zeros(typeD,nno[nD+1]             ), 
