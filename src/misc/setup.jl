@@ -6,6 +6,9 @@ function meshGeom(L,nel)
     elseif nD == 3
         L   = [L[1],L[2y],ceil(L[3])]
         h   = [L[1]/nel[1],L[1]/nel[1],L[1]/nel[1]]
+    else 
+        err_msg = "nD = $(nD), L= $(L): unsupported mesh geometry"
+        throw(error(err_msg))
     end
     return L,h,nD
 end
@@ -252,8 +255,11 @@ function meshSetup(nel,L,typeD)
     )
     return meD
 end
-function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
+function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
+    # non-dimensional constant                                                   
+    ni,nstr = 2,4                                                               # number of material point along 1d, number of stresses
     # material geometry
+    lz     = L[end]
     wl     = 0.15*lz
     xp,clt = materialGeom(meD,lz,wl,coh0,cohr,ni)
     # scalars & vectors
