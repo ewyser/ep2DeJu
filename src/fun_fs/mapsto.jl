@@ -1,10 +1,10 @@
-@views function accum!(mpD,meD,g)
+@views function mapstoN!(mpD,meD,g)
     # initialize nodal quantities
     meD.mn  .= 0.0
     meD.pn  .= 0.0
     meD.fext.= 0.0
     meD.fint.= 0.0 
-    # accumulate material point contributions
+    # mapping back to mesh
     @threads for dim ∈ 1:meD.nD
         @simd for p ∈ 1:mpD.nmp
             # accumulation
@@ -18,10 +18,10 @@
     end
     return nothing
 end
-@views function flip!(mpD,meD,Δt)
-    # flip update
+@views function mapstoP!(mpD,meD,Δt)
+    # mapping back to mp's
     @simd for dim ∈ 1:meD.nD
-        # mapping back to mp's
+        # flip update
         @threads for p ∈ 1:mpD.nmp        
             mpD.v[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
             mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
@@ -58,10 +58,10 @@ end
 end
 @views function mapsto!(mpD,meD,g,Δt,whereto)
     if whereto == "p->N"
-        accum!(mpD,meD,g)
+        mapstoN!(mpD,meD,g)
     elseif whereto == "p<-N"
-        flip!(mpD,meD,Δt)
-        DM!(  mpD,meD,Δt)
+        mapstoP!(mpD,meD,Δt)
+        DM!(     mpD,meD,Δt)
     end
     return nothing
 end
