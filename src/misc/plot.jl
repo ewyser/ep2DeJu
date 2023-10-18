@@ -37,7 +37,7 @@ default(
     )
     savefig(path_plot*"phi0.png")
 end
-@views function __plotStuff(mpD,t,type,ctr)
+@views function plotStuff(mpD,t,type,ctr)
     xlab,ylab = L"$x-$direction",L"$z-$direction"
     gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.75,)#markerstrokecolor=:match,)
     temp = L"$t = $"*string(round(t,digits=1))*" [s]"

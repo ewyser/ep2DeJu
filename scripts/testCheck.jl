@@ -6,14 +6,9 @@
 # include dependencies
 include("../src/superInclude.jl")
 using BenchmarkTools
-# arithmetic precision (double=Float64 or single=Float32)
-typeD = Float64  
-# relative path for figs & data
-path_plot = "./docs/out/"
-if isdir(path_plot)==false mkdir(path_plot) end
 
 @views function test(nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,isΔFbar = kwargsOut(kwargs)
+    ϕ∂ϕType,fwrkDeform,isΔFbar = getKwargs(kwargs)
     @info "** ϵp2-3De v$(getVersion()): $(fwrkDeform) strain formulation **"
     @warn "validation/test"
     # independant physical constant

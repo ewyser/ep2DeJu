@@ -5,14 +5,9 @@
 
 # include dependencies
 include("../src/superInclude.jl")
-# arithmetic precision (double=Float64 or single=Float32)
-const typeD = Float64  
-# relative path for figs & data
-const path_plot = "./docs/out/"
-if isdir(path_plot)==false mkdir(path_plot) end
 
 @views function ϵp2De(nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,isΔFbar = kwargsOut(kwargs)
+    ϕ∂ϕType,fwrkDeform,isΔFbar = getKwargs(kwargs)
     @info "** ϵp2-3De v$(getVersion()): $(fwrkDeform) strain formulation **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
@@ -38,7 +33,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
     while tw<=t
         # plot/save
         if tw >= ctr*tC
-            ctr = __plotStuff(mpD,tw,varPlot,ctr)
+            ctr = plotStuff(mpD,tw,varPlot,ctr)
         end
         # set clock on/off
         tic = time_ns()
@@ -59,8 +54,8 @@ if isdir(path_plot)==false mkdir(path_plot) end
         # update progress bas
         next!(prog;showvalues = get_vals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
-    ProgressMeter.finish!(prog, spinner = '✓',showvalues = get_vals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
-    ctr     = __plotStuff(mpD,tw,varPlot,ctr)
+    ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
+    ctr     = plotStuff(mpD,tw,varPlot,ctr)
     sleep(2.5)
     figName = "$(varPlot)_$(ϕ∂ϕType)_$(fwrkDeform)_$(isΔFbar)_$(cmType).png"
     savefig(path_plot*figName)
