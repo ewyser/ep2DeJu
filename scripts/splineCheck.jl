@@ -68,13 +68,15 @@ default(
             end
         end
     end
-    p = findall(x->x>0.0, vec(a[:,:,1]))
+    tol = 1e-3
+    p = findall(x->x>tol, vec(a[:,:,1]))
     x = vec(a[:,:,4])
     x = x[p]
     y = vec(a[:,:,1])
     y = y[p]
     c = vec(a[:,:,end])
     c = c[p]
+
 
     CM    = zeros(RGB{Float64}, 4)
     CM[1] = RGB{Float64}(1,0,0)  # black
@@ -84,7 +86,7 @@ default(
 
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     scatter(x,y,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5)
+    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
     savefig(path_plot*"check_$(ϕ∂ϕType)_Nsplineplot.png")
     
     x = vec(a[:,:,4])
@@ -96,7 +98,7 @@ default(
 
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     scatter(x,y,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5)
+    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
     savefig(path_plot*"check_$(ϕ∂ϕType)_dNsplineplot.png")
     
     @info "Figs saved in" path_plot
