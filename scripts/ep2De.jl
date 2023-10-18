@@ -5,10 +5,10 @@
 
 # include dependencies
 include("../src/superInclude.jl")
-
+# main program
 @views function ϵp2De(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,isΔFbar = getKwargs(kwargs)
-    @info "** ϵp2-3De v$(getVersion()): $(fwrkDeform) strain formulation **"
+    @info "** ϵp2De v$(getVersion()): $(fwrkDeform) strain formulation **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
     K,G,Del = D(1.0e6,0.3)                                                      # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    

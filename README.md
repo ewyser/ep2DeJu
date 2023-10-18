@@ -123,9 +123,9 @@ julia> ϵp2De(40,"P","MC")
 └ (✓) Done! exiting...
 julia>
 ```
-5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain) is an option for selecting field for plot, ``cmType`` defines the constitutive model being used. 
+5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` is an option for selecting field for plot (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain), and ``cmType`` defines the constitutive model being used. 
 
-6. Optional ``kwargs`` are: ``shpfun=:bsmpm`` defining shapefunctions (currently ``:bsmpm`` or ``:gimpm``), ``fwrk=:finite`` defining the deformation framework and ``vollock=true`` is a boolean (*e.g.,* ``true``/``false``) controlling volumetric locking corrections using $\Delta\bar{F}$ (see [1,2]). An example with ``kwargs`` is given below
+6. Optional ``kwargs`` are: ``shpfun=:bsmpm`` defining shape functions (currently ``:bsmpm`` or ``:gimpm``), ``fwrk=:finite`` defining the deformation framework and ``vollock=true`` is a boolean (*e.g.,* ``true``/``false``) controlling volumetric locking corrections using the $\Delta\bar{F}$ method (see [1,2]). An example with ``kwargs`` is given below
 ```julia
 ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,vollock=true)
 ```

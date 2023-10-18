@@ -239,6 +239,7 @@ function meshSetup(nel,L,typeD)
         mn   = zeros(typeD,nno[nD+1]             ), 
         fext = zeros(typeD,nno[nD+1],nD          ), 
         fint = zeros(typeD,nno[nD+1],nD          ),
+        oobf = zeros(typeD,nno[nD+1],nD          ),
         Dn   = zeros(typeD,nno[nD+1],nD          ),
         fn   = zeros(typeD,nno[nD+1],nD          ),
         an   = zeros(typeD,nno[nD+1],nD          ),
