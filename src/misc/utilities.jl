@@ -15,14 +15,14 @@ function kwargsOut(kwargs)
         end
         ϕ∂ϕType,fwrkDeform,isΔFbar = arg
         if ϕ∂ϕType != :bsmpm && ϕ∂ϕType != :gimpm
-            @error "shape function *$(ϕ∂ϕType)* undefined"
-            exit(1)
+            err_msg = "$(ϕ∂ϕType): shape function undefined"
+            throw(error(err_msg))
         elseif fwrkDeform != :finite && fwrkDeform != :infinitesimal
-            @error "deformation framework *$(fwrkDeform)* undefined"
-            exit(1)
+            err_msg = "$(fwrkDeform): deformation framework undefined"
+            throw(error(err_msg))
         elseif eltype(isΔFbar) != Bool
-            @error "*$(isΔFbar)* is not ::Bool"
-            exit(1)
+            err_msg = "$(isΔFbar): not a valid boolean"
+            throw(error(err_msg))
         end
     end
     return ϕ∂ϕType,fwrkDeform,isΔFbar
