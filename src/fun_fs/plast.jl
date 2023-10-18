@@ -2,9 +2,9 @@
     ftol,ηtol,ηmax = 1e-6,1e4,0
     ψ              = 0.5*π/180.0
     # create an alias
-    if fwrkDeform == "finite"
+    if fwrkDeform == :finite
         σ = mpD.τ
-    elseif fwrkDeform == "infinitesimal"
+    elseif fwrkDeform == :infinitesimal
         σ = mpD.σ
     end
     @threads for p ∈ 1:mpD.nmp
@@ -45,7 +45,7 @@
             end
             mpD.ϵ[:,:,p].-= mutate(Δϵ,"tensor")
             mpD.ϵpII[p]   = ϵII 
-            if fwrkDeform == "finite"
+            if fwrkDeform == :finite
                 # update left cauchy green tensor
                 λ,n           = eigen(mpD.ϵ[:,:,p])
                 mpD.b[:,:,p] .= n*diagm(exp.(2.0*λ))*n'
@@ -58,9 +58,9 @@ end
     ftol,ηtol,ηit,ηmax = 1e-6,1e4,0,0
     Hp,χ = 0.35*Hp,3.0/2.0
     # create an alias
-    if fwrkDeform == "finite"
+    if fwrkDeform == :finite
         σ = mpD.τ
-    elseif fwrkDeform == "infinitesimal"
+    elseif fwrkDeform == :infinitesimal
         σ = mpD.σ
     end
     @threads for mp in 1:mpD.nmp

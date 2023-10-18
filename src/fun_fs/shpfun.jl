@@ -1,10 +1,10 @@
 @views function topol!(mpD,meD)
-    xmin,zmin = minimum(meD.xn[:,1]),minimum(meD.xn[:,2])
+    xmin,zmin = meD.minC[1],meD.minC[2]
     Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
     nez       = meD.nel[2]
     @threads for p ∈ 1:mpD.nmp
         mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
-        mpD.p2n[p,:].= meD.e2n[mpD.p2e[p],:]
+        mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
     end
     return nothing
 end
@@ -43,7 +43,7 @@ function ϕ∇ϕ(ξ,type,Δx)
         if -2.0<=ξ<=-1.0 
             ϕ = 1.0/6.0     *ξ^3+     ξ^2   +2.0*ξ    +4.0/3.0
             ∂ϕ= 3.0/6.0     *ξ^2+2.0 *ξ     +2.0
-        elseif -1.0<=ξ<=-0.0 
+        elseif -1.0<=ξ<=0.0 
             ϕ = -1.0/6.0     *ξ^3           +    ξ    +1.0
             ∂ϕ= -3.0/6.0     *ξ^2           +  1.0
         elseif  0.0<=ξ<= 1.0 
@@ -101,11 +101,11 @@ end
     xb,zb = meD.xB[1:2],meD.xB[3:4]
     Δx,Δz = meD.h[1],meD.h[2]
     #action
-    if ϕ∂ϕType == "bsmpm"
+    if ϕ∂ϕType == :bsmpm
         @threads for mp ∈ 1:mpD.nmp
             @simd for nn ∈ 1:meD.nn
                 # compute basis functions
-                id     = mpD.p2n[mp,nn]
+                id     = mpD.p2n[nn,mp]
                 ξ      = (mpD.x[mp,1]-meD.xn[id,1])/Δx 
                 type   = whichType(meD.xn[id,1],xb,Δx)
                 ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
@@ -113,39 +113,36 @@ end
                 type   = whichType(meD.xn[id,2],zb,Δz)
                 ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
                 # convolution of basis function
-                mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
-                # B-matrix assembly
-                mpD.B[1,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[mp,nn,2]
-                mpD.B[2,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[mp,nn,3]
-                mpD.B[4,nn*meD.nD-1,mp] = mpD.ϕ∂ϕ[mp,nn,3]
-                mpD.B[4,nn*meD.nD-0,mp] = mpD.ϕ∂ϕ[mp,nn,2]                
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz        
             end
+            # B-matrix assembly
+            mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
+            mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
         end
-    elseif ϕ∂ϕType == "gimpm"
+    elseif ϕ∂ϕType == :gimpm
         @threads for mp in 1:mpD.nmp
-            for nn in 1:meD.nn
+            @simd for nn in 1:meD.nn
                 # compute basis functions
-                id     = mpD.p2n[mp,nn]
-                ξ      = (mpD.x[mp,1] - meD.x[id,1])
-                η      = (mpD.x[mp,2] - meD.x[id,2])
+                id     = mpD.p2n[nn,mp]
+                ξ      = (mpD.x[mp,1] - meD.xn[id,1])
+                η      = (mpD.x[mp,2] - meD.xn[id,2])
                 ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l0[mp,1])
                 ϕz,dϕz = NdN(η,meD.h[2],mpD.l0[mp,2])
                 # convolution of basis function
-                mpD.ϕ∂ϕ[mp,nn,1] =  ϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[mp,nn,2] = dϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[mp,nn,3] =  ϕx* dϕz
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
             end
             # B-matrix assembly
-            mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-            mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-            mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-            mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+            mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
+            mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
         end
-    else
-        @error "shapefunction --$(type)-- not available"
-        exit(1)
     end
     return nothing
 end

@@ -6,6 +6,9 @@ function meshGeom(L,nel)
     elseif nD == 3
         L   = [L[1],L[2y],ceil(L[3])]
         h   = [L[1]/nel[1],L[1]/nel[1],L[1]/nel[1]]
+    else 
+        err_msg = "nD = $(nD), L= $(L): unsupported mesh geometry"
+        throw(error(err_msg))
     end
     return L,h,nD
 end
@@ -173,6 +176,7 @@ function e2N(nD,nno,nel,nn)
             end
         end
     end
+    e2n = permutedims(e2n,(2,1))
 	return e2n
 end
 function materialGeom(meD,lz,wl,coh0,cohr,ni)
@@ -229,11 +233,13 @@ function meshSetup(nel,L,typeD)
         nn   = nn,
         L    = L,
         h    = h,
+        minC = minimum(x,dims=2),
         # nodal quantities
         xn   = x,
         mn   = zeros(typeD,nno[nD+1]             ), 
         fext = zeros(typeD,nno[nD+1],nD          ), 
         fint = zeros(typeD,nno[nD+1],nD          ),
+        oobf = zeros(typeD,nno[nD+1],nD          ),
         Dn   = zeros(typeD,nno[nD+1],nD          ),
         fn   = zeros(typeD,nno[nD+1],nD          ),
         an   = zeros(typeD,nno[nD+1],nD          ),
@@ -250,8 +256,11 @@ function meshSetup(nel,L,typeD)
     )
     return meD
 end
-function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
+function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
+    # non-dimensional constant                                                   
+    ni,nstr = 2,4                                                               # number of material point along 1d, number of stresses
     # material geometry
+    lz     = L[end]
     wl     = 0.15*lz
     xp,clt = materialGeom(meD,lz,wl,coh0,cohr,ni)
     # scalars & vectors
@@ -298,11 +307,11 @@ function pointSetup(meD,ni,lz,coh0,cohr,phi0,phir,rho0,nstr,typeD)
         dev  = zeros(typeD,nstr,nmp),
         ep   = zeros(typeD,nstr,nmp),
         # additional quantities
-        ϕ∂ϕ  = zeros(typeD,nmp ,meD.nn,meD.nD+1   ),
-        B    = zeros(typeD,nstr,meD.nn.*meD.nD,nmp),
+        ϕ∂ϕ  = zeros(typeD,meD.nn,nmp ,meD.nD+1   ),
+        B    = zeros(typeD,meD.nn.*meD.nD,nstr,nmp),
         # connectivity
         p2e  = zeros(Int64,nmp),
-        p2n  = zeros(Int64,nmp,meD.nn),
+        p2n  = zeros(Int64,meD.nn,nmp),
     )
     return mpD 
 end
