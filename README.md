@@ -46,7 +46,7 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 ├── license
 ├── scripts
 │   ├── ep2De.jl
-│   ├── splineCheck.jl
+│   ├── shpfunCheck.jl
 │   └── testCheck.jl
 ├── src
 │   ├── ep2DeJu.jl
@@ -62,6 +62,7 @@ The ```./src``` folder contains all functions needed and are called by the diffe
 │   │   ├── rxiv
 │   │   ├── setup.jl
 │   │   ├── types.jl
+│   │   ├── physics.jl
 │   │   └── utilities.jl
 │   └── superInclude.jl
 └── start_macOS.sh
