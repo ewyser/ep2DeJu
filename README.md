@@ -1,3 +1,5 @@
+<div style="max-width:500px; word-wrap:break-word;">
+
 # ***ϵp2DeJu*** #
 ## **Description** 
 This is a small Julia project of an implementation of the solver [ep2-3De v1.0](https://github.com/ewyser/ep2-3De) (written in C and CUDA C) in the Julia language. It solves explicit elasto-plastic problems within a finite deformation framework, *i.e.,* logarithmic strains and kirchoff stresses, using the **material point method** with **cubic b-spline shape functions** (*i.e.,* instead of gimp formulation within ``ep2-3De v1.0``).
@@ -138,3 +140,5 @@ https://doi.org/10.1002/nag.3599
 
 2. Zhao Y, Jiang C, Choo J. Circumventing volumetric locking in explicit material point
 methods: A simple, efficient, and general approach. Int J Numer Methods Eng. 2023;1-22. https://doi.org/10.1002/nme.7347
+
+</div>
