@@ -62,6 +62,7 @@ if isdir(path_plot)==false mkdir(path_plot) end
         next!(prog;showvalues = get_vals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = get_vals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
+    ctr     = __plotStuff(mpD,tw,varPlot,ctr)
     figName = "$(varPlot)_$(ϕ∂ϕType)_$(fwrkDeform)_$(isΔFbar)_$(cmType).png"
     savefig(path_plot*figName)
     @info "Figs saved in" path_plot
