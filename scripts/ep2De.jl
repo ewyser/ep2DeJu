@@ -1,5 +1,5 @@
 # julia -i -O3 -t auto --check-bounds=no --project=.
-# include("./scripts/sim.jl")
+# include("./scripts/ep2De.jl")
 # ϵp2De(40,"P","MC")
 # ϵp2De(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
 
