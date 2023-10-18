@@ -143,9 +143,6 @@ end
             mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
             mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
         end
-    else
-        @error "shape function --$(type)-- not available"
-        exit(1)
     end
     return nothing
 end

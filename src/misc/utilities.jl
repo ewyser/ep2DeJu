@@ -6,16 +6,24 @@ function kwargsOut(kwargs)
         #ϵp2De(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
         kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :vollock => true)
         arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2]]
-        for A in enumerate(kwargs0) 
-            NUM,FIELD = A
-            for a in enumerate(kwargs) 
-                num,field = a
-                if field[1]==FIELD[1]
-                    arg[NUM] = field[2]
-                end
+        for REF in enumerate(kwargs0), argin in enumerate(kwargs)  
+            NUM,FIELD = REF
+            num,field = argin
+            if field[1]==FIELD[1]
+                arg[NUM] = field[2]
             end
         end
         ϕ∂ϕType,fwrkDeform,isΔFbar = arg
+        if ϕ∂ϕType != :bsmpm && ϕ∂ϕType != :gimpm
+            @error "shape function *$(ϕ∂ϕType)* undefined"
+            exit(1)
+        elseif fwrkDeform != :finite && fwrkDeform != :infinitesimal
+            @error "deformation framework *$(fwrkDeform)* undefined"
+            exit(1)
+        elseif eltype(isΔFbar) != Bool
+            @error "*$(isΔFbar)* is not ::Bool"
+            exit(1)
+        end
     end
     return ϕ∂ϕType,fwrkDeform,isΔFbar
 end
