@@ -34,7 +34,7 @@ using BenchmarkTools
     for k in 1:2
         # plot/save
         if tw >= ctr*tC
-            ctr = __plotStuff(mpD,tw,varPlot,ctr)
+            ctr = plotStuff(mpD,tw,varPlot,ctr)
         end
         # set clock on/off
         tic = time_ns()

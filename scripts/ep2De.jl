@@ -52,7 +52,7 @@ include("../src/superInclude.jl")
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
         # update progress bas
-        next!(prog;showvalues = get_vals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
+        next!(prog;showvalues = getVals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
     ctr     = plotStuff(mpD,tw,varPlot,ctr)
