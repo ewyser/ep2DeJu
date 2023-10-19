@@ -1,5 +1,17 @@
+# activate project
+using Pkg
+if splitpath(Base.active_project())[end-1]!="ep2DeJu"
+    Pkg.activate(".")
+end
 # include dependencies & function call(s) for svSolver.jl
-using Pkg, LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
+try 
+    using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
+catch err
+    @error err
+    @warn "Automatic environment instantiation..."
+    Pkg.instantiate()
+    using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
+end
 # arithmetic precision (double=Float64 or single=Float32)
 const typeD = Float64  
 # relative path for figs & data
