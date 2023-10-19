@@ -3,18 +3,18 @@ using Pkg
 if splitpath(Base.active_project())[end-1]!="ep2DeJu"
     Pkg.activate(".")
 end
-# include dependencies & function call(s) for svSolver.jl
+# include dependencies & function call(s)
+local err = false
 try 
     using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
 catch err
     @error err
-    @warn "Automatic environment instantiation..."
+    @warn "By-default instantiation launched by include()"
     Pkg.instantiate()
     using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
 end
-# arithmetic precision (double=Float64 or single=Float32)
-const typeD = Float64  
-# relative path for figs & data
+# arithmetic precision & relative path for figs & data
+const typeD     = Float64  
 const path_plot = "./docs/out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 # include doc for: help?> ϵp2De()
