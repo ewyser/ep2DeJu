@@ -1,14 +1,16 @@
+# plot parameters
 default(
-    fontfamily="Computer Modern",
-    titlefont=12, 
-    guidefont=12,  
-    tickfont=10, 
-    legendfont=10,
-    linewidth=2,
-    framestyle=:box,
-    label=nothing,
-    grid=false
+    fontfamily  = "Computer Modern",
+    titlefont   = 12, 
+    guidefont   = 12,  
+    tickfont    = 10, 
+    legendfont  = 10,
+    linewidth   = 2,
+    framestyle  = :box,
+    label       = nothing,
+    grid        = false
     )
+# plot routines
 @views function plot_coh(xp,coh,phi,ϕ0)
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     scatter(xp[:,1],xp[:,2],zcolor=coh./1e3,

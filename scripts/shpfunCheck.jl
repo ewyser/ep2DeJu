@@ -6,25 +6,12 @@ using Base.Threads
 using LaTeXStrings
 typeD = Float64  # Precision (double=Float64 or single=Float32)
 include("../src/fun_fs/shpfun.jl")
-
+include("../src/misc/plot.jl")
 path_plot = "./docs/out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 
-default(
-    fontfamily="Computer Modern",
-    linewidth=2,
-    framestyle=:box,
-    label=nothing,
-    grid=false
-    )
-
 @views function ϕ∂ϕCheck(ϕ∂ϕType)
     @info "** ϵp2-3De v1.0: $(ϕ∂ϕType) check **"
-    default(titlefont=14, 
-            guidefont=14,  
-            tickfont=10, 
-            legendfont=14
-            )
     @info "init. arbitrary nodal & mp's coordinates"
     xn = LinRange(-2, 12, 10)
     xn = xn[:]
@@ -86,7 +73,7 @@ default(
 
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     scatter(x,y,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
     sleep(2.5)
     savefig(path_plot*"check_$(ϕ∂ϕType)_Nsplineplot.png")
     
@@ -99,7 +86,7 @@ default(
 
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     scatter(x,y,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
     sleep(2.5)
     savefig(path_plot*"check_$(ϕ∂ϕType)_dNsplineplot.png")
     
