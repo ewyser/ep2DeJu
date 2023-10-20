@@ -52,7 +52,7 @@ end
         # update left cauchy-green tensor
         mpD.b[:,:,p].= mpD.ΔF[:,:,p]*mpD.b[:,:,p]*mpD.ΔF[:,:,p]'
         # compute logarithmic strain tensor
-        λ,n          = eigen(mpD.b[:,:,p])
+        λ,n          = eigen(mpD.b[:,:,p],sortby=nothing)
         mpD.ϵ[:,:,p].= 0.5.*(n*diagm(log.(λ))*n')
         # krichhoff stress tensor
         mul!(mpD.τ[:,p],Del,mutate(mpD.ϵ[:,:,p],"voigt"))

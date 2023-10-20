@@ -47,8 +47,8 @@
             mpD.ϵpII[p]   = ϵII 
             if fwrkDeform == :finite
                 # update left cauchy green tensor
-                λ,n           = eigen(mpD.ϵ[:,:,p])
-                mpD.b[:,:,p] .= n*diagm(exp.(2.0*λ))*n'
+                λ,n           = eigen(mpD.ϵ[:,:,p],sortby=nothing)
+                mpD.b[:,:,p] .= n*diagm(exp.(2.0.*λ))*n'
             end
         end        
     end
