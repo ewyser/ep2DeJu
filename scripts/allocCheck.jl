@@ -21,7 +21,7 @@ using BenchmarkTools
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
-    @info "mesh & mp feature(s):" ϕ∂ϕType fwrkDeform isΔFbar nel
+    @info "mesh & mp feature(s):" ϕ∂ϕType fwrkDeform isΔFbar nel nthreads()
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
