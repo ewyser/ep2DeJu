@@ -1,19 +1,18 @@
 function getKwargs(kwargs)
     if isempty(kwargs)
         # ϵp2De(40,"P","mohr")
-        ϕ∂ϕType,fwrkDeform,isΔFbar = :bsmpm,:finite,true
+        ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = :bsmpm,:finite,:flipDM,true
     else
-        #ϵp2De(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
-        kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :vollock => true)
-        arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2]]
-        for REF in enumerate(kwargs0), argin in enumerate(kwargs)  
-            NUM,FIELD = REF
-            num,field = argin
-            if field[1]==FIELD[1]
-                arg[NUM] = field[2]
+        #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,vollock=true)
+        kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :trsf => :flipDM, :vollock => true)
+        arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2],kwargs0[4][2]]
+        for (it,args0) ∈ enumerate(kwargs0), argin ∈ (kwargs)  
+            if argin.first==args0[1]
+                arg[it] = argin.second
             end
         end
-        ϕ∂ϕType,fwrkDeform,isΔFbar = arg
+
+        ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = arg
         if ϕ∂ϕType != :bsmpm && ϕ∂ϕType != :gimpm
             err_msg = "$(ϕ∂ϕType): shape function undefined"
             throw(error(err_msg))
