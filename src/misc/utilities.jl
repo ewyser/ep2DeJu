@@ -24,7 +24,7 @@ function getKwargs(kwargs)
             throw(error(err_msg))
         end
     end
-    return ϕ∂ϕType,fwrkDeform,isΔFbar
+    return ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar
 end
 function getVersion()
     return string(Pkg.project().version)

@@ -4,7 +4,7 @@ using BenchmarkTools
 
 @warn "validation/test"
 @views function allocCheck(nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,isΔFbar = getKwargs(kwargs)
+    ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = getKwargs(kwargs)
     @info "** ϵp2-3De v$(getVersion()): $(fwrkDeform) strain formulation **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
@@ -21,7 +21,7 @@ using BenchmarkTools
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
-    @info "mesh & mp feature(s):" nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
+    @info "mesh & mp feature(s):" ϕ∂ϕType fwrkDeform isΔFbar nel
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
@@ -37,15 +37,12 @@ using BenchmarkTools
     println("launch elastoplast!()")
     @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$isΔFbar,$fwrkDeform,true)
     @warn "Digging deeper in elastoplast!(), "
-    
-    println("-> launch deform!(), true")
-    @btime deform!($mpD,$meD,true)
-    println("-> launch deform!(), false")
-    @btime deform!($mpD,$meD,false)
+    println("-> launch deform!()")
+    @btime deform!($mpD,$meD,$isΔFbar)
     println("-> launch ΔFbar!()")
     @btime ΔFbar!($mpD,$meD)
     println("-> launch elast!()")
     @btime elast!($mpD,$cmParam.Del,$fwrkDeform)
     return msg("(✓) Done! exiting...")
 end
-allocCheck(40,"P","MC")
+allocCheck(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,vollock=true)
