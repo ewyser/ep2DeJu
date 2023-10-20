@@ -1,3 +1,4 @@
+using Random
 function meshGeom(L,nel)
     nD = length(L)
     if nD == 2
@@ -274,6 +275,12 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     cohr   = ones(typeD,nmp).*cohr
     phi    = ones(typeD,nmp).*phi0
     phi[xp[:,2].<=2*wl] .= phir
+
+
+    println(xp[1:5,:])
+    rdId = shuffle(collect(1:size(xp,1)))
+    xp = xp[rdId,:]
+    println(xp[1:5,:])
     # constructor
     mpD = (
         nmp  = nmp,
