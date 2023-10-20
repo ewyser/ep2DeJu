@@ -37,13 +37,15 @@ using BenchmarkTools
     println("launch elastoplast!()")
     @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$isΔFbar,$fwrkDeform,true)
     @warn "Digging deeper in elastoplast!(), "
+    
     println("-> launch deform!(), true")
     @btime deform!($mpD,$meD,true)
     println("-> launch deform!(), false")
     @btime deform!($mpD,$meD,false)
     println("-> launch ΔFbar!()")
     @btime ΔFbar!($mpD,$meD)
-
+    println("-> launch elast!()")
+    @btime elast!($mpD,$cmParam.Del,$fwrkDeform)
     return msg("(✓) Done! exiting...")
 end
 allocCheck(40,"P","MC")
