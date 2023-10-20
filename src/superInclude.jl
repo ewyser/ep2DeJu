@@ -5,7 +5,7 @@ if splitpath(Base.active_project())[end-1]!="ep2DeJu"
 end
 # include dependencies & function call(s)
 try 
-    using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
+    using LinearAlgebra, Plots, LaTeXStrings, Random, Base.Threads,ProgressMeter
 catch
     @error "$(Base.active_project()) needs instantiation"
     @warn "By-default instantiation launched...may take a while"

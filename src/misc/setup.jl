@@ -1,4 +1,3 @@
-using Random
 function meshGeom(L,nel)
     nD = length(L)
     if nD == 2
@@ -217,7 +216,8 @@ function materialGeom(meD,lz,wl,coh0,cohr,ni)
         end
     end
     xp = if meD.nD == 2 hcat(xlt,zlt) elseif meD.nD == 3 hcat(xlt,ylt,zlt) end
-    return xp,clt
+    id = shuffle(collect(1:size(xp,1)))
+    return xp[id,:],clt[id,:]
 end
 function meshSetup(nel,L,typeD)
     # geometry                                               
@@ -264,6 +264,9 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     lz     = L[end]
     wl     = 0.15*lz
     xp,clt = materialGeom(meD,lz,wl,coh0,cohr,ni)
+    println(xp[1:2,:])
+    xp     = xp[shuffle(collect(1:size(xp,1))),:]
+    println(xp[1:2,:])
     # scalars & vectors
     nmp    = size(xp,1)
     l0,l   = ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni),ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
@@ -277,10 +280,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     phi[xp[:,2].<=2*wl] .= phir
 
 
-    println(xp[1:5,:])
-    rdId = shuffle(collect(1:size(xp,1)))
-    xp = xp[rdId,:]
-    println(xp[1:5,:])
+
     # constructor
     mpD = (
         nmp  = nmp,
