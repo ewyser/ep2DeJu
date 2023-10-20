@@ -25,19 +25,24 @@ using BenchmarkTools
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
-    
-    @info "launch ϕ∂ϕ!()"
+    @info "Evaluate core functions:"
+    println("launch ϕ∂ϕ!()")
     @btime ϕ∂ϕ!($mpD,$meD,$ϕ∂ϕType) 
-    @info "launch mapsto!(p->n)"
+    println("launch mapsto!(p->n)")
     @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,"p->n")   
-    @info "launch solve!()"
+    println("launch solve!()")
     @btime solve!($meD,0.1)
-    @info "launch mapsto!(p<-n)"
+    println("launch mapsto!(p<-n)")
     @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,"p<-n")
-    @info "launch elastoplast!(), elastic"
-    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$isΔFbar,$fwrkDeform,false)
-    @info "launch elastoplast!(), elastoplastic"
+    println("launch elastoplast!()")
     @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$isΔFbar,$fwrkDeform,true)
+    @warn "Digging deeper in elastoplast!(), "
+    println("-> launch deform!(), true")
+    @btime deform!($mpD,$meD,true)
+    println("-> launch deform!(), false")
+    @btime deform!($mpD,$meD,false)
+    println("-> launch ΔFbar!()")
+    @btime ΔFbar!($mpD,$meD)
 
     return msg("(✓) Done! exiting...")
 end
