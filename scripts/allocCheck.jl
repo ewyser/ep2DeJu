@@ -1,16 +1,11 @@
-# julia -i -O3 -t auto --check-bounds=no --project=.
-# include("./scripts/test.jl")
-# test(40,"P","MC")
-# test(40,"P","MC";shpfun="bsmpm",fwrk="finite",vollock=true)
-
 # include dependencies
 include("../src/superInclude.jl")
 using BenchmarkTools
 
-@views function test(nel::Int64,varPlot::String,cmType::String; kwargs...)
+@warn "validation/test"
+@views function allocCheck(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,isΔFbar = getKwargs(kwargs)
     @info "** ϵp2-3De v$(getVersion()): $(fwrkDeform) strain formulation **"
-    @warn "validation/test"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
     K,G,Del = D(1.0e6,0.3)                                                      # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
@@ -30,30 +25,20 @@ using BenchmarkTools
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
-    @info "launch $(ϕ∂ϕType) calculation cycle..."
-    for k in 1:2
-        # plot/save
-        if tw >= ctr*tC
-            ctr = plotStuff(mpD,tw,varPlot,ctr)
-        end
-        # set clock on/off
-        tic = time_ns()
-        # adaptative Δt & linear increase in gravity
-        Δt,g  = get_Δt(mpD.v,meD.h,yd),get_g(tw,tg,meD.nD)
-        # bsmpm cycle
-        @time ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
-        @time mapsto!(mpD,meD,g,Δt,"p->N")                  
-        @time solve!(meD,Δt)
-        @time mapsto!(mpD,meD,g,Δt,"p<-N")
-        @time ηmax = elastoplast!(mpD,meD,cmParam,cmType,isΔFbar,fwrkDeform,tw>te)
-        if tw>te && flag == 0
-            plot_coh(mpD.x,mpD.coh,mpD.phi,ϕ0)
-            flag+=1
-        end
-        println()
-        # update sim time
-        tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
-    end
+    
+    @info "launch ϕ∂ϕ!()"
+    @btime ϕ∂ϕ!($mpD,$meD,$ϕ∂ϕType) 
+    @info "launch mapsto!(p->n)"
+    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,"p->n")   
+    @info "launch solve!()"
+    @btime solve!($meD,0.1)
+    @info "launch mapsto!(p<-n)"
+    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,"p<-n")
+    @info "launch elastoplast!(), elastic"
+    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$isΔFbar,$fwrkDeform,false)
+    @info "launch elastoplast!(), elastoplastic"
+    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$isΔFbar,$fwrkDeform,true)
+
     return msg("(✓) Done! exiting...")
 end
-test(40,"P","MC")
+allocCheck(40,"P","MC")

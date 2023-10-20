@@ -36,9 +36,9 @@ include("../src/superInclude.jl")
         Δt,g  = get_Δt(mpD.v,meD.h,yd),get_g(tw,tg,meD.nD)
         # bsmpm cycle
         ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
-        mapsto!(mpD,meD,g,Δt,"p->N")                  
+        mapsto!(mpD,meD,g,Δt,"p->n")                  
         solve!(meD,Δt)
-        mapsto!(mpD,meD,g,Δt,"p<-N")
+        mapsto!(mpD,meD,g,Δt,"p<-n")
         ηmax = elastoplast!(mpD,meD,cmParam,cmType,isΔFbar,fwrkDeform,tw>te)
         if tw>te && flag == 0
             plot_coh(mpD.x,mpD.coh,mpD.phi,ϕ0)

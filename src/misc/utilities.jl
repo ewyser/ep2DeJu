@@ -1,6 +1,6 @@
 function getKwargs(kwargs)
     if isempty(kwargs)
-        # ϵp2De(40,"P","mohr")
+        # ϵp2De(40,"P","MC")
         ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = :bsmpm,:finite,:flipDM,true
     else
         #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,vollock=true)

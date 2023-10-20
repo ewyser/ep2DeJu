@@ -56,9 +56,9 @@ end
     return nothing
 end
 @views function mapsto!(mpD,meD,g,Δt,whereto)
-    if whereto == "p->N"
+    if whereto == "p->n"
         mapstoN!(mpD,meD,g)
-    elseif whereto == "p<-N"
+    elseif whereto == "p<-n"
         mapstoP!(mpD,meD,Δt)
         DM!(     mpD,meD,Δt)
     end
