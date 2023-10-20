@@ -4,12 +4,11 @@ if splitpath(Base.active_project())[end-1]!="ep2DeJu"
     Pkg.activate(".")
 end
 # include dependencies & function call(s)
-local err = false
 try 
     using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
-catch err
-    @error err
-    @warn "By-default instantiation launched by include()"
+catch
+    @error "$(Base.active_project()) needs instantiation"
+    @warn "By-default instantiation launched...may take a while"
     Pkg.instantiate()
     using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
 end
