@@ -1,7 +1,7 @@
-#include("./scripts/kwargsCheck.jl")
+#include("./scripts/unit_testing/kwargsTest.jl")
 
 # include dependencies
-include("../src/superInclude.jl")
+include("../../src/superInclude.jl")
 # main program
 @views function kwargsCheck(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,isΔFbar = getKwargs(kwargs)

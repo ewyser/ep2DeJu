@@ -1,5 +1,5 @@
 # include dependencies
-include("../src/superInclude.jl")
+include("../../src/superInclude.jl")
 # main program
 @views function ϵp2De(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = getKwargs(kwargs)

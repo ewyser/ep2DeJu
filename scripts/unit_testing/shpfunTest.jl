@@ -1,14 +1,11 @@
-#include("./scripts/splineCheck.jl")
+#include("./scripts/unit_testing/shpfunTest.jl")
 # Initialisation
 using Printf, LinearAlgebra, DelimitedFiles
 using Plots
 using Base.Threads
 using LaTeXStrings
 typeD = Float64  # Precision (double=Float64 or single=Float32)
-include("../src/fun_fs/shpfun.jl")
-include("../src/misc/plot.jl")
-path_plot = "./docs/out/"
-if isdir(path_plot)==false mkdir(path_plot) end
+include("../../src/superInclude.jl")
 
 @views function ϕ∂ϕCheck(ϕ∂ϕType)
     @info "** ϵp2-3De v1.0: $(ϕ∂ϕType) check **"

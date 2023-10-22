@@ -1,5 +1,5 @@
 # include dependencies
-include("../src/superInclude.jl")
+include("../../src/superInclude.jl")
 using BenchmarkTools
 
 @warn "validation/test"
