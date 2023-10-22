@@ -30,9 +30,9 @@ include("../../src/superInclude.jl")
                 type   = whichType(xn[nn],xB,dx)
                 ϕz,dϕz = ϕ∇ϕ(η,type,dx)
                 # convolution of basis function
-                a[mp,nn,1] = ϕx*  ϕz                                        
-                a[mp,nn,2] = dϕx*  ϕz                                        
-                a[mp,nn,3] =  ϕx* dϕz
+                a[mp,nn,1] = ϕx
+                a[mp,nn,2] = dϕx
+                a[mp,nn,3] = dϕz
                 a[mp,nn,4] = xp[mp] 
             end
         end
@@ -45,9 +45,9 @@ include("../../src/superInclude.jl")
                 ϕx,dϕx = NdN(ξ,dx,0.5)
                 ϕz,dϕz = NdN(η,dx,0.5)
                 # convolution of basis function
-                a[mp,nn,1] = ϕx*  ϕz                                        
-                a[mp,nn,2] = dϕx*  ϕz                                        
-                a[mp,nn,3] =  ϕx* dϕz
+                a[mp,nn,1] = ϕx
+                a[mp,nn,2] = dϕx
+                a[mp,nn,3] = dϕz
                 a[mp,nn,4] = xp[mp] 
             end
         end
