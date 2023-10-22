@@ -13,11 +13,14 @@ function getKwargs(kwargs)
         end
 
         ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = arg
-        if ϕ∂ϕType != :bsmpm && ϕ∂ϕType != :gimpm
+        if ϕ∂ϕType != :bsmpm && ϕ∂ϕType != :gimpm && ϕ∂ϕType != :smpm
             err_msg = "$(ϕ∂ϕType): shape function undefined"
             throw(error(err_msg))
         elseif fwrkDeform != :finite && fwrkDeform != :infinitesimal
             err_msg = "$(fwrkDeform): deformation framework undefined"
+            throw(error(err_msg))
+        elseif trsfrScheme != :flip && fwrkDeform != :tpic
+            err_msg = "$(fwrkDeform): mapping scheme undefined"
             throw(error(err_msg))
         elseif eltype(isΔFbar) != Bool
             err_msg = "$(isΔFbar): not a valid boolean"
