@@ -4,7 +4,6 @@ using Printf, LinearAlgebra, DelimitedFiles
 using Plots
 using Base.Threads
 using LaTeXStrings
-typeD = Float64  # Precision (double=Float64 or single=Float32)
 include("../../src/superInclude.jl")
 
 @views function ϕ∂ϕCheck(ϕ∂ϕType)
