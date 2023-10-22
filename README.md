@@ -45,9 +45,12 @@ The ```./src``` folder contains all functions needed, which are called by the di
 │   └── refs
 ├── license
 ├── scripts
-│   ├── ep2De.jl
-│   ├── shpfunCheck.jl
-│   └── testCheck.jl
+│   ├── program
+│   │   └── ep2De.jl
+│   └── unit_testing
+│       ├── allocTest.jl
+│       ├── kwargsTest.jl
+│       └── shpfunTest.jl
 ├── src
 │   ├── ep2DeJu.jl
 │   ├── fun_fs
@@ -58,11 +61,11 @@ The ```./src``` folder contains all functions needed, which are called by the di
 │   │   └── solve.jl
 │   ├── misc
 │   │   ├── doc.jl
+│   │   ├── physics.jl
 │   │   ├── plot.jl
 │   │   ├── rxiv
 │   │   ├── setup.jl
 │   │   ├── types.jl
-│   │   ├── physics.jl
 │   │   └── utilities.jl
 │   └── superInclude.jl
 └── start_macOS.sh
@@ -103,7 +106,7 @@ Status `./ep2DeJu/Project.toml`
 ```
 4. Compile using ``include()`` and run method ``ϵp2De(nel,varPlot,cmType; kwargs...)``. It should result in the following:
 ```julia
-julia> include("./scripts/ep2De.jl")
+julia> include("./scripts/program/ep2De.jl")
 ϵp2De (generic function with 1 method)
 julia> ϵp2De(40,"P","MC")
 [ Info: ** ϵp2-3De v0.1.0: finite strain formulation **
