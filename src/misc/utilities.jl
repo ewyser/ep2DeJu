@@ -19,7 +19,7 @@ function getKwargs(kwargs)
         elseif fwrkDeform != :finite && fwrkDeform != :infinitesimal
             err_msg = "$(fwrkDeform): deformation framework undefined"
             throw(error(err_msg))
-        elseif trsfrScheme != :flip && fwrkDeform != :tpic
+        elseif trsfrScheme != :flipDM && trsfrScheme != :tpic
             err_msg = "$(fwrkDeform): mapping scheme undefined"
             throw(error(err_msg))
         elseif eltype(isΔFbar) != Bool
