@@ -25,7 +25,7 @@ function NdN(δx::Float64,h::Float64,lp::Float64)
     return ϕ,∂ϕ    
 end
 @views function whichType(xn,xB,Δx)
-    type = 0
+    type = nothing
     if xn==xB[1] || xn==xB[2] 
         type = 1
     elseif (xB[1]+0.9*Δx)<xn<(xB[1]+1.1*Δx)
