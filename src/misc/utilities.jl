@@ -20,7 +20,7 @@ function getKwargs(kwargs)
             err_msg = "$(fwrkDeform): deformation framework undefined"
             throw(error(err_msg))
         elseif trsfrScheme != :flipDM && trsfrScheme != :tpic
-            err_msg = "$(fwrkDeform): mapping scheme undefined"
+            err_msg = "$(trsfrScheme): mapping scheme undefined"
             throw(error(err_msg))
         elseif eltype(isΔFbar) != Bool
             err_msg = "$(isΔFbar): not a valid boolean"
