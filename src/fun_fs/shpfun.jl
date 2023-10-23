@@ -9,7 +9,7 @@
     return nothing
 end
 function NdN(δx::Float64,h::Float64,lp::Float64)                                                         
-    if     abs(δx) <    lp                       
+    if abs(δx) < lp                       
         ϕ  = 1.0-((4.0*δx^2+(2.0*lp)^2)/(8.0*h*lp))                                   
         ∂ϕ = -((8.0*δx)/(8.0*h*lp))                                     
     elseif (abs(δx)>=   lp ) && (abs(δx)<=(h-lp))
@@ -128,10 +128,10 @@ end
             @simd for nn in 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[nn,mp]
-                ξ      = (mpD.x[mp,1] - meD.xn[id,1])
-                η      = (mpD.x[mp,2] - meD.xn[id,2])
-                ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l0[mp,1])
-                ϕz,dϕz = NdN(η,meD.h[2],mpD.l0[mp,2])
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])
+                ϕx,dϕx = NdN(ξ,Δx,mpD.l0[mp,1])
+                ϕz,dϕz = NdN(η,Δz,mpD.l0[mp,2])
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
@@ -148,10 +148,10 @@ end
             @simd for nn in 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[nn,mp]
-                ξ      = (mpD.x[mp,1] - meD.xn[id,1])
-                η      = (mpD.x[mp,2] - meD.xn[id,2])
-                ϕx,dϕx = NdN(ξ,meD.h[1],0.0         )
-                ϕz,dϕz = NdN(η,meD.h[2],0.0         )
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])
+                ϕx,dϕx = NdN(ξ,Δx,0.0)
+                ϕz,dϕz = NdN(η,Δz,0.0)
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        

@@ -18,35 +18,6 @@
     end
     return nothing
 end
-
-#= 
-@views function mapstoN!(mpD,meD,g)
-    # initialize nodal quantities
-    meD.mn  .= 0.0
-    meD.pn  .= 0.0
-    meD.oobf.= 0.0
-    # mapping back to mesh
-    for dim ∈ 1:meD.nD
-        lk = ReentrantLock()
-        @threads for p ∈ 1:mpD.nmp
-            # accumulation
-            lock(lk) 
-            try 
-                if dim == 1 
-                    meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] 
-                end
-                meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*mpD.v[p,dim])
-                meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
-                meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
-            finally 
-                unlock(lk)
-            end
-        end
-    end
-    return nothing
-end
-=#
-
 @views function mapstoP!(mpD,meD,Δt)
     # mapping back to mp's
     @simd for dim ∈ 1:meD.nD

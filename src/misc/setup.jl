@@ -314,5 +314,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         p2e  = zeros(Int64,nmp),
         p2n  = zeros(Int64,meD.nn,nmp),
     )
+    # plot initial cohesion field
+    plot_coh(mpD.x,mpD.coh,mpD.phi,coh0)
     return mpD 
 end

@@ -21,15 +21,13 @@ include("../../src/superInclude.jl")
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
     @info "mesh & mp feature(s):" dim=meD.nD nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
     # plot & time stepping parameters
-    tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
+    tw,tC,it,ctr,ηmax,ηtot = 0.0,1.0,0,0,0,0    
     # action
     @info "launch $(ϕ∂ϕType) calculation cycle..."
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<=t
         # plot/save
-        if tw >= ctr*tC
-            ctr = plotStuff(mpD,tw,varPlot,ctr)
-        end
+        if tw >= ctr*tC ctr = plotStuff(mpD,tw,varPlot,ctr) end
         # set clock on/off
         tic = time_ns()
         # adaptative Δt & linear increase in gravity
@@ -40,10 +38,6 @@ include("../../src/superInclude.jl")
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,"p<-n")
         ηmax = elastoplast!(mpD,meD,cmParam,cmType,isΔFbar,fwrkDeform,tw>te)
-        if tw>te && flag == 0
-            plot_coh(mpD.x,mpD.coh,mpD.phi,ϕ0)
-            flag+=1
-        end
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
         # update progress bas
@@ -52,8 +46,7 @@ include("../../src/superInclude.jl")
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
     ctr     = plotStuff(mpD,tw,varPlot,ctr)
     sleep(2.5)
-    figName = "$(varPlot)_$(ϕ∂ϕType)_$(fwrkDeform)_$(isΔFbar)_$(cmType).png"
-    savefig(path_plot*figName)
+    savefig(path_plot*"$(varPlot)_$(ϕ∂ϕType)_$(fwrkDeform)_$(isΔFbar)_$(cmType).png")
     @info "Figs saved in" path_plot
     return msg("(✓) Done! exiting...")
 end
