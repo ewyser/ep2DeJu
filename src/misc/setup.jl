@@ -14,8 +14,8 @@ function meshGeom(L,nel)
 end
 function meshCoord(nD,L,h)
     if nD == 2
-        xn  =         Array(range(0.0-2*h[1],L[1]+2.0*h[1],step=h[1]))
-        zn  = reverse(Array(range(0.0-2*h[2],L[2]+2.0*h[2],step=h[2])))
+        xn  = collect((0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])) 
+        zn  = reverse(collect((0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])))
         nno = [length(xn),length(zn),length(xn)*length(zn)] 
         nel = [nno[1]-1,nno[2]-1,(nno[1]-1)*(nno[2]-1)]
         nn  = 16
@@ -264,9 +264,6 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     lz     = L[end]
     wl     = 0.15*lz
     xp,clt = materialGeom(meD,lz,wl,coh0,cohr,ni)
-    println(xp[1:2,:])
-    xp     = xp[shuffle(collect(1:size(xp,1))),:]
-    println(xp[1:2,:])
     # scalars & vectors
     nmp    = size(xp,1)
     l0,l   = ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni),ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
@@ -278,9 +275,6 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     cohr   = ones(typeD,nmp).*cohr
     phi    = ones(typeD,nmp).*phi0
     phi[xp[:,2].<=2*wl] .= phir
-
-
-
     # constructor
     mpD = (
         nmp  = nmp,

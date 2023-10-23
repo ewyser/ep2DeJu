@@ -57,3 +57,5 @@ include("../../src/superInclude.jl")
     @info "Figs saved in" path_plot
     return msg("(✓) Done! exiting...")
 end
+# include("./scripts/program/ep2De.jl")
+# ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,vollock=true)

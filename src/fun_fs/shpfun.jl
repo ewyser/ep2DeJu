@@ -143,6 +143,26 @@ end
             mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
             mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
         end
+    elseif ϕ∂ϕType == :smpm
+        @threads for mp in 1:mpD.nmp
+            @simd for nn in 1:meD.nn
+                # compute basis functions
+                id     = mpD.p2n[nn,mp]
+                ξ      = (mpD.x[mp,1] - meD.xn[id,1])
+                η      = (mpD.x[mp,2] - meD.xn[id,2])
+                ϕx,dϕx = NdN(ξ,meD.h[1],0.0         )
+                ϕz,dϕz = NdN(η,meD.h[2],0.0         )
+                # convolution of basis function
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
+            end
+            # B-matrix assembly
+            mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
+            mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
+            mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
+        end        
     end
     return nothing
 end
