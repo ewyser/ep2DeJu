@@ -51,6 +51,23 @@ include("../../src/superInclude.jl")
                 ϕx,dϕx = NdN(ξ,dx,0.5)
                 ϕz,dϕz = NdN(η,dx,0.5)
                 # convolution of basis function
+                PoU[mp]+= ϕx
+                a[mp,nn,1] = ϕx
+                a[mp,nn,2] = dϕx
+                a[mp,nn,3] = dϕz
+                a[mp,nn,4] = xp[mp] 
+            end
+        end
+    elseif ϕ∂ϕType == "smpm"
+        for mp ∈ eachindex(xp)
+            for nn ∈ eachindex(xn)
+                # compute basis functions
+                ξ      = xp[mp] - xn[nn]
+                η      = (xp[mp] - xn[nn])
+                ϕx,dϕx = NdN(ξ,dx,0.0)
+                ϕz,dϕz = NdN(η,dx,0.0)
+                # convolution of basis function
+                PoU[mp]+= ϕx
                 a[mp,nn,1] = ϕx
                 a[mp,nn,2] = dϕx
                 a[mp,nn,3] = dϕz
@@ -62,10 +79,13 @@ include("../../src/superInclude.jl")
     p = findall(x->x>tol, vec(a[:,:,1]))
     x = vec(a[:,:,4])
     x = x[p]
-    y = vec(a[:,:,1])
-    y = y[p]
+    S = vec(a[:,:,1])
+    S = S[p]
     c = vec(a[:,:,end])
     c = c[p]
+
+    dS = vec(a[:,:,2])
+    dS = dS[p]
 
 
     CM    = zeros(RGB{Float64}, 4)
@@ -74,32 +94,43 @@ include("../../src/superInclude.jl")
     CM[3] = RGB{Float64}(0,0,1) # yellow
     CM[4] = RGB{Float64}(0,0.5,0) # red
 
-    gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-    scatter(x,y,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
-    sleep(2.5)
-    savefig(path_plot*"check_$(ϕ∂ϕType)_S.png")
-    
-
-    y = vec(a[:,:,2])
-    y = y[p]
-
-    gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-    scatter(x,y,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
-    sleep(2.5)
-    savefig(path_plot*"check_$(ϕ∂ϕType)_dS.png")
-    
-    gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-    scatter(xp,PoU,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-    scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"$\sum_n\phi_n(x_p)$",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title="partition of unity")
-    sleep(2.5)
-    savefig(path_plot*"check_$(ϕ∂ϕType)_PoU.png")
-
+    if ϕ∂ϕType == "bsmpm"
+        gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        scatter(x,S,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+        sleep(2.5)
+        savefig(path_plot*"check_$(ϕ∂ϕType)_S.png")
+        gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        scatter(x,dS,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+        sleep(2.5)
+        savefig(path_plot*"check_$(ϕ∂ϕType)_dS.png")
+        gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        scatter(xp,PoU,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"$\sum_n\phi_n(x_p)$",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title="partition of unity")
+        sleep(2.5)
+        savefig(path_plot*"check_$(ϕ∂ϕType)_PoU.png")
+    else
+        gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
+        scatter(x,S,markershape=:circle,color="black",label="",show=true,aspect_ratio=1,markerstrokecolor=:auto,markerstrokewidth=0)
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+        sleep(2.5)
+        savefig(path_plot*"check_$(ϕ∂ϕType)_S.png")
+        gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        scatter(x,dS,markershape=:circle,color="black",label="",show=true,aspect_ratio=1,markerstrokecolor=:auto,markerstrokewidth=0)
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+        sleep(2.5)
+        savefig(path_plot*"check_$(ϕ∂ϕType)_dS.png")
+        gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        scatter(xp,PoU,markershape=:circle,color="black",label="",show=true,aspect_ratio=1,markerstrokecolor=:auto,markerstrokewidth=0)
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"$\sum_n\phi_n(x_p)$",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title="partition of unity")
+        sleep(2.5)
+        savefig(path_plot*"check_$(ϕ∂ϕType)_PoU.png")
+    end
     @info "Figs saved in" path_plot
     return println("[=> done! exiting...")
 end
-ϕ∂ϕCheck("bsmpm")
+ϕ∂ϕCheck("smpm")
 
 
 
