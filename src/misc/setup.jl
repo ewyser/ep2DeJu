@@ -237,7 +237,8 @@ function meshSetup(nel,L,typeD)
         minC = minimum(x,dims=2),
         # nodal quantities
         xn   = x,
-        mn   = zeros(typeD,nno[nD+1]             ), 
+        mn   = zeros(typeD,nno[nD+1]             ), # lumped mass vector
+        Mn   = zeros(typeD,nno[nD+1],nno[nD+1]   ), # consistent mass matrix
         fext = zeros(typeD,nno[nD+1],nD          ), 
         fint = zeros(typeD,nno[nD+1],nD          ),
         oobf = zeros(typeD,nno[nD+1],nD          ),
