@@ -279,7 +279,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     # constructor
     mpD = (
         nmp  = nmp,
-        x    = xp,
+        x    = xp, 
         u    = zeros(typeD,nmp,meD.nD), 
         v    = zeros(typeD,nmp,meD.nD),
         p    = zeros(typeD,nmp,meD.nD),
@@ -310,8 +310,9 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         dev  = zeros(typeD,nstr,nmp),
         ep   = zeros(typeD,nstr,nmp),
         # additional quantities
-        ϕ∂ϕ  = zeros(typeD,meD.nn,nmp ,meD.nD+1   ),
-        B    = zeros(typeD,meD.nn.*meD.nD,nstr,nmp),
+        δx   = zeros(typeD,meD.nn        ,nmp ,meD.nD  ),
+        ϕ∂ϕ  = zeros(typeD,meD.nn        ,nmp ,meD.nD+1),
+        B    = zeros(typeD,meD.nn.*meD.nD,nstr,nmp     ),
         # connectivity
         p2e  = zeros(Int64,nmp),
         p2n  = zeros(Int64,meD.nn,nmp),
