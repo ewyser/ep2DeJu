@@ -130,8 +130,8 @@ include("../../src/superInclude.jl")
     @info "Figs saved in" path_plot
     return println("[=> done! exiting...")
 end
+ϕ∂ϕCheck("bsmpm")
+ϕ∂ϕCheck("gimpm")
 ϕ∂ϕCheck("smpm")
-
-
 
 # https://techytok.com/lesson-parallel-computing/
