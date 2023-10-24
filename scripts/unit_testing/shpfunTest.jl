@@ -1,7 +1,10 @@
 #include("./scripts/unit_testing/shpfunTest.jl")
 # Initialisation
-using LinearAlgebra, Plots, Test, LaTeXStrings
-include("../../src/superInclude.jl")
+using LinearAlgebra, Plots, Test, Pkg, LaTeXStrings, Base.Threads
+const path_plot = "./docs/out/"
+include("../../src/fun_fs/shpfun.jl")
+include("../../src/misc/plot.jl")
+include("../../src/misc/utilities.jl")
 
 @views function ϕ∂ϕCheck(ϕ∂ϕType)
     xn = LinRange(-2, 12, 10)
@@ -91,12 +94,12 @@ include("../../src/superInclude.jl")
     if ϕ∂ϕType == "bsmpm"
         gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
         scatter(x,S,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > -$"*string(abs(log10(tol))))
         sleep(2.5)
         savefig(path_plot*"check_$(ϕ∂ϕType)_S.png")
         gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
         scatter(x,dS,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > -$"*string(abs(log10(tol))))
         sleep(2.5)
         savefig(path_plot*"check_$(ϕ∂ϕType)_dS.png")
         gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
@@ -107,12 +110,12 @@ include("../../src/superInclude.jl")
     else
         gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
         scatter(x,S,markershape=:circle,color="black",label="",show=true,aspect_ratio=1,markerstrokecolor=:auto,markerstrokewidth=0)
-        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > -$"*string(abs(log10(tol))))
         sleep(2.5)
         savefig(path_plot*"check_$(ϕ∂ϕType)_S.png")
         gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
         scatter(x,dS,markershape=:circle,color="black",label="",show=true,aspect_ratio=1,markerstrokecolor=:auto,markerstrokewidth=0)
-        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > $"*string(log10(tol)))
+        scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-2,2),colorbar_title="type",levels=5,title=L"$\log_{10}(\phi_n(x_p)) > -$"*string(abs(log10(tol))))
         sleep(2.5)
         savefig(path_plot*"check_$(ϕ∂ϕType)_dS.png")
         gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
@@ -124,6 +127,7 @@ include("../../src/superInclude.jl")
     return minimum(PoU),sum(PoU)/length(xp),maximum(PoU)
 end
 
+@info "** ϵp2De v$(getVersion()): partition of unity (PoU) testset **"
 for shp in ["bsmpm","gimpm","smpm"]
     @testset "$(shp): PoU" begin
         Min,Mean,Max = ϕ∂ϕCheck(shp)
