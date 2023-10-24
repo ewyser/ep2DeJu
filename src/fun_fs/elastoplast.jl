@@ -20,7 +20,7 @@
     end
     return nothing
 end
-@views function deform!(mpD,meD,isΔFbar)
+@views function deform!(mpD,meD,Δt,isΔFbar)
     # calculate dimensional cst.
     dim = 1.0/meD.nD
     # action
@@ -28,6 +28,8 @@ end
         # compute incremental deformation gradient
         mpD.ΔF[:,:,p].= mpD.I.+(permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
+        # compute velocity gradient
+        mpD.∇v[:,:,p].= (mpD.ΔF[:,:,p].-mpD.I)./Δt
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
         # update material point's volume and domain length
@@ -79,9 +81,9 @@ end
     end
     return nothing
 end
-@views function elastoplast!(mpD,meD,cmParam,cmType,isΔFbar,fwrkDeform,plastOn)
+@views function elastoplast!(mpD,meD,cmParam,cmType,Δt,isΔFbar,fwrkDeform,plastOn)
     # get incremental deformation tensor & logarithmic strains
-    deform!(mpD,meD,isΔFbar)
+    deform!(mpD,meD,Δt,isΔFbar)
     # update kirchoff/cauchy stresses
     elast!(mpD,cmParam.Del,fwrkDeform)
     # plastic corrector

@@ -1,3 +1,4 @@
+#include("./scripts/unit_testing/allocTest.jl")
 # include dependencies
 include("../../src/superInclude.jl")
 using BenchmarkTools
@@ -35,10 +36,10 @@ using BenchmarkTools
     println("launch mapsto!(p<-n)")
     @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,"p<-n")
     println("launch elastoplast!()")
-    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$isΔFbar,$fwrkDeform,true)
+    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,0.1,$isΔFbar,$fwrkDeform,true)
     @warn "Digging deeper in elastoplast!(), "
     println("-> launch deform!()")
-    @btime deform!($mpD,$meD,$isΔFbar)
+    @btime deform!($mpD,$meD,0.1,$isΔFbar)
     println("-> launch ΔFbar!()")
     @btime ΔFbar!($mpD,$meD)
     println("-> launch elast!()")
