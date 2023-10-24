@@ -116,8 +116,8 @@ end
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
-                mpD.δx[nn,mp,1]  = -ξ*Δx
-                mpD.δx[nn,mp,2]  = -η*Δz       
+                mpD.δx[nn,1,mp]  = (meD.xn[id,1]-mpD.x[mp,1])
+                mpD.δx[nn,2,mp]  = (meD.xn[id,2]-mpD.x[mp,2])       
             end
             # B-matrix assembly
             mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]

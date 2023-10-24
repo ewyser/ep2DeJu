@@ -11,7 +11,9 @@
             if dim == 1 
                 meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] 
             end
-            meD.pn[  mpD.p2n[:,p],dim].+=(mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*(mpD.v[p,dim].+(mpD.∇v[dim,:,p]'*mpD.δx[:,p,:]'))')
+            A = mpD.v[p,:].+(mpD.∇v[:,:,p]*mpD.δx[:,:,p]')
+
+            meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*A[dim,:]
             meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
             meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
         end

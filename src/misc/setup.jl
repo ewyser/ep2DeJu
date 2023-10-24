@@ -216,8 +216,7 @@ function materialGeom(meD,lz,wl,coh0,cohr,ni)
         end
     end
     xp = if meD.nD == 2 hcat(xlt,zlt) elseif meD.nD == 3 hcat(xlt,ylt,zlt) end
-    id = shuffle(collect(1:size(xp,1)))
-    return xp[id,:],clt[id,:]
+    return xp,clt
 end
 function meshSetup(nel,L,typeD)
     # geometry                                               
@@ -271,7 +270,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     v0,v   = ones(typeD,nmp  ).*(2.0.*l0[:,1].*2.0.*l0[:,2]),ones(typeD,nmp  ).*(2.0.*l[:,1].*2.0.*l[:,2])
     m      = rho0.*v0
     coh    = ones(typeD,nmp ).*coh0#clt
-    #coh  =  clt
+    coh    =  clt
     #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
     cohr   = ones(typeD,nmp).*cohr
     phi    = ones(typeD,nmp).*phi0
@@ -310,9 +309,9 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         dev  = zeros(typeD,nstr,nmp),
         ep   = zeros(typeD,nstr,nmp),
         # additional quantities
-        δx   = zeros(typeD,meD.nn        ,nmp ,meD.nD  ),
-        ϕ∂ϕ  = zeros(typeD,meD.nn        ,nmp ,meD.nD+1),
-        B    = zeros(typeD,meD.nn.*meD.nD,nstr,nmp     ),
+        ϕ∂ϕ  = zeros(typeD,meD.nn        ,nmp   ,meD.nD+1),
+        B    = zeros(typeD,meD.nn.*meD.nD,nstr  ,nmp     ),
+        δx   = zeros(typeD,meD.nn        ,meD.nD,nmp     ),
         # connectivity
         p2e  = zeros(Int64,nmp),
         p2n  = zeros(Int64,meD.nn,nmp),

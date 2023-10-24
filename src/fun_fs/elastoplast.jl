@@ -25,11 +25,11 @@ end
     dim = 1.0/meD.nD
     # action
     @threads for p ∈ 1:mpD.nmp
-        # compute incremental deformation gradient
-        mpD.ΔF[:,:,p].= mpD.I.+(permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
-        mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # compute velocity gradient
-        mpD.∇v[:,:,p].= (mpD.ΔF[:,:,p].-mpD.I)./Δt
+        mpD.∇v[:,:,p].= (permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.vn[mpD.p2n[:,p],:])'
+        # compute incremental deformation gradient
+        mpD.ΔF[:,:,p].= mpD.I+(Δt.*mpD.∇v[:,:,p])
+        mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
         # update material point's volume and domain length
