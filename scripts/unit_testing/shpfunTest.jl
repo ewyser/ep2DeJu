@@ -1,14 +1,9 @@
 #include("./scripts/unit_testing/shpfunTest.jl")
 # Initialisation
-using Printf, LinearAlgebra, DelimitedFiles
-using Plots
-using Base.Threads
-using LaTeXStrings
+using LinearAlgebra, Plots, Test, LaTeXStrings
 include("../../src/superInclude.jl")
 
 @views function ϕ∂ϕCheck(ϕ∂ϕType)
-    @info "** ϵp2-3De v1.0: $(ϕ∂ϕType) check **"
-    @info "init. arbitrary nodal & mp's coordinates"
     xn = LinRange(-2, 12, 10)
     xn = xn[:]
     xp = LinRange(xn[3], xn[end-2], 4*80)
@@ -17,7 +12,6 @@ include("../../src/superInclude.jl")
     xB = vec(hcat(xn[3],xn[end-2]))
     a  = zeros(Float64,length(xp),length(xn),5)
     PoU = zeros(Float64,length(xp))
-    @info "shape functions calculation(s)..."
     if ϕ∂ϕType == "bsmpm"
         for mp ∈ eachindex(xp)
             for nn ∈ eachindex(xn)
@@ -127,11 +121,14 @@ include("../../src/superInclude.jl")
         sleep(2.5)
         savefig(path_plot*"check_$(ϕ∂ϕType)_PoU.png")
     end
-    @info "Figs saved in" path_plot
-    return println("[=> done! exiting...")
+    return minimum(PoU),sum(PoU)/length(xp),maximum(PoU)
 end
-ϕ∂ϕCheck("bsmpm")
-ϕ∂ϕCheck("gimpm")
-ϕ∂ϕCheck("smpm")
 
-# https://techytok.com/lesson-parallel-computing/
+for shp in ["bsmpm","gimpm","smpm"]
+    @testset "$(shp): PoU" begin
+        Min,Mean,Max = ϕ∂ϕCheck(shp)
+        @test Min  ≈ 1.0 atol=0.001
+        @test Mean ≈ 1.0 atol=0.001
+        @test Max  ≈ 1.0 atol=0.001
+    end
+end
