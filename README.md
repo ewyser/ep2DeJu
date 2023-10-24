@@ -2,7 +2,7 @@
 
 # ***ϵp2DeJu*** #
 ## **Description** 
-This is a small Julia project of an implementation of [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) (written in C and CUDA C) in the Julia language. It solves explicit elasto-plastic problems within a finite deformation framework, *i.e.,* logarithmic strains and kirchoff stresses, using the **material point method** with **cubic b-spline shape functions** (*i.e.,* instead of gimp formulation within ``ep2-3De v1.0``).
+It is an implementation of [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) in the Julia language. It solves explicit elasto-plastic problems within a finite deformation framework, *i.e.,* logarithmic strains and kirchoff stresses, using the **material point method** with **cubic b-spline shape functions** (*i.e.,* instead of gimp formulation).
 
 <p align="center">
   <img src="docs/img/epII.png" width="400"/>
