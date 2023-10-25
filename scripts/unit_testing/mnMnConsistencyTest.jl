@@ -12,7 +12,7 @@ const typeD     = Float64
 # main program
 @views function mnMn(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
-    @info "** ϵp2De v$(getVersion()): $(fwrkDeform) strain formulation **"
+    @info "** ϵp2De v$(getVersion()): lumped consistent mass matrix **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
     K,G,Del = D(1.0e6,0.3)                                                      # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
@@ -62,9 +62,9 @@ const typeD     = Float64
     
     
     gr()
-    p1 = heatmap(x,z,mn_plot  ,yflip=true, title=L"$m_n$")
-    p2 = heatmap(x,z,mn_L_plot,yflip=true, title=L"$m_{\mathrm{lump.}}$")
-    p3 = heatmap(x,z,log10.(abs.(mn_L_plot-mn_plot)),yflip=true,title=L"\mathrm{log}_{10}(|m_n-m_{\mathrm{lump.}}|)")
+    p1 = heatmap(x,z,mn_plot  ,yflip=true, title=L"$m_i = \sum m_{p} \phi_{i}(x_{p}) $")
+    p2 = heatmap(x,z,mn_L_plot,yflip=true, title=L"$m_{i,\mathrm{lump}}=\sum m_{ij} = \sum m_p \phi_{i}(x_p)\phi_{j}(x_p)$")
+    p3 = heatmap(x,z,log10.(abs.(mn_L_plot-mn_plot)),yflip=true,title=L"\mathrm{log}_{10}(|m_n-m_{i,\mathrm{lump}}|)")
     display(plot(p1,p2,p3; layout=(3,1), size=(450,550)))
     savefig(path_plot*"mnVsMn.png")
 
