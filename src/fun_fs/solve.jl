@@ -1,6 +1,6 @@
 @views function solve!(meD,Δt)
     # viscous damping
-    η   = 0.1
+    η       = 0.1
     # initialize
     meD.vn .= 0.0
     # solve momentum equation on the mesh
