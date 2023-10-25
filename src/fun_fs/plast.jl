@@ -339,9 +339,9 @@ end
             σ[4,p]  = 0.0
             epII[p]+= sqrt(2.0)*Δλ/3.0
         end
-        Δσ = [σxx-σ[1,p],σyy-σ[2,p],σzz-σ[3,p],σxy-σ[4,p]]
+        #Δσ = [σxx-σ[1,p],σyy-σ[2,p],σzz-σ[3,p],σxy-σ[4,p]]
         #println(size(Δσ))
-        ϵ[:,p] .-= Del\Δσ
+        #ϵ[:,p] .-= Del\Δσ
     end
     ηmax = 0
     return ηmax
