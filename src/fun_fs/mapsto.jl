@@ -21,7 +21,7 @@
         end
     end
     # lumped mass matrix
-    #meD.mn .= vec(sum(meD.Mn,dims=2))
+    #meD.mn .= sum(meD.Mn,dims=2)
     return nothing
 end
 @views function mapstoP!(mpD,meD,Δt)
