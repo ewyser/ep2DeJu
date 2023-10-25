@@ -1,9 +1,9 @@
 function getKwargs(kwargs)
     if isempty(kwargs)
         # ϵp2De(40,"P","MC")
-        ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = :bsmpm,:finite,:flipDM,true
+        ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = :bsmpm,:finite,:modUSL,true
     else
-        #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:flipDM,vollock=true)
+        #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:modUSL,vollock=true)
         kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :trsf => :modUSL, :vollock => true)
         arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2],kwargs0[4][2]]
         for (it,args0) ∈ enumerate(kwargs0), argin ∈ (kwargs)  
@@ -12,22 +12,22 @@ function getKwargs(kwargs)
             end
         end
 
-        ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = arg
+        ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = arg
         if ϕ∂ϕType != :bsmpm && ϕ∂ϕType != :gimpm && ϕ∂ϕType != :smpm
             err_msg = "$(ϕ∂ϕType): shape function undefined"
             throw(error(err_msg))
         elseif fwrkDeform != :finite && fwrkDeform != :infinitesimal
             err_msg = "$(fwrkDeform): deformation framework undefined"
             throw(error(err_msg))
-        elseif trsfrScheme != :modUSL && trsfrScheme != :tpicUSL
-            err_msg = "$(trsfrScheme): mapping scheme undefined"
+        elseif trsfrAp != :modUSL && trsfrAp != :tpicUSL
+            err_msg = "$(trsfrAp): mapping scheme undefined"
             throw(error(err_msg))
         elseif eltype(isΔFbar) != Bool
             err_msg = "$(isΔFbar): not a valid boolean"
             throw(error(err_msg))
         end
     end
-    return ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar
+    return ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar
 end
 function getVersion()
     return string(Pkg.project().version)

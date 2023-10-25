@@ -2,7 +2,7 @@
 include("../../src/superInclude.jl")
 # main program
 @views function ϵp2De(nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = getKwargs(kwargs)
+    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
     @info "** ϵp2De v$(getVersion()): $(fwrkDeform) strain formulation **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
@@ -34,9 +34,9 @@ include("../../src/superInclude.jl")
         Δt,g  = get_Δt(mpD.v,meD.h,yd),get_g(tw,tg,meD.nD)
         # bsmpm cycle
         ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
-        mapsto!(mpD,meD,g,Δt,"p->n")                  
+        mapsto!(mpD,meD,g,Δt,trsfrAp,"p->n")                  
         solve!(meD,Δt)
-        mapsto!(mpD,meD,g,Δt,"p<-n")
+        mapsto!(mpD,meD,g,Δt,trsfrAp,"p<-n")
         ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,isΔFbar,fwrkDeform,tw>te)
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
