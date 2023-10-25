@@ -1,6 +1,7 @@
 #= =#
 @views function mapstoN!(mpD,meD,g)
     # initialize nodal quantities
+    meD.Mn  .= 0.0
     meD.mn  .= 0.0
     meD.pn  .= 0.0
     meD.oobf.= 0.0
@@ -9,13 +10,18 @@
         @simd for p ∈ 1:mpD.nmp
             # accumulation
             if dim == 1 
-                meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] 
+                # lumped mass matrix
+                meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p]
+                # consistent mass matrix
+                meD.Mn[mpD.p2n[:,p],mpD.p2n[:,p]].+= (mpD.ϕ∂ϕ[:,p,1].*mpD.ϕ∂ϕ[:,p,1]'.*mpD.m[p]) 
             end
             meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*mpD.v[p,dim])
             meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
             meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
         end
     end
+    # lumped mass matrix
+    #meD.mn .= vec(sum(meD.Mn,dims=2))
     return nothing
 end
 @views function mapstoP!(mpD,meD,Δt)
