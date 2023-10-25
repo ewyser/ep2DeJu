@@ -1,10 +1,10 @@
 function getKwargs(kwargs)
     if isempty(kwargs)
         # ϵp2De(40,"P","MC")
-        ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = :bsmpm,:finite,:modUSL,true
+        ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = :bsmpm,:finite,:mUSL,true
     else
         #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:modUSL,vollock=true)
-        kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :trsf => :modUSL, :vollock => true)
+        kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :trsf => :mUSL, :vollock => true)
         arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2],kwargs0[4][2]]
         for (it,args0) ∈ enumerate(kwargs0), argin ∈ (kwargs)  
             if argin.first==args0[1]
@@ -19,7 +19,7 @@ function getKwargs(kwargs)
         elseif fwrkDeform != :finite && fwrkDeform != :infinitesimal
             err_msg = "$(fwrkDeform): deformation framework undefined"
             throw(error(err_msg))
-        elseif trsfrAp != :modUSL && trsfrAp != :tpicUSL
+        elseif trsfrAp != :mUSL && trsfrAp != :tpicUSL
             err_msg = "$(trsfrAp): mapping scheme undefined"
             throw(error(err_msg))
         elseif eltype(isΔFbar) != Bool

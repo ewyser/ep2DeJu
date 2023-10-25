@@ -2,7 +2,7 @@
 
 # ***ϵp2DeJu*** #
 ## **Description** 
-It is an implementation of [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) in the Julia language. It solves explicit elasto-plastic problems within a finite deformation framework (*i.e.,* adopting logarithmic strains and Kirchoff stresses to allow the use of conventional small-strain stress integration algorithms with a finite deformation framework), using the **material point method** with **cubic b-spline shape functions** alongside with a **modUSL approach**.
+This project is an implementation of [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) in the Julia language. It solves explicit elasto-plastic problems within a finite deformation framework (*i.e.,* adopting logarithmic strains and Kirchoff stresses which allows the use of conventional small-strain stress integration algorithms within a finite deformation framework), using the **material point method** with **cubic b-spline shape functions** alongside with a **mUSL approach**.
 
 <p align="center">
   <img src="docs/img/epII.png" width="400"/>
@@ -101,7 +101,7 @@ Status `./ep2DeJu/Project.toml`
 
 (ep2DeJu) pkg>
 ```
-4. Compile using ``include()`` and run method ``ϵp2De(nel,varPlot,cmType; kwargs...)``. It should result in the following:
+4. Pre-compile using ``include()`` and run method ``ϵp2De(nel,varPlot,cmType; kwargs...)``. It should result in the following:
 ```julia
 julia> include("./scripts/program/ep2De.jl")
 ϵp2De (generic function with 1 method)
@@ -125,9 +125,9 @@ julia>
 ```
 5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` is an option for selecting field for plot (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain), and ``cmType`` defines the constitutive model being used. 
 
-6. Optional ``kwargs`` are: ``shpfun=:bsmpm`` defining shape functions (currently ``:bsmpm`` or ``:gimpm``), ``fwrk=:finite`` defining the deformation framework, ``trsf=:flipDM`` defining the mapping scheme and ``vollock=true`` is a boolean (*e.g.,* ``true``/``false``) controlling volumetric locking corrections using the $\Delta\bar{F}$ method (see [1,2]). An example with ``kwargs`` is given below
+6. Optional ``kwargs`` are: ``shpfun=:bsmpm`` defining shape functions (currently ``:bsmpm`` or ``:gimpm``), ``fwrk=:finite`` defining the deformation framework, ``trsf=:mUSL`` defining the mapping scheme and ``vollock=true`` is a boolean (*e.g.,* ``true``/``false``) controlling volumetric locking corrections using the $\Delta\bar{F}$ method (see [1,2]). An example with ``kwargs`` is given below
 ```julia
-ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:flipDM,vollock=true)
+ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
 ```
 
 5. Outputs (figs, gif, etc.) are saved in the folder ```./docs/out/ ```
