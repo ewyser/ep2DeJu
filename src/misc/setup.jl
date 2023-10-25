@@ -270,7 +270,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     v0,v   = ones(typeD,nmp  ).*(2.0.*l0[:,1].*2.0.*l0[:,2]),ones(typeD,nmp  ).*(2.0.*l[:,1].*2.0.*l[:,2])
     m      = rho0.*v0
     coh    = ones(typeD,nmp ).*coh0#clt
-    coh    =  clt
+    #coh    =  clt
     #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
     cohr   = ones(typeD,nmp).*cohr
     phi    = ones(typeD,nmp).*phi0
