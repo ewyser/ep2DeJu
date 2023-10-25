@@ -7,7 +7,7 @@ include("../../src/misc/setup.jl")
 include("../../src/misc/physics.jl")
 include("../../src/misc/plot.jl")
 include("../../src/fun_fs/shpfun.jl")
-
+const path_plot = "./docs/out/"
 # main program
 @views function mnMn(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
@@ -49,6 +49,24 @@ include("../../src/fun_fs/shpfun.jl")
     # lumped mass matrix and lumped mass vector
     mn_lumped = sum(meD.Mn,dims=2)
     mn        = meD.mn
+
+
+    x = reshape(meD.xn[:,1],(meD.nno[2],(meD.nno[1])))
+    z = reshape(meD.xn[:,2],(meD.nno[2],(meD.nno[1])))
+    x = x[1,:]
+    z = sort(z[:,1])
+
+    mn_L_plot = reshape(mn_lumped,(meD.nno[2],(meD.nno[1])))
+    mn_plot   = reshape(mn       ,(meD.nno[2],(meD.nno[1])))
+    
+    
+    gr()
+    p1 = heatmap(x,z,mn_plot  ,yflip=true, title=L"$m_n$")
+    p2 = heatmap(x,z,mn_L_plot,yflip=true, title=L"$m_{\mathrm{lump.}}=\sum_j M_{ij}$")
+    p3 = heatmap(x,z,log10.(abs.(mn_L_plot-mn_plot)),yflip=true,title=L"\mathrm{log}_{10}(|m_n-m_{\mathrm{lump.}}|)")
+    display(plot(p1,p2,p3; layout=(3,1), size=(450,550)))
+    savefig(path_plot*"mnVsMn.png")
+
     return abs.(mn_lumped.-mn)
 end
 
