@@ -217,7 +217,7 @@ function materialGeom(meD,lz,wl,coh0,cohr,ni)
     end
     xp = if meD.nD == 2 hcat(xlt,zlt) elseif meD.nD == 3 hcat(xlt,ylt,zlt) end
     id = shuffle(collect(1:size(xp,1)))
-    return xp[id,:],clt[id,:]
+    return xp,clt
 end
 function meshSetup(nel,L,typeD)
     # geometry                                               
