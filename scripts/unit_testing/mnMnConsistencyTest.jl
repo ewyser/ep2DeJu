@@ -1,6 +1,6 @@
 # include("./scripts/unit_testing/mnMnConsistencyTest.jl")
 # include dependencies
-using Test
+using Test, Random, Plots, Pkg, Base.Threads, LaTeXStrings, LinearAlgebra
 include("../../src/misc/types.jl")
 include("../../src/misc/utilities.jl")
 include("../../src/misc/setup.jl")
@@ -8,6 +8,7 @@ include("../../src/misc/physics.jl")
 include("../../src/misc/plot.jl")
 include("../../src/fun_fs/shpfun.jl")
 const path_plot = "./docs/out/"
+const typeD     = Float64 
 # main program
 @views function mnMn(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
@@ -62,7 +63,7 @@ const path_plot = "./docs/out/"
     
     gr()
     p1 = heatmap(x,z,mn_plot  ,yflip=true, title=L"$m_n$")
-    p2 = heatmap(x,z,mn_L_plot,yflip=true, title=L"$m_{\mathrm{lump.}}=\sum_j M_{ij}$")
+    p2 = heatmap(x,z,mn_L_plot,yflip=true, title=L"$m_{\mathrm{lump.}}$")
     p3 = heatmap(x,z,log10.(abs.(mn_L_plot-mn_plot)),yflip=true,title=L"\mathrm{log}_{10}(|m_n-m_{\mathrm{lump.}}|)")
     display(plot(p1,p2,p3; layout=(3,1), size=(450,550)))
     savefig(path_plot*"mnVsMn.png")
