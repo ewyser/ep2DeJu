@@ -2,7 +2,7 @@
 
 # ***ϵp2DeJu*** #
 ## **Description** 
-It is an implementation of [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) in the Julia language. It solves explicit elasto-plastic problems within a finite deformation framework, *i.e.,* logarithmic strains and kirchoff stresses, using the **material point method** with **cubic b-spline shape functions** (*i.e.,* instead of gimp formulation).
+It is an implementation of [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) in the Julia language. It solves explicit elasto-plastic problems within a finite deformation framework (*i.e.,* logarithmic strains and kirchoff stresses), using the **material point method** with **cubic b-spline shape functions** (*i.e.,* instead of gimp formulation).
 
 <p align="center">
   <img src="docs/img/epII.png" width="400"/>
@@ -10,7 +10,7 @@ It is an implementation of [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De)
 
 * **Fig |** Slumping dynamics (without any volumetric locking corrections) showing the accumulated plastic strain $\epsilon_p^{\mathrm{acc}}$ after an elastic load of 8 s and an additional elasto-plastic load of $\approx$ 7 s. 
 
-The solver relies on random gaussian fields to generate initial fields $\psi(\boldsymbol{x})$, *e.g.,* the cohesion $c(\boldsymbol{x}_p)$ or the internal friction angle $\phi(\boldsymbol{x}_p)$, with the material point's coordinates $\boldsymbol{x}_p$. 
+The solver relies on random gaussian fields to generate initial fields $\psi(\boldsymbol{x})$, *e.g.,* the cohesion $c(\boldsymbol{x}_p)$ or the internal friction angle $\phi(\boldsymbol{x}_p)$, with $\boldsymbol{x}_p$ the material point's coordinates. 
 
 <p align="center">
   <img src="docs/img/c0.png" width="400"/>
