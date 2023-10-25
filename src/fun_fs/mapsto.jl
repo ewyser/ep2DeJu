@@ -11,8 +11,8 @@
             if dim == 1 
                 meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] 
             end
-            δx= meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1)
-            A = mpD.v[p,:].+(mpD.∇v[:,:,p]*δx')
+            δx= (meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1))'
+            A = mpD.v[p,:].+(mpD.∇v[:,:,p]*δx)
 
 
             meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*A[dim,:]
