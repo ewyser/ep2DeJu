@@ -10,9 +10,7 @@
     end 
     # compute nodal determinant of incremental deformation 
     @threads for n ∈ 1:meD.nno[meD.nD+1]
-        if meD.mn[n]>0.0 
-            meD.ΔJn[n]/= meD.mn[n]
-        end
+        if meD.mn[n]>0.0 meD.ΔJn[n]/= meD.mn[n] end
     end
     # compute determinant Jbar 
     @threads for p ∈ 1:mpD.nmp
@@ -20,10 +18,16 @@
     end
     return nothing
 end
-@views function deform!(mpD,meD,Δt,isΔFbar)
-    # calculate dimensional cst.
-    dim = 1.0/meD.nD
-    # action
+@views function domUpd(mpD)
+    @threads for p ∈ 1:mpD.nmp
+        # update material point's domain length using ymmetric material stretch tensor U
+        λ,n        = eigen(mpD.F[:,:,p]'*mpD.F[:,:,p])
+        U          = (n*diagm(sqrt.(λ))*n')
+        mpD.l[p,:].= U*mpD.l0[p,:]
+    end
+    return nothing
+end
+@views function deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
     @threads for p ∈ 1:mpD.nmp
         # compute incremental deformation gradient
         mpD.ΔF[:,:,p].= mpD.I.+(permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
@@ -32,15 +36,11 @@ end
         mpD.∇v[:,:,p].= (mpD.ΔF[:,:,p].-mpD.I)./Δt
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
-        # update material point's volume and domain length
+        # update material point's volume
         mpD.J[p]      = det(mpD.F[:,:,p])
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
-        mpD.l[p,:]   .= mpD.J[p].^(dim).*mpD.l0[p,:]  
-
-        λ,n           = eigen(mpD.F[:,:,p]'*mpD.F[:,:,p])
-        U             = (n*diagm(sqrt.(λ))*n')
-        mpD.l[p,:]   .= U*mpD.l[p,:]
     end
+    if ϕ∂ϕType == :gimpm domUpd(mpD) end
     if isΔFbar ΔFbar!(mpD,meD) end
     return nothing
 end
@@ -85,9 +85,9 @@ end
     end
     return nothing
 end
-@views function elastoplast!(mpD,meD,cmParam,cmType,Δt,isΔFbar,fwrkDeform,plastOn)
+@views function elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,plastOn)
     # get incremental deformation tensor & logarithmic strains
-    deform!(mpD,meD,Δt,isΔFbar)
+    deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
     # update kirchoff/cauchy stresses
     elast!(mpD,cmParam.Del,fwrkDeform)
     # plastic corrector
