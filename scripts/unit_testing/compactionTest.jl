@@ -2,6 +2,32 @@
 # include dependencies
 include("../../src/superInclude.jl")
 # main program
+function meshBCs(xn,h,nno,nD)
+    if nD == 2
+        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],0.0,Inf]                                    
+        bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
+        bcz = findall(x->x<=xB[3], xn[:,2])
+        bcX = ones(Int64,nno[nD+1],1)
+        bcX[bcx] .= 0
+        bcZ = ones(nno[nD+1],1)
+        bcZ[bcz] .= 0
+        bcX[bcz] .= 0
+        bc   = hcat(bcX,bcZ)
+    elseif nD == 3
+        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],minimum(xn[:,2])+2*h[1],maximum(xn[:,2])-2*h[1],0.0,Inf]                                    
+        bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
+        bcy = vcat(findall(x->x<=xB[3], xn[:,2]),findall(x->x>=xB[4], xn[:,2]))
+        bcz = findall(x->x<=xB[5], xn[:,3])
+        bcX = ones(Int64,nno[nD+1],1)
+        bcX[bcx] .= 0
+        bcY = ones(nno[nD+1],1)
+        bcY[bcy] .= 0
+        bcZ = ones(nno[nD+1],1)
+        bcZ[bcz] .= 0
+        bc   = hcat(bcX,bcY,bcZ)
+    end
+    return bc,xB
+end
 function materialGeomCompact(meD,lz,wl,coh0,cohr,ni)
     xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
     zL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
@@ -88,6 +114,25 @@ end
     end
     return ctr+=1
 end
+@views function solve!(meD,Δt)
+    # viscous damping
+    η   = 0.0
+    # initialize
+    meD.fn .= 0.0
+    meD.an .= 0.0
+    meD.vn .= 0.0
+    # solve momentum equation on the mesh
+    @threads for n ∈ 1:meD.nno[meD.nD+1]
+        if meD.mn[n]>0.0 
+            m           = (1.0/meD.mn[n]).*meD.bc[n,:]                   #(2,)
+            meD.Dn[n,:].= η.*norm(meD.oobf[n,:]).*sign.(meD.pn[n,:].*m)  #(2,)
+            meD.fn[n,:].= meD.oobf[n,:].-meD.Dn[n,:]                     #(2,)
+            meD.an[n,:].= meD.fn[n,:].*m                                 #(2,)
+            meD.vn[n,:].= (meD.pn[n,:].+Δt.*meD.fn[n,:]).*m              #(2,)
+        end
+    end
+    return nothing
+end
 
 @views function compactTest(nel,varPlot,ν,E,ρ0,l0; kwargs...)
     cmType = "MC"
@@ -95,15 +140,16 @@ end
     @info "** ϵp2De v$(getVersion()): compaction of a two-dimensional column under self weight **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
-    K,G,Del = D(E,ν)                                                      # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
+    K,G,Del = D(E,ν)                                                            # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
-    t,te,tg = 10.0,10.0,10.0                                                    # simulation time [s], elastic loading [s], gravity load
+    t,te,tg = 400.0,400.0,400.0                                                 # simulation time [s], elastic loading [s], gravity load
     # mesh & mp setup
-    L       = [10.0,l0]                                                        # domain geometry
+    L       = [10.0,l0]                                                         # domain geometry
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
+    z0      = copy(mpD.x[:,end])
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
@@ -134,13 +180,26 @@ end
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
     ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
-    sleep(2.5)
-    savefig(path_plot*"$(varPlot)_compaction_self_weight_test.png")
+    savefig(path_plot*"$(varPlot)_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform).png")
     @info "Figs saved in" path_plot
-    return msg("(✓) Done! exiting...")
+    # analytics
+    xN,yN = abs.(mpD.σ[2,:]),z0
+    xA,yA = abs.(ρ0.*g[end].*(l0.-z0)),z0
+    err   = sum(sqrt.((xN.-xA).^2).*mpD.V0)/(abs(g[end])*ρ0*l0*sum(mpD.V0))
+    return (xN,yN,xA,yA,err),ϕ∂ϕType,fwrkDeform
 end
+
+
 # initial parameters
-nel,l0 = 5,50.0
-ν,E,ρ0 = 0.3,1.0e6,80.0
+nel,l0 = 3,50.0
+ν,E,ρ0 = 0.0,1.0e4,80.0
 #action
-compactTest(nel,"P",ν,E,ρ0,l0;shpfun=:bsmpm,fwrk=:finite,vollock=true)
+DAT,ϕ∂ϕType,fwrkDeform = compactTest(nel,"P",ν,E,ρ0,l0;shpfun=:bsmpm,fwrk=:finite,vollock=true)
+
+xN,yN,xA,yA,err = DAT
+
+gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+plot(xN.*1e-3,yN,seriestype=:scatter, label="numerical approximation")
+display(plot!(xA.*1e-3,yA,label="analytical solution",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]"))
+savefig(path_plot*"numericVsAnalytic_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform).png")
+
