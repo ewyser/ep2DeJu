@@ -80,8 +80,8 @@ end
             show=true,
             )
     else
-        @error "field --"*string(type)*"-- not found as a valid arg. for plot"
-        exit(1)
+        err_msg = "$(type): plot option undefined"
+        throw(error(err_msg))
     end
     return ctr+=1
 end
