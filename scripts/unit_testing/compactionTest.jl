@@ -209,7 +209,7 @@ end
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
-    @info "mesh & mp feature(s):" dim=meD.nD nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
+    @info "mesh & mp feature(s):" dim=meD.nD nel=Int64(meD.nel[2]) nno=meD.nno[end] nmp=mpD.nmp
     # plot & time stepping parameters
     tw,tC,it,ctr,ηmax,ηtot = 0.0,1.0,0,0,0,0    
     # action
@@ -242,20 +242,39 @@ end
     xN,yN = abs.(mpD.σ[2,:]),z0
     xA,yA = abs.(ρ0.*g[end].*(l0.-z0)),z0
     err   = sum(sqrt.((xN.-xA).^2).*mpD.V0)/(abs(g[end])*ρ0*l0*sum(mpD.V0))
-    return (xN,yN,xA,yA,err),ϕ∂ϕType,fwrkDeform
+    return (xN,yN,xA,yA,err,meD.h)
 end
+@views function compacTest()
+    ϕ∂ϕType    = :gimpm
+    fwrkDeform = :finite
 
+    nel = (1,2,4,8,16,32,64,128)
+    store = []
+    H     = []
+    error = []
+    for (it,nely) in enumerate(nel)
+        # initial parameters
+        nel,l0 = nely,50.0
+        ν,E,ρ0 = 0.0,1.0e4,80.0
+        #action
+        DAT = compactTest(nel,"P",ν,E,ρ0,l0;shpfun=ϕ∂ϕType,fwrk=fwrkDeform,vollock=false)
+        push!(store,DAT )
+    end 
 
-# initial parameters
-nel,l0 = 10,50.0
-ν,E,ρ0 = 0.0,1.0e4,80.0
-#action
-DAT,ϕ∂ϕType,fwrkDeform = compactTest(nel,"P",ν,E,ρ0,l0;shpfun=:gimpm,fwrk=:finite,vollock=false)
-
-xN,yN,xA,yA,err = DAT
-
-gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-plot(xN.*1e-3,yN,seriestype=:scatter, label="numerical approximation")
-display(plot!(xA.*1e-3,yA,label="analytical solution",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]"))
-savefig(path_plot*"numericVsAnalytic_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform).png")
-
+    for k in 1:length(store)
+        xN,yN,xA,yA,err,h = store[k]
+        push!(H ,h[end])
+        push!(error,err)
+        nely = nel[k]
+        gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="numerical approximation")
+        p1 = plot!(xA.*1e-3,yA,label="analytical solution",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
+        display(plot(p1; layout=(1,1), size=(450,250)))
+        savefig(path_plot*"numericVsAnalytic_compaction_self_weight_test_nel_$(nely)_$(ϕ∂ϕType)_$(fwrkDeform).png")
+    end
+    gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+    p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$\dfrac{1}{h}$ [m$^{-1}$]",ylabel="error",xaxis=:log,yaxis=:log) 
+    display(plot(p1; layout=(1,1), size=(450,250)))
+    savefig(path_plot*"convergence_compaction_self_weight_test_nel_$(ϕ∂ϕType)_$(fwrkDeform).png")
+end
+compacTest()
