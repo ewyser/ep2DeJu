@@ -1,11 +1,11 @@
-#include("./scripts/unit_testing/allocTest.jl")
+# include("./scripts/unit_testing/allocTest.jl")
 # include dependencies
 include("../../src/superInclude.jl")
 using BenchmarkTools
 
 @warn "validation/test"
 @views function allocCheck(nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,trsfrScheme,isΔFbar = getKwargs(kwargs)
+    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
     @info "** ϵp2-3De v$(getVersion()): time & allocation evaluation **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
@@ -30,16 +30,16 @@ using BenchmarkTools
     println("launch ϕ∂ϕ!()")
     @btime ϕ∂ϕ!($mpD,$meD,$ϕ∂ϕType) 
     println("launch mapsto!(p->n)")
-    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,"p->n")   
+    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,$trsfrAp,"p->n")   
     println("launch solve!()")
     @btime solve!($meD,0.1)
     println("launch mapsto!(p<-n)")
-    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,"p<-n")
+    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,$trsfrAp,"p<-n")
     println("launch elastoplast!()")
-    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,0.1,$isΔFbar,$fwrkDeform,true)
+    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,0.1,$ϕ∂ϕType,$isΔFbar,$fwrkDeform,true)
     @warn "Digging deeper in elastoplast!(), "
     println("-> launch deform!()")
-    @btime deform!($mpD,$meD,0.1,$isΔFbar)
+    @btime deform!($mpD,$meD,0.1,$ϕ∂ϕType,$isΔFbar)
     println("-> launch ΔFbar!()")
     @btime ΔFbar!($mpD,$meD)
     println("-> launch elast!()")

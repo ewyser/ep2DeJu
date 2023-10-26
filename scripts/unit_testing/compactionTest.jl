@@ -228,7 +228,7 @@ end
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p->n")                  
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p<-n")
-        ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,isΔFbar,fwrkDeform,tw>te)
+        ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,tw>te)
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
         # update progress bas
