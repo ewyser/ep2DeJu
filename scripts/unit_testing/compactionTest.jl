@@ -71,14 +71,14 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
 end
 @views function plotStuff(mpD,t,type,ctr,title)
     xlab,ylab = L"$x-$direction",L"$z-$direction"
-    gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.75,)#markerstrokecolor=:match,)
+    gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.0,markerstrokecolor=:match,)
     temp = title
     if type == "P"
         p = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
         scatter(mpD.x[:,1],mpD.x[:,2],zcolor=p,
             xlabel = xlab,
             ylabel = ylab,
-            label=L"$p=-\dfrac{1}{3}\left(\sigma_{xx,p}+\sigma_{yy,p}+\sigma_{zz,p}\right)$",
+            label=L"$\sigma_{zz}$",
             aspect_ratio=1,
             c=:viridis,
             ylim=(0.0,50.0),
@@ -116,7 +116,7 @@ end
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<=t
         # plot/save
-        if tw >= ctr*tC ctr = plotStuff(mpD,tw,varPlot,ctr,L"$\sigma_{zz}$, $g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]") end
+        if tw >= ctr*tC ctr = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]") end
         # set clock on/off
         tic = time_ns()
         # adaptative Δt & linear increase in gravity
@@ -133,7 +133,7 @@ end
         next!(prog;showvalues = getVals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
-    ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$\sigma_{zz}$, $g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
+    ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
     sleep(2.5)
     savefig(path_plot*"$(varPlot)_compaction_self_weight_test.png")
     @info "Figs saved in" path_plot
