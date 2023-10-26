@@ -228,6 +228,7 @@ end
         ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,tw>te)
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
+        next!(prog;showvalues = getVals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
     ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
@@ -247,7 +248,7 @@ end
     H     = []
     error = []
     @testset "convergence using $(ϕ∂ϕType), $(fwrkDeform) deformation" begin
-        nel = (1,2,4)
+        nel = (1,2,4,8,16)
         ERR   = 1.0
         for (it,nely) in enumerate(nel)
             # initial parameters
