@@ -130,8 +130,8 @@ end
                 id     = mpD.p2n[nn,mp]
                 ξ      = (mpD.x[mp,1]-meD.xn[id,1])
                 η      = (mpD.x[mp,2]-meD.xn[id,2])
-                ϕx,dϕx = NdN(ξ,Δx,mpD.l0[mp,1])
-                ϕz,dϕz = NdN(η,Δz,mpD.l0[mp,2])
+                ϕx,dϕx = NdN(ξ,Δx,mpD.l[mp,1])
+                ϕz,dϕz = NdN(η,Δz,mpD.l[mp,2])
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        

@@ -36,6 +36,10 @@ end
         mpD.J[p]      = det(mpD.F[:,:,p])
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
         mpD.l[p,:]   .= mpD.J[p].^(dim).*mpD.l0[p,:]  
+
+        λ,n           = eigen(mpD.F[:,:,p]'*mpD.F[:,:,p])
+        U             = (n*diagm(sqrt.(λ))*n')
+        mpD.l[p,:]   .= U*mpD.l[p,:]
     end
     if isΔFbar ΔFbar!(mpD,meD) end
     return nothing

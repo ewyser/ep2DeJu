@@ -2,6 +2,22 @@
 # include dependencies
 include("../../src/superInclude.jl")
 # main program
+function meshGeom(L,nel)
+    nD = length(L)
+    h   = [L[1],L[2]/nel]
+    return L,h,nD
+end
+function meshCoord(nD,L,h)
+    xn  = collect((0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])) 
+    zn  = reverse(collect((0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])))
+    nno = [length(xn),length(zn),length(xn)*length(zn)] 
+    nel = [nno[1]-1,nno[2]-1,(nno[1]-1)*(nno[2]-1)]
+    nn  = 16
+    xn  = (xn'.*ones(typeD,nno[2],1     ))     
+    zn  = (     ones(typeD,nno[1],1     )'.*zn)
+    x   = hcat(vec(xn),vec(zn))
+    return x,nn,nel,nno
+end
 function meshBCs(xn,h,nno,nD)
     if nD == 2
         xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],0.0,Inf]                                    
@@ -11,7 +27,7 @@ function meshBCs(xn,h,nno,nD)
         bcX[bcx] .= 0
         bcZ = ones(nno[nD+1],1)
         bcZ[bcz] .= 0
-        bcX[bcz] .= 0
+        #bcX[bcz] .= 0
         bc   = hcat(bcX,bcZ)
     elseif nD == 3
         xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],minimum(xn[:,2])+2*h[1],maximum(xn[:,2])-2*h[1],0.0,Inf]                                    
@@ -27,6 +43,45 @@ function meshBCs(xn,h,nno,nD)
         bc   = hcat(bcX,bcY,bcZ)
     end
     return bc,xB
+end
+function meshSetup(nel,L,typeD)
+    # geometry                                               
+    L,h,nD       = meshGeom(L,nel)
+    # mesh 
+    x,nn,nel,nno = meshCoord(nD,L,h)
+    # boundary conditions
+    bc,xB        = meshBCs(x,h,nno,nD)
+    # constructor
+    meD = (
+        nD   = nD,
+        nel  = nel,
+        nno  = nno,
+        nn   = nn,
+        L    = L,
+        h    = h,
+        minC = minimum(x,dims=2),
+        # nodal quantities
+        xn   = x,
+        mn   = zeros(typeD,nno[nD+1]             ), # lumped mass vector
+        Mn   = zeros(typeD,nno[nD+1],nno[nD+1]   ), # consistent mass matrix
+        fext = zeros(typeD,nno[nD+1],nD          ), 
+        fint = zeros(typeD,nno[nD+1],nD          ),
+        oobf = zeros(typeD,nno[nD+1],nD          ),
+        Dn   = zeros(typeD,nno[nD+1],nD          ),
+        fn   = zeros(typeD,nno[nD+1],nD          ),
+        an   = zeros(typeD,nno[nD+1],nD          ),
+        pn   = zeros(typeD,nno[nD+1],nD          ),
+        vn   = zeros(typeD,nno[nD+1],nD          ),
+        Δun  = zeros(typeD,nno[nD+1],nD          ),
+        ΔJn  = zeros(typeD,nno[nD+1],nD          ),
+        bn   = zeros(typeD,nD       ,nD,nno[nD+1]),
+        # mesh-to-node topology
+        e2n  = e2N(nD,nno,nel,nn),
+        xB   = xB,
+        # mesh boundary conditions
+        bc   = bc,
+    )
+    return meD
 end
 function materialGeomCompact(meD,lz,wl,coh0,cohr,ni)
     xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
@@ -116,7 +171,7 @@ end
 end
 @views function solve!(meD,Δt)
     # viscous damping
-    η   = 0.0
+    η   = 0.05
     # initialize
     meD.fn .= 0.0
     meD.an .= 0.0
@@ -144,9 +199,10 @@ end
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
-    t,te,tg = 400.0,400.0,400.0                                                 # simulation time [s], elastic loading [s], gravity load
+    tg      = ceil((1.0/yd)*(2.0*l0)*40.0)
+    t,te    = 1.25*tg,1.25*tg
     # mesh & mp setup
-    L       = [10.0,l0]                                                         # domain geometry
+    L       = [l0/nel,l0]                                                       # domain geometry
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
     z0      = copy(mpD.x[:,end])
@@ -191,10 +247,10 @@ end
 
 
 # initial parameters
-nel,l0 = 3,50.0
+nel,l0 = 10,50.0
 ν,E,ρ0 = 0.0,1.0e4,80.0
 #action
-DAT,ϕ∂ϕType,fwrkDeform = compactTest(nel,"P",ν,E,ρ0,l0;shpfun=:bsmpm,fwrk=:finite,vollock=true)
+DAT,ϕ∂ϕType,fwrkDeform = compactTest(nel,"P",ν,E,ρ0,l0;shpfun=:gimpm,fwrk=:finite,vollock=false)
 
 xN,yN,xA,yA,err = DAT
 
