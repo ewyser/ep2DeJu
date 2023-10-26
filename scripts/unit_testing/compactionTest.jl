@@ -74,7 +74,7 @@ end
     gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.0,markerstrokecolor=:match,)
     temp = title
     if type == "P"
-        p = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
+        p = -mpD.σ[2,:]/1e3
         scatter(mpD.x[:,1],mpD.x[:,2],zcolor=p,
             xlabel = xlab,
             ylabel = ylab,
@@ -89,19 +89,19 @@ end
     return ctr+=1
 end
 
-@views function compactTest(nel::Int64,varPlot::String,cmType::String; kwargs...)
+@views function compactTest(nel,varPlot,ν,E,ρ0,l0; kwargs...)
+    cmType = "MC"
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
     @info "** ϵp2De v$(getVersion()): compaction of a two-dimensional column under self weight **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
-    K,G,Del = D(1.0e6,0.3)                                                      # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
-    ρ0      = 80.0                                                              # density [kg/m^3]
+    K,G,Del = D(E,ν)                                                      # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
     t,te,tg = 10.0,10.0,10.0                                                    # simulation time [s], elastic loading [s], gravity load
     # mesh & mp setup
-    L       = [10.0,50.0]                                                        # domain geometry
+    L       = [10.0,l0]                                                        # domain geometry
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
@@ -139,4 +139,8 @@ end
     @info "Figs saved in" path_plot
     return msg("(✓) Done! exiting...")
 end
-compactTest(5,"P","MC";shpfun=:bsmpm,fwrk=:finite,vollock=true)
+# initial parameters
+nel,l0 = 5,50.0
+ν,E,ρ0 = 0.3,1.0e6,80.0
+#action
+compactTest(nel,"P",ν,E,ρ0,l0;shpfun=:bsmpm,fwrk=:finite,vollock=true)
