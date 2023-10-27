@@ -29,11 +29,13 @@ end
 end
 @views function deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
     @threads for p ∈ 1:mpD.nmp
+        # compute displacement gradient
+        mpD.∇u[:,:,p].= (permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
         # compute incremental deformation gradient
-        mpD.ΔF[:,:,p].= mpD.I.+(permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
+        mpD.ΔF[:,:,p].= mpD.I.+mpD.∇u[:,:,p]
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # compute velocity gradient
-        mpD.∇v[:,:,p].= (mpD.ΔF[:,:,p].-mpD.I)./Δt
+        mpD.∇v[:,:,p].= mpD.∇u[:,:,p]./Δt
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
         # update material point's volume

@@ -130,6 +130,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         J    = ones(typeD,nmp),
         # tensor in matrix notation
         I    = Matrix(1.0I,meD.nD,meD.nD    ),
+        ∇u   = zeros(typeD,meD.nD,meD.nD,nmp),
         ΔF   = zeros(typeD,meD.nD,meD.nD,nmp),
         F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
         ∇v   = zeros(typeD,meD.nD,meD.nD,nmp),
