@@ -249,7 +249,7 @@ end
     return (xN,yN,xA,yA),meD.h,err
 end
 @views function compacTest()
-    ϕ∂ϕType    = :bsmpm
+    ϕ∂ϕType    = :gimpm
     fwrkDeform = :finite
     trsfrAp    = :mUSL
     @info "** ϵp2De v$(getVersion()): compaction of a two-dimensional column under self weight **"
