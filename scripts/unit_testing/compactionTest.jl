@@ -251,35 +251,34 @@ end
     ϕ∂ϕType    = :gimpm
     fwrkDeform = :finite
     @info "** ϵp2De v$(getVersion()): compaction of a two-dimensional column under self weight **"
-    
-    store = []
-    H     = []
-    error = []
+    store,H,error = [],[],[]
     try
         @testset "convergence using $(ϕ∂ϕType), $(fwrkDeform) deformation" begin
-            nel = (1,2,4,8,16)
-            ERR   = 1.0
-            for (it,nely) in enumerate(nel)
-                # initial parameters
-                nel,l0 = nely,50.0
-                ν,E,ρ0 = 0.0,1.0e4,80.0
+            # geometry
+            n         = [0,1,2,3,4,5]
+            nel       = 2.0.^n
+            # initial parameters 
+            l0,ν,E,ρ0 = 50.0,0.0,1.0e4,80.0
+            # init error
+            ϵ         = 1.0
+            for (it,nel) in enumerate(nel)
                 #action
                 DAT,h,err = compactTest(nel,"P",ν,E,ρ0,l0;shpfun=ϕ∂ϕType,fwrk=fwrkDeform,vollock=true)
                 push!(store,DAT )
                 push!(H ,h[end])
                 push!(error,err)
                 # test
-                @test err < ERR
-                ERR = err
+                @test (err < ϵ )
+                ϵ = err
             end 
         end
         gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
-        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$\dfrac{1}{h}$ [m$^{-1}$]",ylabel="error",xaxis=:log,yaxis=:log) 
+        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log,yaxis=:log) 
         display(plot(p1; layout=(1,1), size=(450,250)))
         savefig(path_plot*"convergence_pass_compacTest_$(ϕ∂ϕType)_$(fwrkDeform).png")
     catch
         gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
-        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$\dfrac{1}{h}$ [m$^{-1}$]",ylabel="error",xaxis=:log,yaxis=:log) 
+        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log,yaxis=:log) 
         display(plot(p1; layout=(1,1), size=(450,250)))
         savefig(path_plot*"convergence_fail_compacTest_$(ϕ∂ϕType)_$(fwrkDeform).png")
     end
