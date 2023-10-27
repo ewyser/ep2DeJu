@@ -189,6 +189,14 @@ end
     end
     return nothing
 end
+@views function getVals(it,cmpl,symb)
+    # completion [%]
+    cmpl = round(100.0*cmpl,digits=1)
+    # save vals
+    vals = [("iteration(s)",it),
+            (symb*" t/T",cmpl)]
+    return vals
+end
 
 @views function compactTest(nel,varPlot,ν,E,ρ0,l0; kwargs...)
     cmType = "MC"
@@ -228,9 +236,9 @@ end
         ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,tw>te)
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
-        next!(prog;showvalues = getVals(meD,mpD,it,ηmax,ηtot,tw/t,"(✗)"))
+        next!(prog;showvalues = getVals(it,tw/t,"(✗)"))
     end
-    ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
+    ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(it,1.0,"(✓)"))
     ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
     savefig(path_plot*"$(varPlot)_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform).png")
     # analytics
