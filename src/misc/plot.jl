@@ -40,48 +40,34 @@ default(
     savefig(path_plot*"phi0.png")
 end
 @views function plotStuff(mpD,t,type,ctr)
-    xlab,ylab = L"$x-$direction",L"$z-$direction"
-    gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.75,)#markerstrokecolor=:match,)
     temp = L"$t = $"*string(round(t,digits=1))*" [s]"
     if type == "P"
-        p = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
-        scatter(mpD.x[:,1],mpD.x[:,2],zcolor=p,
-            xlabel = xlab,
-            ylabel = ylab,
-            label=L"$p=-\left(\sigma_{xx,p}+\sigma_{yy,p}+\sigma_{zz,p}\right)/3$",
-            aspect_ratio=1,
-            c=:viridis,
-            ylim=(-10.0,20.0),
-            title="pressure: "*temp,
-            show=true,
-            )  
+        d   = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
+        lab = L"$p=-\left(\sigma_{xx,p}+\sigma_{yy,p}+\sigma_{zz,p}\right)/3$"
+        tit = "pressure, "*temp
     elseif type == "epII"
-        scatter(mpD.x[:,1],mpD.x[:,2],zcolor=mpD.ϵpII,
-            xlabel = xlab,
-            ylabel = ylab,    
-            label=L"$\epsilon_{\mathrm{II}}^{\mathrm{acc}}$",
-            aspect_ratio=1,
-            c=:viridis,
-            clims=(0.0,2.0),
-            ylim=(-10.0,20.0),
-            title="plastic strain: "*temp,
-            show=true,
-            ) 
+        d = mpD.ϵpII
+        lab = L"$\epsilon_{\mathrm{II}}^{\mathrm{acc}}$"
+        tit = "plastic strain, "*temp
     elseif type == "du"
-        scatter(mpD.x[:,1],mpD.x[:,2],zcolor=sqrt.(mpD.u[:,1].^2+mpD.u[:,2].^2),
-            markershape=:circle,
-            xlabel = xlab,
-            ylabel = ylab,
-            label=L"$\Delta u$",
-            aspect_ratio=1,
-            c=:viridis,
-            ylim=(-10.0,20.0),
-            title="displacement: "*temp,
-            show=true,
-            )
+        d = sqrt.(mpD.u[:,1].^2+mpD.u[:,2].^2)
+        lab = L"$\Delta u$"
+        tit = "displacement, "*temp
     else
         err_msg = "$(type): plot option undefined"
         throw(error(err_msg))
     end
+    # plot
+    gr(legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.75,)#markerstrokecolor=:match,)
+    p1 = scatter(mpD.x[:,1],mpD.x[:,2],zcolor=d,
+    xlabel = L"$x-$direction",
+    ylabel = L"$z-$direction",
+    label  = lab,
+    aspect_ratio=1,
+    c=:viridis,
+    ylim=(-10.0,20.0),
+    title=tit,
+    )
+    display(plot(p1;layout=(1,1),size=(500,250))) 
     return ctr+=1
 end
