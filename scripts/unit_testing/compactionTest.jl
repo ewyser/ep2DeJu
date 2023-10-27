@@ -209,7 +209,7 @@ end
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
-    @info "mesh & mp feature(s):" nel=Int64(meD.nel[2])
+    @info "mesh & mp feature(s):" nel=Int64(meD.nel[2]-4)
     # plot & time stepping parameters
     tw,tC,it,ctr,ηmax,ηtot = 0.0,1.0,0,0,0,0    
     # action
@@ -248,7 +248,7 @@ end
     H     = []
     error = []
     @testset "convergence using $(ϕ∂ϕType), $(fwrkDeform) deformation" begin
-        nel = (1,2,4,8,16)
+        nel = (1,2,4,8,16,32,64,128)
         ERR   = 1.0
         for (it,nely) in enumerate(nel)
             # initial parameters
