@@ -1,5 +1,4 @@
-#= =#
-@views function mapstoN!(mpD,meD,g)
+@views function mUSLmapstoN!(mpD,meD,g)
     # initialize nodal quantities
     meD.Mn  .= 0.0
     meD.mn  .= 0.0
@@ -20,11 +19,13 @@
             meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
         end
     end
-    # lumped mass matrix
-    #meD.mn .= sum(meD.Mn,dims=2)
     return nothing
 end
-@views function mapstoP!(mpD,meD,Δt)
+@views function tpicUSLmapstoN!(mpD,meD,g)
+
+    return nothing
+end
+@views function mUSLmapstoP!(mpD,meD,Δt)
     # mapping back to mp's
     @simd for dim ∈ 1:meD.nD
         # flip update
@@ -33,6 +34,10 @@ end
             mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
         end          
     end
+    return nothing
+end
+@views function tpicUSLmapstoP!(mpD,meD,Δt)
+
     return nothing
 end
 @views function DM!(mpD,meD,Δt)
@@ -62,12 +67,30 @@ end
     end
     return nothing
 end
+@views function mapstoN!(mpD,meD,g,trsfrAp)
+    if trsfrAp == :mUSL
+        mUSLmapstoN!(mpD,meD,g)
+    elseif trsfrAp == :tpicUSL
+
+    end
+    # lumped mass matrix
+    #meD.mn .= sum(meD.Mn,dims=2)
+    return nothing
+end
+@views function mapstoP!(mpD,meD,Δt,trsfrAp)
+    if trsfrAp == :mUSL
+        mUSLmapstoP!(mpD,meD,Δt)
+        DM!(         mpD,meD,Δt)
+    elseif trsfrAp == :tpicUSL
+
+    end
+    return nothing
+end
 @views function mapsto!(mpD,meD,g,Δt,trsfrAp,whereto)
     if whereto == "p->n"
-        mapstoN!(mpD,meD,g)
+        mapstoN!(mpD,meD,g,trsfrAp)
     elseif whereto == "p<-n"
-        mapstoP!(mpD,meD,Δt)
-        DM!(     mpD,meD,Δt)
+        mapstoP!(mpD,meD,Δt,trsfrAp)
     end
     return nothing
 end
