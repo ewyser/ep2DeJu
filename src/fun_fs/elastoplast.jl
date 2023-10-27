@@ -20,7 +20,7 @@
 end
 @views function domUpd(mpD)
     @threads for p ∈ 1:mpD.nmp
-        # update material point's domain length using ymmetric material stretch tensor U
+        # update material point's domain length using symmetric material stretch tensor U
         λ,n        = eigen(mpD.F[:,:,p]'*mpD.F[:,:,p])
         U          = (n*diagm(sqrt.(λ))*n')
         mpD.l[p,:].= U*mpD.l0[p,:]
@@ -29,13 +29,12 @@ end
 end
 @views function deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
     @threads for p ∈ 1:mpD.nmp
-        # compute displacement gradient
-        mpD.∇u[:,:,p].= (permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.Δun[mpD.p2n[:,p],:])'
+        # compute velocity gradient & displacement gradient
+        mpD.∇v[:,:,p].= (permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.vn[mpD.p2n[:,p],:])'
+        mpD.∇u[:,:,p].= Δt.*mpD.∇v[:,:,p]
         # compute incremental deformation gradient
         mpD.ΔF[:,:,p].= mpD.I.+mpD.∇u[:,:,p]
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
-        # compute velocity gradient
-        mpD.∇v[:,:,p].= mpD.∇u[:,:,p]./Δt
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
         # update material point's volume
@@ -78,7 +77,6 @@ end
     end   
     return nothing
 end
-# For volumetric locking, F-bar method is used, see DOI: 10.1002/nag.3599
 @views function elast!(mpD,Del,fwrkDeform)
     if fwrkDeform == :finite
         finite!(mpD,Del) 

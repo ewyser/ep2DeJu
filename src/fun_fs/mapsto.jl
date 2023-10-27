@@ -25,7 +25,25 @@
     return nothing
 end
 @views function tpicUSLmapstoN!(mpD,meD,g)
-
+    # initialize nodal quantities
+    meD.Mn  .= 0.0
+    meD.mn  .= 0.0
+    meD.pn  .= 0.0
+    meD.oobf.= 0.0
+    # mapping back to mesh
+    @threads for dim ∈ 1:meD.nD
+        @simd for p ∈ 1:mpD.nmp
+            # accumulation
+            if dim == 1 
+                meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] 
+            end
+            δx= (meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1))'
+            A = mpD.v[p,:].+(mpD.∇v[:,:,p]*δx)
+            meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*A[dim,:]
+            meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
+            meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
+        end
+    end
     return nothing
 end
 @views function mUSLmapstoP!(mpD,meD,Δt)
@@ -40,13 +58,20 @@ end
     return nothing
 end
 @views function tpicUSLmapstoP!(mpD,meD,Δt)
-
+    # mapping back to mp's
+    @simd for dim ∈ 1:meD.nD
+        # flip update
+        @threads for p ∈ 1:mpD.nmp        
+            mpD.v[p,dim] =    (mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+            mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+        end          
+    end
     return nothing
 end
 @views function DM!(mpD,meD,Δt)
     # initialize for DM
-    meD.pn .= 0.0
-    meD.Δun.= 0.0
+    meD.pn.= 0.0
+    meD.vn.= 0.0
     # accumulate material point contributions
     @threads for dim ∈ 1:meD.nD
         # accumulation
@@ -58,14 +83,14 @@ end
     @simd for dim ∈ 1:meD.nD
         @threads for n ∈ 1:meD.nno[meD.nD+1]
             if meD.mn[n]>0.0
-                meD.Δun[n,dim] = (Δt*meD.pn[n,dim]*(1.0/meD.mn[n])*meD.bc[n,dim])
+                meD.vn[n,dim] = (meD.pn[n,dim]*(1.0/meD.mn[n])*meD.bc[n,dim])
             end    
         end
     end
     # update material point's displacement
     @simd for dim ∈ 1:meD.nD
         @threads for p ∈ 1:mpD.nmp
-            mpD.u[p,dim]+= (mpD.ϕ∂ϕ[:,p,1]'*meD.Δun[mpD.p2n[:,p],dim])
+            mpD.u[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
         end        
     end
     return nothing
@@ -77,7 +102,7 @@ end
     if trsfrAp == :mUSL
         mUSLmapstoN!(mpD,meD,g)
     elseif trsfrAp == :tpicUSL
-
+        tpicUSLmapstoN!(mpD,meD,g)
     end
     # lumped mass matrix
     #meD.mn .= sum(meD.Mn,dims=2)
@@ -88,7 +113,7 @@ end
         mUSLmapstoP!(mpD,meD,Δt)
         DM!(         mpD,meD,Δt)
     elseif trsfrAp == :tpicUSL
-
+        tpicUSLmapstoP!(mpD,meD,Δt)
     end
     return nothing
 end

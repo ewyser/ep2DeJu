@@ -3,7 +3,7 @@ function getKwargs(kwargs)
         # ϵp2De(40,"P","MC")
         ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = :bsmpm,:finite,:mUSL,true
     else
-        #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:modUSL,vollock=true)
+        #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
         kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :trsf => :mUSL, :vollock => true)
         arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2],kwargs0[4][2]]
         for (it,args0) ∈ enumerate(kwargs0), argin ∈ (kwargs)  
