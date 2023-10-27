@@ -48,11 +48,11 @@ end
         scatter(mpD.x[:,1],mpD.x[:,2],zcolor=p,
             xlabel = xlab,
             ylabel = ylab,
-            label=L"$p=-\dfrac{1}{3}\left(\sigma_{xx,p}+\sigma_{yy,p}+\sigma_{zz,p}\right)$",
+            label=L"$p=-\left(\sigma_{xx,p}+\sigma_{yy,p}+\sigma_{zz,p}\right)/3$",
             aspect_ratio=1,
             c=:viridis,
             ylim=(-10.0,20.0),
-            title="Pressure: "*temp,
+            title="pressure: "*temp,
             show=true,
             )  
     elseif type == "epII"
@@ -64,7 +64,7 @@ end
             c=:viridis,
             clims=(0.0,2.0),
             ylim=(-10.0,20.0),
-            title="Plastic strain: "*temp,
+            title="plastic strain: "*temp,
             show=true,
             ) 
     elseif type == "du"
@@ -76,7 +76,7 @@ end
             aspect_ratio=1,
             c=:viridis,
             ylim=(-10.0,20.0),
-            title="Displacement: "*temp,
+            title="displacement: "*temp,
             show=true,
             )
     else
