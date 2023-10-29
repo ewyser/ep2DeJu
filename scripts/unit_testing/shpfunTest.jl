@@ -9,12 +9,15 @@ include("../../src/misc/utilities.jl")
 @views function ϕ∂ϕCheck(ϕ∂ϕType)
     xn = LinRange(-2, 12, 10)
     xn = xn[:]
-    xp = LinRange(xn[3], xn[end-2], 4*80)
+    np = 4*80
+    xp = LinRange(xn[3], xn[end-2],np)
     xp = xp[:]
     dx = abs(xn[1]-xn[2])
     xB = vec(hcat(xn[3],xn[end-2]))
     a  = zeros(Float64,length(xp),length(xn),5)
+    
     PoU = zeros(Float64,length(xp))
+    LFR = zeros(length(xp),length(xn))
     if ϕ∂ϕType == "bsmpm"
         for mp ∈ eachindex(xp)
             for nn ∈ eachindex(xn)
@@ -37,6 +40,7 @@ include("../../src/misc/utilities.jl")
                 a[mp,nn,2] = dϕx
                 a[mp,nn,3] = dϕz
                 a[mp,nn,4] = xp[mp] 
+                LFR[mp,nn]= ϕx*xn[nn]
             end
         end
     elseif ϕ∂ϕType == "gimpm"
@@ -53,6 +57,7 @@ include("../../src/misc/utilities.jl")
                 a[mp,nn,2] = dϕx
                 a[mp,nn,3] = dϕz
                 a[mp,nn,4] = xp[mp] 
+                LFR[mp,nn]= ϕx*xn[nn]
             end
         end
     elseif ϕ∂ϕType == "smpm"
@@ -69,6 +74,7 @@ include("../../src/misc/utilities.jl")
                 a[mp,nn,2] = dϕx
                 a[mp,nn,3] = dϕz
                 a[mp,nn,4] = xp[mp] 
+                LFR[mp,nn]= ϕx*xn[nn]
             end
         end
     end
@@ -84,31 +90,37 @@ include("../../src/misc/utilities.jl")
     dS = vec(a[:,:,2])
     dS = dS[p]
 
+    LFR = (sum(LFR,dims=2).-xp)
 
     CM    = zeros(RGB{Float64}, 4)
     CM[1] = RGB{Float64}(1,0,0)  # black
-    CM[2] = RGB{Float64}(0,1,0) # yellow
+    CM[2] = RGB{Float64}(0,1,0) # yellow 
     CM[3] = RGB{Float64}(0,0,1) # yellow
     CM[4] = RGB{Float64}(0,0.5,0) # red
 
-    Title = ["Shape functions","Derivatives","Partition of unity (PoU)"]
+    Title = [L"\phi_n(x_p)",L"\partial_x\phi_n(x_p)",L"$\sum_n\phi_n(x_p)=1$",L"$\Delta = x_p-\sum_n\phi_n(x_p)x_n$"]
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     if ϕ∂ϕType == "bsmpm"
-        p1=scatter(x,S,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-        p1=scatter!(xn,zeros(size(xn)),color="red",markersize=5,ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.25),colorbar_title="type",levels=5,title=Title[1])
-        p2=scatter(x,dS,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-        p2=scatter!(xn,zeros(size(xn)),color="red",markersize=5,ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-1,1),colorbar_title="type",levels=5,title=Title[2])
-        p3=scatter(xp,PoU,zcolor=c,markershape=:circle,label="",show=true,aspect_ratio=1,cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
-        p3=scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"$\sum_n\phi_n(x_p)$",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.5),colorbar_title="type",levels=5,title=Title[3])
+        p1=scatter(x,S,zcolor=c,markershape=:circle,label="",cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
+        p1=scatter!(xn,zeros(size(xn)),color="black",markersize=5,markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.25),colorbar_title="type",levels=5,title=Title[1])
+        p2=scatter(x,dS,zcolor=c,markershape=:circle,label="",cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
+        p2=scatter!(xn,zeros(size(xn)),color="black",markersize=5,markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-1,1),colorbar_title="type",levels=5,title=Title[2])
+        p3=scatter(xp,PoU,zcolor=c,markershape=:circle,label="",cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
+        p3=scatter!(xn,zeros(size(xn)),color="black",markersize=5,markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.5),colorbar_title="type",levels=5,title=Title[3])
+        p4=scatter(xp,LFR,zcolor=c,markershape=:circle,label="",cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0,ylim=(-maximum(LFR),maximum(LFR)))
+        p4=scatter!(xn,zeros(size(xn)),color="black",markersize=2.5,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),colorbar_title="type",levels=5,title=Title[4])
+    
     else
-        p1=scatter(x,S,markershape=:circle,color="black",label="",show=true,aspect_ratio=1,markerstrokecolor=:auto,markerstrokewidth=0)
-        p1=scatter!(xn,zeros(size(xn)),color="red",markersize=5,ylabel=L"\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.25),colorbar_title="type",levels=5,title=Title[1])
-        p2=scatter(x,dS,markershape=:circle,color="black",label="",show=true,aspect_ratio=1,markerstrokecolor=:auto,markerstrokewidth=0)
-        p2=scatter!(xn,zeros(size(xn)),color="red",markersize=5,ylabel=L"\partial_x\phi_n(x_p)",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-1,1),colorbar_title="type",levels=5,title=Title[2])
-        p3=scatter(xp,PoU,markershape=:circle,color="black",label="",show=true,aspect_ratio=1,markerstrokecolor=:auto,markerstrokewidth=0)
-        p3=scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",ylabel=L"$\sum_n\phi_n(x_p)$",markershape=:square,label="",show=true,aspect_ratio=1,c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.5),colorbar_title="type",levels=5,title=Title[3])
+        p1=scatter(x,S,markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0)
+        p1=scatter!(xn,zeros(size(xn)),color="red",markersize=5,markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.25),colorbar_title="type",levels=5,title=Title[1])
+        p2=scatter(x,dS,markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0)
+        p2=scatter!(xn,zeros(size(xn)),color="red",markersize=5,markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-1,1),colorbar_title="type",levels=5,title=Title[2])
+        p3=scatter(xp,PoU,markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0)
+        p3=scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.5),colorbar_title="type",levels=5,title=Title[3])
+        p4=scatter(xp,(LFR),markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0,ylim=(-maximum(LFR),maximum(LFR)))
+        p4=scatter!(xn,zeros(size(xn)),color="red",markersize=1,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),colorbar_title="type",levels=5,title=Title[4])
     end
-    display(plot(p1,p2,p3; layout=(3,1), size=(550,500)))
+    display(plot(p1,p2,p3,p4; layout=(4,1), size=(550,600)))
     savefig(path_plot*"check_$(ϕ∂ϕType).png")
 
     return minimum(PoU),sum(PoU)/length(xp),maximum(PoU)
