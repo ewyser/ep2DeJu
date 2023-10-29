@@ -1,4 +1,4 @@
-# include("./scripts/unit_testing/compactionTest.jl")
+# include("./scripts/unit_testing/compacTest.jl")
 # include dependencies
 include("../../src/superInclude.jl")
 using Test
