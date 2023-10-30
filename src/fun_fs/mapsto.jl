@@ -3,6 +3,12 @@
 #--------------------------------------------------------------------------------------------
 @views function flipMapping!(mpD,meD,g,Δt,mapsto)
     if mapsto == "p->n"
+        # initialize nodal quantities
+        meD.Mn  .= 0.0
+        meD.mn  .= 0.0
+        meD.pn  .= 0.0
+        meD.oobf.= 0.0
+        # mapping back to mesh
         @threads for dim ∈ 1:meD.nD
             @simd for p ∈ 1:mpD.nmp
                 # accumulation
@@ -17,11 +23,13 @@
                 meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
             end
         end
+        # lumped mass matrix
+        #meD.mn .= sum(meD.Mn,dims=2)
     elseif mapsto == "p<-n"
         # mapping back to mp's
         @simd for dim ∈ 1:meD.nD
-            # flip update
             @threads for p ∈ 1:mpD.nmp        
+                # flip update
                 mpD.v[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
                 mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
             end          
@@ -31,6 +39,12 @@
 end
 @views function tpicMapping!(mpD,meD,g,Δt,mapsto)
     if mapsto == "p->n"
+        # initialize nodal quantities
+        meD.Mn  .= 0.0
+        meD.mn  .= 0.0
+        meD.pn  .= 0.0
+        meD.oobf.= 0.0
+        # mapping back to mesh
         @threads for dim ∈ 1:meD.nD
             @simd for p ∈ 1:mpD.nmp
                 # accumulation
@@ -47,11 +61,13 @@ end
                 meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
             end
         end
+        # lumped mass matrix
+        #meD.mn .= sum(meD.Mn,dims=2)
     elseif mapsto == "p<-n"
         # mapping back to mp's
         @simd for dim ∈ 1:meD.nD
-            # pic update
             @threads for p ∈ 1:mpD.nmp        
+                # pic update
                 mpD.v[p,dim] =    (mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
                 mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
             end          
@@ -109,19 +125,11 @@ end
 ## dispatcher functions
 #--------------------------------------------------------------------------------------------
 @views function mapstoN!(mpD,meD,g,Δt,trsfrAp,whereto)
-    # initialize nodal quantities
-    meD.Mn  .= 0.0
-    meD.mn  .= 0.0
-    meD.pn  .= 0.0
-    meD.oobf.= 0.0
-    # mapping back to mesh
     if trsfrAp == :mUSL
         flipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :tpicUSL
         tpicMapping!(mpD,meD,g,Δt,whereto)
     end
-    # lumped mass matrix
-    #meD.mn .= sum(meD.Mn,dims=2)
     return nothing
 end
 @views function mapstoP!(mpD,meD,g,Δt,trsfrAp,whereto)
