@@ -18,7 +18,7 @@
     end
     return nothing
 end
-@views function domUpd(mpD)
+@views function domainUpd!(mpD)
     @threads for p ∈ 1:mpD.nmp
         # update material point's domain length using symmetric material stretch tensor U
         λ,n        = eigen(mpD.F[:,:,p]'*mpD.F[:,:,p])
@@ -41,7 +41,7 @@ end
         mpD.J[p]      = det(mpD.F[:,:,p])
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
     end
-    if ϕ∂ϕType == :gimpm domUpd(mpD) end
+    if ϕ∂ϕType == :gimpm domainUpd!(mpD) end
     if isΔFbar ΔFbar!(mpD,meD) end
     return nothing
 end
