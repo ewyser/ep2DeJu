@@ -1,36 +1,62 @@
 #--------------------------------------------------------------------------------------------
 ## doer functions
 #--------------------------------------------------------------------------------------------
-@views function mUSLmapstoN!(mpD,meD,g)
-    # initialize nodal quantities
-    meD.Mn  .= 0.0
-    meD.mn  .= 0.0
-    meD.pn  .= 0.0
-    meD.oobf.= 0.0
-    # mapping back to mesh
-    @threads for dim ∈ 1:meD.nD
-        @simd for p ∈ 1:mpD.nmp
-            # accumulation
-            if dim == 1 
-                # lumped mass matrix
-                meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p]
-                # consistent mass matrix
-                meD.Mn[mpD.p2n[:,p],mpD.p2n[:,p]].+= (mpD.ϕ∂ϕ[:,p,1].*mpD.ϕ∂ϕ[:,p,1]').*mpD.m[p] 
+@views function flipMapping!(mpD,meD,g,Δt,mapsto)
+    if mapsto == "p->n"
+        @threads for dim ∈ 1:meD.nD
+            @simd for p ∈ 1:mpD.nmp
+                # accumulation
+                if dim == 1 
+                    # lumped mass matrix
+                    meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p]
+                    # consistent mass matrix
+                    meD.Mn[mpD.p2n[:,p],mpD.p2n[:,p]].+= (mpD.ϕ∂ϕ[:,p,1].*mpD.ϕ∂ϕ[:,p,1]').*mpD.m[p] 
+                end
+                meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*mpD.v[p,dim])
+                meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
+                meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
             end
-            meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*mpD.v[p,dim])
-            meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
-            meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
+        end
+    elseif mapsto == "p<-n"
+        # mapping back to mp's
+        @simd for dim ∈ 1:meD.nD
+            # flip update
+            @threads for p ∈ 1:mpD.nmp        
+                mpD.v[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
+                mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+            end          
+        end        
+    end
+    return nothing
+end
+@views function tpicMapping!(mpD,meD,g,Δt,mapsto)
+    if mapsto == "p->n"
+        @threads for dim ∈ 1:meD.nD
+            @simd for p ∈ 1:mpD.nmp
+                # accumulation
+                if dim == 1 
+                    meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p] 
+                end
+                δx= (meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1))'
+                A = mpD.v[p,:].+(mpD.∇v[:,:,p]*δx)
+                meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*A[dim,:]
+                meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
+                meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
+            end
+        end
+    elseif mapsto == "p<-n"
+        # mapping back to mp's
+        @simd for dim ∈ 1:meD.nD
+            # pic update
+            @threads for p ∈ 1:mpD.nmp        
+                mpD.v[p,dim] =    (mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+                mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+            end          
         end
     end
     return nothing
 end
-@views function tpicUSLmapstoN!(mpD,meD,g)
-    # initialize nodal quantities
-    meD.Mn  .= 0.0
-    meD.mn  .= 0.0
-    meD.pn  .= 0.0
-    meD.oobf.= 0.0
-    # mapping back to mesh
+@views function apic2n!(mpD,meD,g,Δt,mapsto)
     @threads for dim ∈ 1:meD.nD
         @simd for p ∈ 1:mpD.nmp
             # accumulation
@@ -43,28 +69,6 @@ end
             meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
             meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
         end
-    end
-    return nothing
-end
-@views function mUSLmapstoP!(mpD,meD,Δt)
-    # mapping back to mp's
-    @simd for dim ∈ 1:meD.nD
-        # flip update
-        @threads for p ∈ 1:mpD.nmp        
-            mpD.v[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
-            mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
-        end          
-    end
-    return nothing
-end
-@views function tpicUSLmapstoP!(mpD,meD,Δt)
-    # mapping back to mp's
-    @simd for dim ∈ 1:meD.nD
-        # flip update
-        @threads for p ∈ 1:mpD.nmp        
-            mpD.v[p,dim] =    (mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
-            mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
-        end          
     end
     return nothing
 end
@@ -98,30 +102,36 @@ end
 #--------------------------------------------------------------------------------------------
 ## dispatcher functions
 #--------------------------------------------------------------------------------------------
-@views function mapstoN!(mpD,meD,g,trsfrAp)
+@views function mapstoN!(mpD,meD,g,Δt,trsfrAp,whereto)
+    # initialize nodal quantities
+    meD.Mn  .= 0.0
+    meD.mn  .= 0.0
+    meD.pn  .= 0.0
+    meD.oobf.= 0.0
+    # mapping back to mesh
     if trsfrAp == :mUSL
-        mUSLmapstoN!(mpD,meD,g)
+        flipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :tpicUSL
-        tpicUSLmapstoN!(mpD,meD,g)
+        tpicMapping!(mpD,meD,g,Δt,whereto)
     end
     # lumped mass matrix
     #meD.mn .= sum(meD.Mn,dims=2)
     return nothing
 end
-@views function mapstoP!(mpD,meD,Δt,trsfrAp)
+@views function mapstoP!(mpD,meD,g,Δt,trsfrAp,whereto)
     if trsfrAp == :mUSL
-        mUSLmapstoP!(mpD,meD,Δt)
-        DM!(         mpD,meD,Δt)
+        flipMapping!(mpD,meD,g,Δt,whereto)
+        DM!(       mpD,meD,Δt)
     elseif trsfrAp == :tpicUSL
-        tpicUSLmapstoP!(mpD,meD,Δt)
+        tpicMapping!(mpD,meD,g,Δt,whereto)
     end
     return nothing
 end
 @views function mapsto!(mpD,meD,g,Δt,trsfrAp,whereto)
     if whereto == "p->n"
-        mapstoN!(mpD,meD,g,trsfrAp)
+        mapstoN!(mpD,meD,g,Δt,trsfrAp,whereto)
     elseif whereto == "p<-n"
-        mapstoP!(mpD,meD,Δt,trsfrAp)
+        mapstoP!(mpD,meD,g,Δt,trsfrAp,whereto)
     end
     return nothing
 end
