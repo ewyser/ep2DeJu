@@ -22,7 +22,7 @@ using BenchmarkTools
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
-    @info "mesh & mp feature(s):" ϕ∂ϕType fwrkDeform isΔFbar nel nthreads()
+    @info "mesh & mp feature(s):" ϕ∂ϕType fwrkDeform trsfrAp isΔFbar nel nthreads()
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
     # action
@@ -46,4 +46,4 @@ using BenchmarkTools
     @btime elast!($mpD,$cmParam.Del,$fwrkDeform)
     return msg("(✓) Done! exiting...")
 end
-allocCheck(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,vollock=true)
+allocCheck(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:tpicUSL,vollock=true)
