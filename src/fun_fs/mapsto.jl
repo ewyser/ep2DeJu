@@ -37,6 +37,43 @@
     end
     return nothing
 end
+@views function picflipMapping!(mpD,meD,g,Δt,mapsto)
+    if mapsto == "p->n"
+        # initialize nodal quantities
+        meD.mn  .= 0.0
+        meD.pn  .= 0.0
+        meD.oobf.= 0.0
+        # mapping back to mesh
+        @threads for dim ∈ 1:meD.nD
+            @simd for p ∈ 1:mpD.nmp
+                # accumulation
+                if dim == 1 
+                    # lumped mass matrix
+                    meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p]
+                end
+                meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*mpD.v[p,dim])
+                meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
+                meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
+            end
+        end
+    elseif mapsto == "p<-n"
+        ξ = 0.95
+        # mapping back to mp's
+        @simd for dim ∈ 1:meD.nD
+            @threads for p ∈ 1:mpD.nmp        
+                # flip update
+                vFlip = v[p,dim]+Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
+                # pic update
+                vPic  = (mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])  
+                # pic-flip blend
+                mpD.v[p,dim] = ξ.*vFlip+(1.0-ξ).*vPic
+                # position update
+                mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+            end          
+        end        
+    end
+    return nothing
+end
 @views function tpicMapping!(mpD,meD,g,Δt,mapsto)
     if mapsto == "p->n"
         # initialize nodal quantities
@@ -169,6 +206,8 @@ end
 @views function mapstoN!(mpD,meD,g,Δt,trsfrAp,whereto)
     if trsfrAp == :mUSL
         flipMapping!(mpD,meD,g,Δt,whereto)
+    elseif trsfrAp == :picflip
+        picflipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :tpicUSL
         tpicMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :apicUSL
@@ -181,6 +220,8 @@ end
     if trsfrAp == :mUSL
         flipMapping!(mpD,meD,g,Δt,whereto)
         DM!(       mpD,meD,Δt)
+    elseif trsfrAp == :picflip
+        picflipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :tpicUSL
         tpicMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :apicUSL
