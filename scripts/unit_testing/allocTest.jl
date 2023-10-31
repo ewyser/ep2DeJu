@@ -46,4 +46,4 @@ using BenchmarkTools
     @btime elast!($mpD,$cmParam.Del,$fwrkDeform)
     return msg("(✓) Done! exiting...")
 end
-allocCheck(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:tpicUSL,vollock=true)
+allocCheck(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)

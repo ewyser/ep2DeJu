@@ -21,7 +21,7 @@ end
 @views function domainUpd!(mpD)
     @threads for p ∈ 1:mpD.nmp
         # update material point's domain length using symmetric material stretch tensor U
-        λ,n        = eigen(mpD.F[:,:,p]'*mpD.F[:,:,p])
+        λ,n        = eigen(mpD.F[:,:,p]'*mpD.F[:,:,p],sortby=nothing)
         U          = (n*diagm(sqrt.(λ))*n')
         mpD.l[p,:].= U*mpD.l0[p,:]
     end
@@ -29,7 +29,7 @@ end
 end
 @views function deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
     @threads for p ∈ 1:mpD.nmp
-        # compute velocity gradient & displacement gradient
+        # compute velocity & displacement gradients
         mpD.∇v[:,:,p].= (permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.vn[mpD.p2n[:,p],:])'
         mpD.∇u[:,:,p].= Δt.*mpD.∇v[:,:,p]
         # compute incremental deformation gradient
