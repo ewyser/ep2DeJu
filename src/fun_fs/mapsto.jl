@@ -91,8 +91,8 @@ end
                     # consistent mass matrix
                     meD.Mn[mpD.p2n[:,p],mpD.p2n[:,p]].+= (mpD.ϕ∂ϕ[:,p,1].*mpD.ϕ∂ϕ[:,p,1]').*mpD.m[p] 
                 end
-                δx= (meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1))'
-                A = mpD.v[p,:].+(mpD.∇v[:,:,p]*δx)
+                δx= (meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1))
+                A = (mpD.v[p,:].+(mpD.∇v[:,:,p]*δx'))
                 meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*A[dim,:]
                 meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
                 meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
@@ -182,9 +182,9 @@ end
     # initialize
     mpD.Bapic.= 0.0
     @threads for p ∈ 1:mpD.nmp
-        δx = (meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1))'
         for nn ∈ 1:meD.nn
-            mpD.Bapic[:,:,p].+= mpD.ϕ∂ϕ[nn,p,1].*meD.vn[mpD.p2n[nn,p],:]'.*δx[nn]
+            δx = meD.xn[mpD.p2n[nn,p],:].-mpD.x[p,:]
+            mpD.Bapic[:,:,p].+= mpD.ϕ∂ϕ[nn,p,1].*(meD.vn[mpD.p2n[nn,p],:]'.*δx)
         end
     end  
     return nothing
