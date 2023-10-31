@@ -62,7 +62,7 @@ end
         @simd for dim ∈ 1:meD.nD
             @threads for p ∈ 1:mpD.nmp        
                 # flip update
-                vFlip = v[p,dim]+Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
+                vFlip = mpD.v[p,dim]+Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
                 # pic update
                 vPic  = (mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])  
                 # pic-flip blend
@@ -206,12 +206,12 @@ end
 @views function mapstoN!(mpD,meD,g,Δt,trsfrAp,whereto)
     if trsfrAp == :mUSL
         flipMapping!(mpD,meD,g,Δt,whereto)
-    elseif trsfrAp == :picflip
+    elseif trsfrAp == :picflipUSL
         picflipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :tpicUSL
         tpicMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :apicUSL
-        apicD!(mpD,meD)
+        getD!(mpD,meD)
         apicMapping!(mpD,meD,g,Δt,whereto)
     end
     return nothing
@@ -220,7 +220,7 @@ end
     if trsfrAp == :mUSL
         flipMapping!(mpD,meD,g,Δt,whereto)
         DM!(       mpD,meD,Δt)
-    elseif trsfrAp == :picflip
+    elseif trsfrAp == :picflipUSL
         picflipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :tpicUSL
         tpicMapping!(mpD,meD,g,Δt,whereto)
