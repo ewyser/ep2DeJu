@@ -184,7 +184,7 @@ end
     @threads for p ∈ 1:mpD.nmp
         δx = (meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1))'
         for nn ∈ 1:meD.nn
-            mpD.Bapic[:,:,p] .+= mpD.ϕ∂ϕ[nn,p,1].*meD.vn[mpD.p2n[nn,p],:]'.*δx[nn]
+            mpD.Bapic[:,:,p].+= mpD.ϕ∂ϕ[nn,p,1].*meD.vn[mpD.p2n[nn,p],:]'.*δx[nn]
         end
     end  
     return nothing
@@ -195,7 +195,7 @@ end
     @threads for p ∈ 1:mpD.nmp
         for nn ∈ 1:meD.nn
             δx = meD.xn[mpD.p2n[nn,p],:].-mpD.x[p,:]
-            mpD.Dapic[:,:,p].+= (δx'.*δx)
+            mpD.Dapic[:,:,p].+= mpD.ϕ∂ϕ[nn,p,1].*(δx'.*δx)
         end
     end  
     return nothing
