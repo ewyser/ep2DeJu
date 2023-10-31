@@ -248,16 +248,15 @@ end
     err   = sum(sqrt.((xN.-xA).^2).*mpD.V0)/(abs(g[end])*ρ0*l0*sum(mpD.V0))
     return (xN,yN,xA,yA),meD.h,err
 end
-@views function compacTest()
+@views function compacTest(trsfrAp)
     ϕ∂ϕType    = :gimpm
     fwrkDeform = :finite
-    trsfrAp    = :mUSL
     @info "** ϵp2De v$(getVersion()): compaction of a two-dimensional column under self weight **"
     store,H,error = [],[],[]
     try
-        @testset "convergence using $(ϕ∂ϕType), $(fwrkDeform) deformation" begin
+        @testset "convergence using $(ϕ∂ϕType), $(fwrkDeform) deformation, $(trsfrAp) mapping" begin
             # geometry
-            n         = [0,1,2,3,4,5]
+            n         = [0,1,2,3,4,5,6]
             nel       = 2.0.^n
             # initial parameters 
             l0,ν,E,ρ0 = 50.0,0.0,1.0e4,80.0
@@ -275,12 +274,12 @@ end
             end 
         end
         gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
-        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log,yaxis=:log) 
+        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
         display(plot(p1; layout=(1,1), size=(450,250)))
         savefig(path_plot*"convergence_pass_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     catch
         gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
-        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log,yaxis=:log) 
+        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
         display(plot(p1; layout=(1,1), size=(450,250)))
         savefig(path_plot*"convergence_fail_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     end
@@ -290,8 +289,10 @@ end
     p1 = plot!(xA.*1e-3,yA,label="analytical solution",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
     display(plot(p1; layout=(1,1), size=(450,250)))
     savefig(path_plot*"numericVsAnalytic_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
+    return nothing
 end
-compacTest()
+compacTest(:mUSL)
+compacTest(:tpicUSL)
 
 
 
