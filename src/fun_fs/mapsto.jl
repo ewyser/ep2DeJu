@@ -91,9 +91,9 @@ end
                     # consistent mass matrix
                     meD.Mn[mpD.p2n[:,p],mpD.p2n[:,p]].+= (mpD.ϕ∂ϕ[:,p,1].*mpD.ϕ∂ϕ[:,p,1]').*mpD.m[p] 
                 end
-                δx= (meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1))
-                A = (mpD.v[p,:].+(mpD.∇v[:,:,p]*δx'))
-                meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*A[dim,:]
+                δx = meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1)
+                δv = mpD.∇v[:,:,p]*δx'
+                meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*(mpD.v[p,dim].+δv[dim,:])
                 meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
                 meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
             end
@@ -105,8 +105,9 @@ end
         @simd for dim ∈ 1:meD.nD
             @threads for p ∈ 1:mpD.nmp        
                 # pic update
-                mpD.v[p,dim] =    (mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
-                mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+                mpD.v[p,dim] = mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim]
+                mpD.x[p,dim]+= Δt*mpD.v[p,dim]
+                mpD.u[p,dim]+= Δt*mpD.v[p,dim]
             end          
         end
     end
