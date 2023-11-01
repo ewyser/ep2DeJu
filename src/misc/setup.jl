@@ -4,7 +4,7 @@ function meshGeom(L,nel)
         L   = [L[1],ceil(L[2])]
         h   = [L[1]/nel,L[1]/nel]
     elseif nD == 3
-        L   = [L[1],L[2y],ceil(L[3])]
+        L   = [L[1],L[2],ceil(L[3])]
         h   = [L[1]/nel[1],L[1]/nel[1],L[1]/nel[1]]
     else 
         err_msg = "nD = $(nD), L= $(L): unsupported mesh geometry"
@@ -51,7 +51,9 @@ function meshBCs(xn,h,nno,nD)
         #bcX[bcz] .= 0
         bc   = hcat(bcX,bcZ)
     elseif nD == 3
-        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],minimum(xn[:,2])+2*h[1],maximum(xn[:,2])-2*h[1],0.0,Inf]                                    
+        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],
+               minimum(xn[:,2])+2*h[2],maximum(xn[:,1])-2*h[2],
+               0.0                    ,Inf]                                    
         bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
         bcy = vcat(findall(x->x<=xB[3], xn[:,2]),findall(x->x>=xB[4], xn[:,2]))
         bcz = findall(x->x<=xB[5], xn[:,3])
