@@ -182,39 +182,83 @@ function e2N(nD,nno,nel,nn)
 	return e2n
 end
 function materialGeom(meD,lz,wl,coh0,cohr,ni)
-    xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
-    zL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
-    npx,npz     = length(xL),length(zL)
-    xp,zp       = ((xL'.*ones(npz,1  )      )),((     ones(npx,1  )'.*zL )) 
-    c           = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])
-    xp,zp,c     = vec(xp),vec(zp),vec(c)
-    x           = LinRange(minimum(xp),maximum(xp),200)
-    a           = -1.25
-    x,z         = x.+0.5.*meD.L[1],a.*x
-    xlt = Float64[]
-    zlt = Float64[]
-    clt = Float64[]
-    pos = Float64 
-    for mp ∈ eachindex(xp)
-        for p ∈ eachindex(z)
-            Δx = xp[mp]-x[p]
-            Δz = zp[mp]-z[p]
-            nx = a
-            nz = -1.0
-            s  = Δx*nx+Δz*nz        
-            if s>0
-                pos = 1
-            else
-                pos = 0
+    if meD.nD == 2
+        xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
+        zL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
+        npx,npz     = length(xL),length(zL)
+        xp,zp       = ((xL'.*ones(npz,1  )      )),((     ones(npx,1  )'.*zL )) 
+        c           = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])
+        xp,zp,c     = vec(xp),vec(zp),vec(c)
+        x           = LinRange(minimum(xp),maximum(xp),200)
+        a           = -1.25
+        x,z         = x.+0.5.*meD.L[1],a.*x
+        xlt = Float64[]
+        zlt = Float64[]
+        clt = Float64[]
+        pos = Float64 
+        for mp ∈ eachindex(xp)
+            for p ∈ eachindex(z)
+                Δx = xp[mp]-x[p]
+                Δz = zp[mp]-z[p]
+                nx = a
+                nz = -1.0
+                s  = Δx*nx+Δz*nz        
+                if s>0
+                    pos = 1
+                else
+                    pos = 0
+                end
+                if zp[mp]<wl 
+                    pos = 1
+                end
             end
-            if zp[mp]<wl 
-                pos = 1
+            if pos==1
+                push!(xlt, xp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
+                push!(zlt, zp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
+                push!(clt, c[mp])
             end
         end
-        if pos==1
-            push!(xlt, xp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
-            push!(zlt, zp[mp]) # push!(inArray, What), incremental construction of an array of arbitrary size
-            push!(clt, c[mp])
+    elseif meD.nD == 3
+        xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
+        yL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:meD.xB[4]
+        zL          = meD.xB[5]+(0.5*meD.h[3]/ni):meD.h[3]/ni:lz-0.5*meD.h[3]/ni
+        npx,npy,npz = length(xL),length(yL),length(zL)
+        xp          = (xL'.*ones(npz,1  )      ).*ones(1,1,npy)
+        yp          = (     ones(npz,npx)      ).*reshape(yL,1,1,npy)
+        zp          = (     ones(npx,1  )'.*zL ).*ones(1,1,npy)
+        c           = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])   
+        xp,yp,zp,c  = vec(xp),vec(yp),vec(zp),vec(c)
+
+        
+        wl          = 0.15*lz
+        x           = LinRange(minimum(xp),maximum(xp),200)
+        a           = -1.25
+        x,z         = x.+0.5.*meD.L[1],a.*x
+        xlt,ylt,zlt = Float64[],Float64[],Float64[]
+        clt         = Float64[]
+        pos         = Float64 
+        for mp ∈ eachindex(xp)
+            for p ∈ eachindex(z)
+                Δx = xp[mp]-x[p]
+                Δz = zp[mp]-z[p]
+                nx = a
+                nz = -1.0
+                s  = Δx*nx+Δz*nz        
+                if s>0.0
+                    pos = 1
+                else
+                    pos = 0
+                end
+                if zp[mp]<wl 
+                    pos = 1
+                end
+            end
+            if pos==1
+                push!(xlt, xp[mp]) 
+                push!(ylt, yp[mp]) 
+                push!(zlt, zp[mp]) 
+                push!(clt, c[mp])
+            end
         end
     end
     xp = if meD.nD == 2 hcat(xlt,zlt) elseif meD.nD == 3 hcat(xlt,ylt,zlt) end
@@ -262,7 +306,7 @@ function meshSetup(nel,L,typeD)
 end
 function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     # non-dimensional constant                                                   
-    ni,nstr = 2,4                                                               # number of material point along 1d, number of stresses
+    if meD.nD == 2 ni,nstr = 2,4 elseif meD.nD == 3 ni,nstr = 2,6 end # number of material point along 1d, number of stress components                                                          
     # material geometry
     lz     = L[end]
     wl     = 0.15*lz
@@ -273,11 +317,11 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     v0,v   = ones(typeD,nmp  ).*(2.0.*l0[:,1].*2.0.*l0[:,2]),ones(typeD,nmp  ).*(2.0.*l[:,1].*2.0.*l[:,2])
     m      = rho0.*v0
     coh    = ones(typeD,nmp ).*coh0#clt
-    #coh  =  clt
+    coh  =  clt
     #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
     cohr   = ones(typeD,nmp).*cohr
     phi    = ones(typeD,nmp).*phi0
-    phi[xp[:,2].<=2*wl] .= phir
+    phi[xp[:,end].<=2*wl] .= phir
     # constructor
     mpD = (
         nmp  = nmp,
