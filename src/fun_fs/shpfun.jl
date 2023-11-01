@@ -96,7 +96,7 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 @views function ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
-    # get topological list
+    # get topological relations, i.e., mps-to-elements and elements-to-nodes
     topol!(mpD,meD)
     # calculate shape functions
     if ϕ∂ϕType == :bsmpm
