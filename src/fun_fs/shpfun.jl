@@ -96,22 +96,20 @@ end
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 @views function ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
+    # get topological list
     topol!(mpD,meD)
-    #preprocessing
-    xb,zb = meD.xB[1:2],meD.xB[3:4]
-    Δx,Δz = meD.h[1],meD.h[2]
-    #action
+    # calculate shape functions
     if ϕ∂ϕType == :bsmpm
         @threads for mp ∈ 1:mpD.nmp
             @simd for nn ∈ 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[nn,mp]
-                ξ      = (mpD.x[mp,1]-meD.xn[id,1])/Δx 
-                type   = whichType(meD.xn[id,1],xb,Δx)
-                ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-                η      = (mpD.x[mp,2]-meD.xn[id,2])/Δz
-                type   = whichType(meD.xn[id,2],zb,Δz)
-                ϕz,dϕz = ϕ∇ϕ(η,type,Δz)
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])/meD.h[1] 
+                type   = whichType(meD.xn[id,1],meD.xB[1:2],meD.h[1])
+                ϕx,dϕx = ϕ∇ϕ(ξ,type,meD.h[1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])/meD.h[2]
+                type   = whichType(meD.xn[id,2],meD.xB[3:4],meD.h[2])
+                ϕz,dϕz = ϕ∇ϕ(η,type,meD.h[2])
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
@@ -130,8 +128,8 @@ end
                 id     = mpD.p2n[nn,mp]
                 ξ      = (mpD.x[mp,1]-meD.xn[id,1])
                 η      = (mpD.x[mp,2]-meD.xn[id,2])
-                ϕx,dϕx = NdN(ξ,Δx,mpD.l[mp,1])
-                ϕz,dϕz = NdN(η,Δz,mpD.l[mp,2])
+                ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l[mp,1])
+                ϕz,dϕz = NdN(η,meD.h[2],mpD.l[mp,2])
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
@@ -150,8 +148,8 @@ end
                 id     = mpD.p2n[nn,mp]
                 ξ      = (mpD.x[mp,1]-meD.xn[id,1])
                 η      = (mpD.x[mp,2]-meD.xn[id,2])
-                ϕx,dϕx = NdN(ξ,Δx,0.0)
-                ϕz,dϕz = NdN(η,Δz,0.0)
+                ϕx,dϕx = NdN(ξ,meD.h[1],0.0)
+                ϕz,dϕz = NdN(η,meD.h[2],0.0)
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
