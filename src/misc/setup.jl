@@ -37,6 +37,7 @@ function meshCoord(nD,L,h)
         zn  = vec(zn)
         x   = hcat(xn,yn,zn)
     end
+
     return x,nn,nel,nno
 end
 function meshBCs(xn,h,nno,nD)
@@ -52,8 +53,8 @@ function meshBCs(xn,h,nno,nD)
         bc   = hcat(bcX,bcZ)
     elseif nD == 3
         xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],
-               minimum(xn[:,2])+2*h[2],maximum(xn[:,1])-2*h[2],
-               0.0                    ,Inf]                                    
+               minimum(xn[:,2])+2*h[2],maximum(xn[:,2])-2*h[2],
+               0.0                    ,Inf]       
         bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
         bcy = vcat(findall(x->x<=xB[3], xn[:,2]),findall(x->x>=xB[4], xn[:,2]))
         bcz = findall(x->x<=xB[5], xn[:,3])
@@ -228,8 +229,6 @@ function materialGeom(meD,lz,wl,coh0,cohr,ni)
         zp          = (     ones(npx,1  )'.*zL ).*ones(1,1,npy)
         c           = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])   
         xp,yp,zp,c  = vec(xp),vec(yp),vec(zp),vec(c)
-
-        
         wl          = 0.15*lz
         x           = LinRange(minimum(xp),maximum(xp),200)
         a           = -1.25

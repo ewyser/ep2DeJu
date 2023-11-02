@@ -12,18 +12,32 @@ default(
     )
 # plot routines
 @views function plot_coh(xp,coh,phi,ϕ0)
-    gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-    scatter(xp[:,1],xp[:,2],zcolor=coh./1e3,
-    markershape=:circle,
-    label="",
-    show=true,
-    aspect_ratio=1,
-    c=:vik,
-    clims=(10.0,30.0),
-    markerstrokecolor=:auto,
-    markerstrokewidth=0,
-    ylim=(-10,20),
-    )
+    if size(xp,2)==2
+        gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        scatter(xp[:,1],xp[:,2],zcolor=coh./1e3,
+        markershape=:circle,
+        label="",
+        show=true,
+        aspect_ratio=1,
+        c=:vik,
+        clims=(10.0,30.0),
+        markerstrokecolor=:auto,
+        markerstrokewidth=0,
+        ylim=(-10,20),
+        )
+    elseif size(xp,2)==3
+        gr(size=(2.0*250,4*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        scatter(xp[:,1],xp[:,2],xp[:,3],zcolor=coh./1e3,
+        markershape=:circle,
+        label="",
+        show=true,
+        aspect_ratio=:equal,
+        c=:vik,
+        clims=(10.0,30.0),
+        markerstrokecolor=:auto,
+        markerstrokewidth=0,
+        )
+    end
     savefig(path_plot*"coh0.png")
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     scatter(xp[:,1],xp[:,2],zcolor=phi,
