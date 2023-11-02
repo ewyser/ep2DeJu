@@ -1,9 +1,8 @@
 # include("./scripts/unit_testing/allocTest.jl")
+@warn "unit testing"
 # include dependencies
 include("../../src/superInclude.jl")
 using BenchmarkTools
-
-@warn "validation/test"
 @views function allocCheck(nel::Int64,varPlot::String,cmType::String; kwargs...)
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
     @info "** ϵp2-3De v$(getVersion()): time & allocation evaluation **"
