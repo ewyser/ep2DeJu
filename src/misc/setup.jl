@@ -42,28 +42,29 @@ function meshCoord(nD,L,h)
 end
 function meshBCs(xn,h,nno,nD)
     if nD == 2
-        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],0.0,Inf]                                    
+        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],
+               0.0                    ,Inf                    ]                                    
         bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
         bcz = findall(x->x<=xB[3], xn[:,2])
-        bcX = ones(Int64,nno[nD+1],1)
-        bcX[bcx] .= 0
+        bcX = ones(Float64,nno[nD+1],1)
+        bcX[bcx] .= 0.0
         bcZ = ones(nno[nD+1],1)
-        bcZ[bcz] .= 0
-        #bcX[bcz] .= 0
+        bcZ[bcz] .= 0.0
+        #bcX[bcz] .= 0.0
         bc   = hcat(bcX,bcZ)
     elseif nD == 3
         xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],
                minimum(xn[:,2])+2*h[2],maximum(xn[:,2])-2*h[2],
-               0.0                    ,Inf]       
+               0.0                    ,Inf                    ]       
         bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
         bcy = vcat(findall(x->x<=xB[3], xn[:,2]),findall(x->x>=xB[4], xn[:,2]))
         bcz = findall(x->x<=xB[5], xn[:,3])
-        bcX = ones(Int64,nno[nD+1],1)
-        bcX[bcx] .= 0
+        bcX = ones(Float64,nno[nD+1],1)
+        bcX[bcx] .= 0.0
         bcY = ones(nno[nD+1],1)
-        bcY[bcy] .= 0
+        bcY[bcy] .= 0.0
         bcZ = ones(nno[nD+1],1)
-        bcZ[bcz] .= 0
+        bcZ[bcz] .= 0.0
         bc   = hcat(bcX,bcY,bcZ)
     end
     return bc,xB
