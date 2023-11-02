@@ -1,10 +1,21 @@
 @views function topol!(mpD,meD)
-    xmin,zmin = meD.minC[1],meD.minC[2]
-    Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
-    nez       = meD.nel[2]
-    @threads for p ∈ 1:mpD.nmp
-        mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
-        mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
+    if meD.nD == 2
+        xmin,zmin = meD.minC[1],meD.minC[2]
+        Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
+        nez       = meD.nel[2]
+        @threads for p ∈ 1:mpD.nmp
+            mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
+            mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
+        end
+    elseif meD.nD == 3
+        xmin,ymin,zmin = meD.minC[1],meD.minC[2],meD.minC[3]
+        Δx,Δy,Δz       = 1.0/meD.h[1],1.0/meD.h[2],1.0/meD.h[3]
+        nez            = meD.nel[3]
+        @threads for p ∈ 1:mpD.nmp
+            mpD.p2e[p]  = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
+            mpD.p2n[:p].= mpD.e2n[:,mpD.p2e[p]]
+        end
+        return nothing
     end
     return nothing
 end
