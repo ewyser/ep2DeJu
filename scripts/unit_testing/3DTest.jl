@@ -13,7 +13,7 @@ include("../../src/superInclude.jl")
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
     t,te,tg = 15.0,10.0,15.0/1.5                                                # simulation time [s], elastic loading [s], gravity load
     # mesh & mp setup
-    L       = [64.0,12.80,12.80]                                                   # domain geometry
+    L       = [64.0,12.80]                                                   # domain geometry
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
@@ -25,6 +25,7 @@ include("../../src/superInclude.jl")
     # action
     @info "launch $(ϕ∂ϕType) calculation cycle..."
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
+
     #=
     while tw<=t
         # plot/save

@@ -118,7 +118,7 @@ include("../../src/misc/utilities.jl")
         p3=scatter(xp,PoU,markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0)
         p3=scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.5),colorbar_title="type",levels=5,title=Title[3])
         p4=scatter(xp,(LFR),markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0,ylim=(-maximum(LFR),maximum(LFR)))
-        p4=scatter!(xn,zeros(size(xn)),color="red",markersize=1,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),colorbar_title="type",levels=5,title=Title[4])
+        p4=scatter!(xn,zeros(size(xn)),color="red",markersize=2.5,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),colorbar_title="type",levels=5,title=Title[4])
     end
     display(plot(p1,p2,p3,p4; layout=(4,1), size=(550,600)))
     savefig(path_plot*"check_$(ϕ∂ϕType).png")

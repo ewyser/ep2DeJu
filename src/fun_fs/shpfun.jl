@@ -1,21 +1,10 @@
 @views function topol!(mpD,meD)
-    if meD.nD == 2
-        xmin,zmin = meD.minC[1],meD.minC[2]
-        Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
-        nez       = meD.nel[2]
-        @threads for p ∈ 1:mpD.nmp
-            mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
-            mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
-        end
-    elseif meD.nD == 3
-        xmin,ymin,zmin = meD.minC[1],meD.minC[2],meD.minC[3]
-        Δx,Δy,Δz       = 1.0/meD.h[1],1.0/meD.h[2],1.0/meD.h[3]
-        nez            = meD.nel[3]
-        @threads for p ∈ 1:mpD.nmp
-            mpD.p2e[p]  = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
-            mpD.p2n[:p].= mpD.e2n[:,mpD.p2e[p]]
-        end
-        return nothing
+    xmin,zmin = meD.minC[1],meD.minC[2]
+    Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
+    nez       = meD.nel[2]
+    @threads for p ∈ 1:mpD.nmp
+        mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
+        mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
     end
     return nothing
 end
@@ -204,21 +193,13 @@ end
 
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-@views function topol3D!(xmin,ymin,zmin,p2e,p2n,e2n,xn,yz,zn,xp,h,nel,nmp,nn)
-    xmin = minimum(meD.x[:,1])
-    ymin = minimum(meD.x[:,2])
-    zmin = minimum(meD.x[:,3])
-    Δx::Float64 = 1.0/meD.h[1]
-    Δy::Float64 = 1.0/meD.h[2]
-    Δz::Float64 = 1.0/meD.h[3]
-    nez::Int64  = meD.nel[3]
-    id::Int64   = 0
-    for p ∈ 1:mpD.nmp
-        id = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1::Int64)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
-        for n ∈ 1:nn
-            mpD.p2n[p,n] = mpD.e2n[id,n]
-        end
-        mpD.p2e[p] = id
+@views function topol3d!(mpD,meD)
+    xmin,ymin,zmin = meD.minC[1],meD.minC[2],meD.minC[3]
+    Δx,Δy,Δz       = 1.0/meD.h[1],1.0/meD.h[2],1.0/meD.h[3]
+    nez            = meD.nel[3]
+    @threads for p ∈ 1:mpD.nmp
+        mpD.p2e[p]  = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
+        mpD.p2n[:p].= mpD.e2n[:,mpD.p2e[p]]
     end
     return nothing
 end
