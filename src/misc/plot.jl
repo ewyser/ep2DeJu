@@ -11,7 +11,7 @@ default(
     grid        = false
     )
 # plot routines
-@views function plot_coh(xp,coh,phi,ϕ0)
+@views function plot_coh(xp,coh,phi,coh0,ϕ0)
     if size(xp,2)==2
         gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
         scatter(xp[:,1],xp[:,2],zcolor=coh./1e3,
@@ -44,7 +44,7 @@ default(
     markershape=:circle,
     label="",
     show=true,
-    aspect_ratio=1,
+    aspect_ratio=:equal,
     c=:vik,
     clims=(ϕ0-ϕ0/5,ϕ0+ϕ0/5),
     markerstrokecolor=:auto,
