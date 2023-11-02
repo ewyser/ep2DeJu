@@ -8,4 +8,4 @@ cd ${path}
 #------------------------------------------------------------------
 # execute .jl code(s)
 #------------------------------------------------------------------
-julia -i -O3 -t 3,1 --check-bounds=no --project=.
+julia --optimize=3 --threads auto --check-bounds=no --project=.
