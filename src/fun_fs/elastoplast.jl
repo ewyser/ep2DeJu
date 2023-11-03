@@ -51,13 +51,15 @@ end
             ϵmut = [     ϵ[1] 0.5*ϵ[4];
                     0.5*ϵ[4]     ϵ[2]]
         elseif length(ϵ) == 6
-
+            ϵmut = [    ϵ[1] 0.5*ϵ[6] 0.5*ϵ[5];
+                    0.5*ϵ[6]     ϵ[2] 0.5*ϵ[4];
+                    0.5*ϵ[5] 0.5*ϵ[4] 0.5*ϵ[3]]
         end
     elseif type == "voigt"
         if length(ϵ) == 4
-            ϵmut = vcat(ϵ[1,1],ϵ[2,2],0.0,2*ϵ[1,2])
+            ϵmut = vcat(ϵ[1,1],ϵ[2,2],0.0,2*ϵ[1,2]) #xx,yy,zz,xy
         elseif length(ϵ) == 9
-    
+            ϵmut = vcat(ϵ[1,1],ϵ[2,2],ϵ[3,3],2*ϵ[2,3],2*ϵ[1,3],2*ϵ[1,2]) #xx,yy,zz,yz,xz,xy
         end
     end
     return ϵmut

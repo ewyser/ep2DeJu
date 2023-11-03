@@ -230,11 +230,19 @@ end
         mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
         mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
         mpD.B[3,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
-        mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-        mpD.B[5,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
-        mpD.B[5,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[6,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
-        mpD.B[6,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
+        mpD.B[4,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[5,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
+        mpD.B[5,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[6,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[6,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
     end
 end
+#=
+1 xx
+2 yy
+3 zz
+4 yz
+5 xz
+6 xy
+=#
