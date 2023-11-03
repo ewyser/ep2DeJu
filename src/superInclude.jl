@@ -41,7 +41,7 @@ if @isdefined perf
         include("./fun_fs/plast.jl")
     end
 else
-    @info "ϵp2De() init by-default mode"
+    @info "ϵp23De() init by-default mode"
     include("./fun_fs/shpfun.jl")
     include("./fun_fs/mapsto.jl")
     include("./fun_fs/solve.jl")

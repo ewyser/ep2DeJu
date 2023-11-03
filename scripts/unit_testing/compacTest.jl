@@ -204,7 +204,7 @@ end
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
-    K,G,Del = D(E,ν)                                                            # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
+    K,G,Del = D(E,ν,2)                                                          # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              

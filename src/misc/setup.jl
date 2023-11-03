@@ -37,7 +37,6 @@ function meshCoord(nD,L,h)
         zn  = vec(zn)
         x   = hcat(xn,yn,zn)
     end
-
     return x,nn,nel,nno
 end
 function meshBCs(xn,h,nno,nD)
@@ -230,7 +229,6 @@ function materialGeom(meD,lz,wl,coh0,cohr,ni)
         zp          = (     ones(npx,1  )'.*zL ).*ones(1,1,npy)
         c           = GRFS_gauss(xp,coh0,cohr,ni,meD.h[1])   
         xp,yp,zp,c  = vec(xp),vec(yp),vec(zp),vec(c)
-        wl          = 0.15*lz
         x           = LinRange(minimum(xp),maximum(xp),200)
         a           = -1.25
         x,z         = x.+0.5.*meD.L[1],a.*x
@@ -302,7 +300,6 @@ function meshSetup(nel,L,typeD)
         # mesh boundary conditions
         bc   = bc,
     )
-    println(meD.h)
     return meD
 end
 function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
