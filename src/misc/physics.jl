@@ -1,10 +1,27 @@
-@views function D(E,ν)
+@views function D(E,ν,nD)
     Gc = E/(2.0*(1.0+ν))                                                   # shear modulus               [Pa]
     Kc = E/(3.0*(1.0-2.0*ν))                                               # bulk modulus                [Pa]
-    D  = [ Kc+4/3*Gc Kc-2/3*Gc Kc-2/3*Gc 0.0 ;
-           Kc-2/3*Gc Kc+4/3*Gc Kc-2/3*Gc 0.0 ;
-           Kc-2/3*Gc Kc-2/3*Gc Kc+4/3*Gc 0.0 ;
-           0.0       0.0       0.0       Gc  ]
+    if nD == 2
+        D  = [ 
+            Kc+4/3*Gc Kc-2/3*Gc Kc-2/3*Gc 0.0 ;
+            Kc-2/3*Gc Kc+4/3*Gc Kc-2/3*Gc 0.0 ;
+            Kc-2/3*Gc Kc-2/3*Gc Kc+4/3*Gc 0.0 ;
+            0.0       0.0       0.0       Gc  ]
+    elseif nD == 3
+        D  = [ 
+            Kc+4/3*Gc Kc-2/3*Gc Kc-2/3*Gc 0.0 0.0 0.0;
+            Kc-2/3*Gc Kc+4/3*Gc Kc-2/3*Gc 0.0 0.0 0.0;
+            Kc-2/3*Gc Kc-2/3*Gc Kc+4/3*Gc 0.0 0.0 0.0;
+            0.0       0.0       0.0       Gc  0.0 0.0;
+            0.0       0.0       0.0       0.0 Gc  0.0;
+            0.0       0.0       0.0       0.0 0.0 Gc ;]
+    end
+    return Kc,Gc,D
+end
+@views function D3D(E,ν)
+    Gc = E/(2.0*(1.0+ν))                                                   # shear modulus               [Pa]
+    Kc = E/(3.0*(1.0-2.0*ν))                                               # bulk modulus                [Pa]
+
     return Kc,Gc,D
 end
 @views function get_Δt(vp,h,yd)

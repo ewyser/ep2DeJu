@@ -6,7 +6,7 @@ include("../../src/superInclude.jl")
     @info "** ϵp2De v$(getVersion()): $(fwrkDeform) strain formulation **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
-    K,G,Del = D(1.0e6,0.3)                                                      # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
+    K,G,Del = D(1.0e6,0.3,2)                                                    # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
     ρ0      = 2700.0                                                            # density [kg/m^3]
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
@@ -37,7 +37,7 @@ include("../../src/superInclude.jl")
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p->n")                  
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p<-n")
-        ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,tw>te)
+        ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,false)
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
         # update progress bas

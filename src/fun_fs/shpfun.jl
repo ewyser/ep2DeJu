@@ -196,14 +196,14 @@ end
 @views function topol3D!(mpD,meD)
     xmin,ymin,zmin = meD.minC[1],meD.minC[2],meD.minC[3]
     Δx,Δy,Δz       = 1.0/meD.h[1],1.0/meD.h[2],1.0/meD.h[3]
-    ney,nez        = meD.nel[2],meD.nel[3]
+    nex,ney,nez    = meD.nel[1],meD.nel[2],meD.nel[3]
     @threads for p ∈ 1:mpD.nmp
         mpD.p2e[p  ] = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
-        mpD.p2n[:,p].= mpD.e2n[:,mpD.p2e[p]]
+        mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
     end
     return nothing
 end
-@views function ϕ∂ϕ3D!(mpD::NamedTuple,meD::NamedTuple)
+@views function ϕ∂ϕ3D!(mpD,meD,ϕ∂ϕType)
     # get topological relations, i.e., mps-to-elements and elements-to-nodes
     topol3D!(mpD,meD)
     # calculate shape functions
@@ -221,21 +221,21 @@ end
             type   = whichType(meD.xn[id,3],meD.xB[5:6],meD.h[3])
             ϕz,dϕz = ϕ∇ϕ(ζ,type,meD.h[3])
             # convolution of basis function
-            mpD.ϕ∂ϕ[p,n,1] =  ϕx*  ϕy*  ϕz                                                                                
-            mpD.ϕ∂ϕ[p,n,2] = dϕx*  ϕy*  ϕz                                                                                
-            mpD.ϕ∂ϕ[p,n,3] =  ϕx* dϕy*  ϕz                                   
-            mpD.ϕ∂ϕ[p,n,4] =  ϕx*  ϕy* dϕz       
+            mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
+            mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
+            mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
+            mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz       
         end
         # B-matrix assembly
-        mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-        mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[3,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
-        mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
-        mpD.B[4,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[5,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
-        mpD.B[5,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-        mpD.B[6,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[6,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
+        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
+        mpD.B[3:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,4]
+        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,4]
+        mpD.B[3:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
+        mpD.B[1:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,4]
+        mpD.B[3:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,2]
+        mpD.B[1:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,3]
+        mpD.B[2:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,2]
     end
 end
 #=

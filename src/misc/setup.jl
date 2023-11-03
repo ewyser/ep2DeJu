@@ -302,6 +302,7 @@ function meshSetup(nel,L,typeD)
         # mesh boundary conditions
         bc   = bc,
     )
+    println(meD.h)
     return meD
 end
 function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
