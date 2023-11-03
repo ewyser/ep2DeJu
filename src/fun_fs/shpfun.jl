@@ -238,6 +238,10 @@ end
         mpD.B[3,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
         mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
         mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[5,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[5,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
+        mpD.B[6,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[6,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
         =#
     end
 end
