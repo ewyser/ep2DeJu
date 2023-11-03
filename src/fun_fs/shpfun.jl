@@ -193,55 +193,48 @@ end
 
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
-@views function topol3d!(mpD,meD)
+@views function topol3D!(mpD,meD)
     xmin,ymin,zmin = meD.minC[1],meD.minC[2],meD.minC[3]
     Δx,Δy,Δz       = 1.0/meD.h[1],1.0/meD.h[2],1.0/meD.h[3]
-    nez            = meD.nel[3]
+    ney,nez        = meD.nel[2],meD.nel[3]
     @threads for p ∈ 1:mpD.nmp
-        mpD.p2e[p]  = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
-        mpD.p2n[:p].= mpD.e2n[:,mpD.p2e[p]]
+        mpD.p2e[p  ] = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
+        mpD.p2n[:,p].= mpD.e2n[:,mpD.p2e[p]]
     end
     return nothing
 end
 @views function ϕ∂ϕ3D!(mpD::NamedTuple,meD::NamedTuple)
-    #preprocessing
-    xb = copy(meD.xB[1:2])
-    yb = copy(meD.xB[3:4])
-    zb = copy(meD.xB[5:6])
-    Δx = meD.h[1]
-    Δy = meD.h[2]
-    Δz = meD.h[3]
-    #action
-    for n ∈ 1:nn
-        for p ∈ 1:nmp
+    # get topological relations, i.e., mps-to-elements and elements-to-nodes
+    topol3D!(mpD,meD)
+    # calculate shape functions
+    @threads for mp ∈ 1:mpD.nmp
+        @simd for nn ∈ 1:meD.nn
             # compute basis functions
-            id     = p2n[p,n]
-            ξ      = (mpD.x[p,1] - meD.x[id,1])/Δx 
-            type   = whichType(meD.x[id,1],xb,Δx)
-            ϕx,dϕx = ϕ∇ϕ(ξ,type,Δx)
-            η      = (mpD.x[p,2] - meD.x[id,3])/Δy
-            type   = whichType(meD.x[id,2],yb,Δy)
-            ϕy,dϕy = ϕ∇ϕ(η,type,Δy)
-            ζ      = (mpD.x[p,3] - meD.x[id,3])/Δz
-            type   = whichType(meD.x[id,3],zb,Δz)
-            ϕz,dϕz = ϕ∇ϕ(ζ,type,Δz)
+            id     = mpD.p2n[nn,mp]
+            ξ      = (mpD.x[mp,1]-meD.xn[id,1])/meD.h[1] 
+            type   = whichType(meD.xn[id,1],meD.xB[1:2],meD.h[1])
+            ϕx,dϕx = ϕ∇ϕ(ξ,type,meD.h[1])
+            η      = (mpD.x[mp,2]-meD.xn[id,2])/meD.h[2]
+            type   = whichType(meD.xn[id,2],meD.xB[3:4],meD.h[2])
+            ϕy,dϕy = ϕ∇ϕ(η,type,meD.h[2])
+            ζ      = (mpD.x[mp,3]-meD.xn[id,3])/meD.h[3]
+            type   = whichType(meD.xn[id,3],meD.xB[5:6],meD.h[3])
+            ϕz,dϕz = ϕ∇ϕ(ζ,type,meD.h[3])
             # convolution of basis function
             mpD.ϕ∂ϕ[p,n,1] =  ϕx*  ϕy*  ϕz                                                                                
             mpD.ϕ∂ϕ[p,n,2] = dϕx*  ϕy*  ϕz                                                                                
             mpD.ϕ∂ϕ[p,n,3] =  ϕx* dϕy*  ϕz                                   
-            mpD.ϕ∂ϕ[p,n,4] =  ϕx*  ϕy* dϕz  
+            mpD.ϕ∂ϕ[p,n,4] =  ϕx*  ϕy* dϕz       
         end
-        #=
         # B-matrix assembly
         mpD.B[1,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
         mpD.B[2,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
         mpD.B[3,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
         mpD.B[4,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
         mpD.B[4,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-        mpD.B[5,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[5,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-        mpD.B[6,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
-        mpD.B[6,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
-        =#
+        mpD.B[5,2:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
+        mpD.B[5,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,3]
+        mpD.B[6,1:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,4]
+        mpD.B[6,3:meD.nD:end,mp].= mpD.ϕ∂ϕ[mp,:,2]
     end
 end
