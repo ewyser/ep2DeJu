@@ -47,10 +47,18 @@ end
 end
 @views function mutate(ϵ,type)
     if type == "tensor"
-        ϵmut = [     ϵ[1] 0.5*ϵ[4];
-                 0.5*ϵ[4]     ϵ[2]]
+        if length(ϵ) == 4
+            ϵmut = [     ϵ[1] 0.5*ϵ[4];
+                    0.5*ϵ[4]     ϵ[2]]
+        elseif length(ϵ) == 6
+
+        end
     elseif type == "voigt"
-        ϵmut = vcat(ϵ[1,1],ϵ[2,2],0.0,2*ϵ[1,2])
+        if length(ϵ) == 4
+            ϵmut = vcat(ϵ[1,1],ϵ[2,2],0.0,2*ϵ[1,2])
+        elseif length(ϵ) == 9
+    
+        end
     end
     return ϵmut
 end
