@@ -45,21 +45,21 @@ end
     if isΔFbar ΔFbar!(mpD,meD) end
     return nothing
 end
-@views function mutate(ϵ,α,type)
+@views function mutate(ϵ,Χ,type)
     if type == :tensor # α = 1/2 when ϵ := strain, α = 1.0 when ϵ := stress
         if length(ϵ) == 4
-            ϵmut = [     ϵ[1] α*ϵ[4];
-                       α*ϵ[4]     ϵ[2]]
+            ϵmut = [  ϵ[1] Χ*ϵ[4];
+                    Χ*ϵ[4]   ϵ[2]]
         elseif length(ϵ) == 6
-            ϵmut = [    ϵ[1] 0.5*ϵ[6] 0.5*ϵ[5];
-                    0.5*ϵ[6]     ϵ[2] 0.5*ϵ[4];
-                    0.5*ϵ[5] 0.5*ϵ[4]     ϵ[3]]
+            ϵmut = [  ϵ[1] Χ*ϵ[6] Χ*ϵ[5];
+                    Χ*ϵ[6]   ϵ[2] Χ*ϵ[4];
+                    Χ*ϵ[5] Χ*ϵ[4]   ϵ[3]]
         end
     elseif type == :voigt # α = 2.0 when ϵ := strain, α = 1.0 when ϵ := stress
         if length(ϵ) == 4
-            ϵmut = vcat(ϵ[1,1],ϵ[2,2],0.0,α*ϵ[1,2]) #xx,yy,zz,xy
+            ϵmut = vcat(ϵ[1,1],ϵ[2,2],0.0,Χ*ϵ[1,2]) #xx,yy,zz,xy
         elseif length(ϵ) == 9
-            ϵmut = vcat(ϵ[1,1],ϵ[2,2],ϵ[3,3],α*ϵ[2,3],α*ϵ[1,3],α*ϵ[1,2]) #xx,yy,zz,yz,xz,xy
+            ϵmut = vcat(ϵ[1,1],ϵ[2,2],ϵ[3,3],Χ*ϵ[2,3],Χ*ϵ[1,3],Χ*ϵ[1,2]) #xx,yy,zz,yz,xz,xy
         end
     end
     return ϵmut
