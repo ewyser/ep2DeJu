@@ -33,7 +33,7 @@ include("../../src/superInclude.jl")
         # adaptative Δt & linear increase in gravity
         Δt,g  = get_Δt(mpD.v,meD.h,yd),get_g(tw,tg,meD.nD)
         # bsmpm cycle
-        ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
+        shpfun(mpD,meD,ϕ∂ϕType)
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p->n")                  
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p<-n")

@@ -176,7 +176,7 @@ end
 end
 
 
-@view function assemblyB!(mpD,meD,mp)
+@views function assemblyB!(mpD,meD,mp)
     if meD.nD == 2
         mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
         mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
@@ -195,7 +195,7 @@ end
     end
     return nothing
 end
-@view function ϕ∂ϕbsmpm!(mpD,meD)
+@views function ϕ∂ϕbsmpm!(mpD,meD)
     # calculate shape functions
     if meD.nD == 2
         @threads for mp ∈ 1:mpD.nmp
@@ -242,12 +242,21 @@ end
     end
     return nothing
 end
-@view function ϕ∂ϕgimpm!(mpD,meD)
+@views function ϕ∂ϕgimpm!(mpD,meD)
     # calculate shape functions
     if meD.nD == 2
         @threads for mp ∈ 1:mpD.nmp
             @simd for nn ∈ 1:meD.nn
-                # compute basis functions    
+                # compute basis functions
+                id     = mpD.p2n[nn,mp]
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])
+                ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l[mp,1])
+                ϕz,dϕz = NdN(η,meD.h[2],mpD.l[mp,2])
+                # convolution of basis function
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
             end
             # B-matrix assembly
             assemblyB!(mpD,meD,mp)
@@ -256,9 +265,13 @@ end
         @threads for mp ∈ 1:mpD.nmp
             @simd for nn ∈ 1:meD.nn
                 # compute basis functions
-
-                ζ      = (mpD.x[mp,3]-meD.xn[id,3])/meD.h[3]
-                ϕz,dϕz = ϕ∇ϕ(ζ,type,meD.h[3])
+                id     = mpD.p2n[nn,mp]
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])
+                ζ      = (mpD.x[mp,3]-meD.xn[id,3])
+                ϕx,dϕx = NdN(ξ,meD.h[1],mpD.l[mp,1])
+                ϕy,dϕy = NdN(η,meD.h[2],mpD.l[mp,2])
+                ϕz,dϕz = NdN(ζ,meD.h[3],mpD.l[mp,3])
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
@@ -274,7 +287,7 @@ end
 
 @views function shpfun(mpD,meD,ϕ∂ϕType)
     # get topological relations, i.e., mps-to-elements and elements-to-nodes
-    if meD.nD==2 twoDtplgy! elseif meD.nD==3 threeDtplgy! end
+    if meD.nD==2 twoDtplgy!(mpD,meD) elseif meD.nD==3 threeDtplgy!(mpD,meD) end
     # calculate shape functions
     if ϕ∂ϕType == :bsmpm
         ϕ∂ϕbsmpm!(mpD,meD)
