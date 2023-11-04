@@ -43,7 +43,7 @@
                 end
                 ηmax = max(ηit,ηmax)
             end
-            mpD.ϵ[:,:,p].-= mutate(Δϵ,"tensor")
+            mpD.ϵ[:,:,p].-= mutate(Δϵ,1/2,:tensor)
             mpD.ϵpII[p]   = ϵII 
             if fwrkDeform == :finite
                 # update left cauchy green tensor
