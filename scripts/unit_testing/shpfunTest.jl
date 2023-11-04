@@ -25,7 +25,7 @@ include("../../src/misc/utilities.jl")
                 ξ      = (xp[mp] - xn[nn])/dx 
                 type   = whichType(xn[nn],xB,dx)
                     a[mp,nn,end] = 1.0*type 
-                ϕx,dϕx = ϕ∇ϕ(ξ,type,dx)
+                ϕx,dϕx = ϕ∂ϕ(ξ,xn[nn],xB,dx)
                 if type != 0
                     PoU[mp]+= ϕx
                 end
@@ -33,7 +33,7 @@ include("../../src/misc/utilities.jl")
 
                 η      = (xp[mp] - xn[nn])/dx
                 type   = whichType(xn[nn],xB,dx)
-                ϕz,dϕz = ϕ∇ϕ(η,type,dx)
+                ϕz,dϕz = ϕ∂ϕ(η,xn[nn],xB,dx)
 
                 # convolution of basis function
                 a[mp,nn,1] = ϕx
@@ -49,8 +49,8 @@ include("../../src/misc/utilities.jl")
                 # compute basis functions
                 ξ      = xp[mp] - xn[nn]
                 η      = (xp[mp] - xn[nn])
-                ϕx,dϕx = NdN(ξ,dx,0.5)
-                ϕz,dϕz = NdN(η,dx,0.5)
+                ϕx,dϕx = S∂S(ξ,dx,0.5)
+                ϕz,dϕz = S∂S(η,dx,0.5)
                 # convolution of basis function
                 PoU[mp]+= ϕx
                 a[mp,nn,1] = ϕx
@@ -66,8 +66,8 @@ include("../../src/misc/utilities.jl")
                 # compute basis functions
                 ξ      = xp[mp] - xn[nn]
                 η      = (xp[mp] - xn[nn])
-                ϕx,dϕx = NdN(ξ,dx,0.0)
-                ϕz,dϕz = NdN(η,dx,0.0)
+                ϕx,dϕx = S∂S(ξ,dx,0.0)
+                ϕz,dϕz = S∂S(η,dx,0.0)
                 # convolution of basis function
                 PoU[mp]+= ϕx
                 a[mp,nn,1] = ϕx
