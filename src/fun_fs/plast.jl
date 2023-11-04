@@ -8,8 +8,8 @@
         σ = mpD.σ
     end
     @threads for p ∈ 1:mpD.nmp
-        ϕ,H,ϵII0 = mpD.phi[p],cos(mpD.phi[p])*cmParam.Hp,mpD.ϵpII[p]
-        c0,cr    = mpD.coh[p]+cmParam.Hp*ϵII0,mpD.cohr[p]
+        ϕ,H,ϵII0 = mpD.ϕ[p],cos(mpD.ϕ[p])*cmParam.Hp,mpD.ϵpII[p]
+        c0,cr    = mpD.c0[p]+cmParam.Hp*ϵII0,mpD.cr[p]
         if c0<cr c0 = cr end
         σm,τII   = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
         f        = τII+σm*sin(ϕ)-c0*cos(ϕ)    
@@ -32,7 +32,7 @@
                 Δσ  = Δγ*cmParam.Del*∂σg
                 Δϵ.+= cmParam.Del\Δσ
                 ϵII = ϵII0+sqrt(2/3*(Δϵ[1]^2+Δϵ[2]^2+Δϵ[3]^2+2*Δϵ[4]^2))
-                c0  = mpD.coh[p]+cmParam.Hp*ϵII
+                c0  = mpD.c0[p]+cmParam.Hp*ϵII
                 if c0<cr c0 = cr end
                 σ[:,p].-= Δσ
                 σm,τII  = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)

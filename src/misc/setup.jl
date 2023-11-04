@@ -337,9 +337,9 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         V0   = v0,
         V    = v,
         m    = m,
-        coh  = coh,
-        cohr = cohr,
-        phi  = phi,
+        c0   = coh,
+        cr   = cohr,
+        ϕ    = phi,            
         ϵpII = zeros(typeD,nmp),
         ϵpV  = zeros(typeD,nmp), 
         ΔJ   = ones(typeD,nmp),
@@ -351,9 +351,9 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         F    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
         ∇v   = zeros(typeD,meD.nD,meD.nD,nmp),
         ϵ    = zeros(typeD,meD.nD,meD.nD,nmp),
+        ω    = zeros(typeD,meD.nD,meD.nD,nmp),
         b    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
         # tensor in voigt notation
-        ω    = zeros(typeD,nmp),
         σR   = zeros(typeD,nstr,nmp),
         σ    = zeros(typeD,nstr,nmp),
         τ    = zeros(typeD,nstr,nmp),
@@ -370,6 +370,6 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         p2n  = zeros(Int64,meD.nn,nmp),
     )
     # plot initial cohesion field
-    plot_coh(mpD.x,mpD.coh,mpD.phi,coh0,phi0)
+    plot_coh(mpD.x,mpD.c0,mpD.ϕ,coh0,phi0)
     return mpD 
 end
