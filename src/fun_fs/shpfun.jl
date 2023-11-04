@@ -285,7 +285,7 @@ end
     return nothing
 end
 
-@views function shpfun(mpD,meD,ϕ∂ϕType)
+@views function shpfun!(mpD,meD,ϕ∂ϕType)
     # get topological relations, i.e., mps-to-elements and elements-to-nodes
     if meD.nD==2 twoDtplgy!(mpD,meD) elseif meD.nD==3 threeDtplgy!(mpD,meD) end
     # calculate shape functions

@@ -27,7 +27,7 @@ using BenchmarkTools
     # action
     @info "Evaluate core functions:"
     println("launch ϕ∂ϕ!()")
-    @btime shpfun($mpD,$meD,$ϕ∂ϕType)
+    @btime shpfun!($mpD,$meD,$ϕ∂ϕType)
     println("launch mapsto!(p->n)")
     @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,$trsfrAp,"p->n")   
     println("launch solve!()")
