@@ -1,9 +1,19 @@
-@views function topol!(mpD,meD)
+@views function twoDtplgy!(mpD,meD)
     xmin,zmin = meD.minC[1],meD.minC[2]
     Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
     nez       = meD.nel[2]
     @threads for p ∈ 1:mpD.nmp
         mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
+        mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
+    end
+    return nothing
+end
+@views function threeDtplgy!(mpD,meD)
+    xmin,ymin,zmin = meD.minC[1],meD.minC[2],meD.minC[3]
+    Δx,Δy,Δz       = 1.0/meD.h[1],1.0/meD.h[2],1.0/meD.h[3]
+    nex,ney,nez    = meD.nel[1],meD.nel[2],meD.nel[3]
+    @threads for p ∈ 1:mpD.nmp
+        mpD.p2e[p  ] = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
         mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
     end
     return nothing
@@ -97,7 +107,7 @@ end
 #----------------------------------------------------------------------------------------------------------
 @views function ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
     # get topological relations, i.e., mps-to-elements and elements-to-nodes
-    topol!(mpD,meD)
+    twoDtplgy!(mpD,meD)
     # calculate shape functions
     if ϕ∂ϕType == :bsmpm
         @threads for mp ∈ 1:mpD.nmp
@@ -166,9 +176,115 @@ end
 end
 
 
+@view function assemblyB!(mpD,meD,mp)
+    if meD.nD == 2
+        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
+        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
+        mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
+        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
+    elseif meD.nD == 3
+        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
+        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
+        mpD.B[3:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,4]
+        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,4]
+        mpD.B[3:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
+        mpD.B[1:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,4]
+        mpD.B[3:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,2]
+        mpD.B[1:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,3]
+        mpD.B[2:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,2]
+    end
+    return nothing
+end
+@view function ϕ∂ϕbsmpm!(mpD,meD)
+    # calculate shape functions
+    if meD.nD == 2
+        @threads for mp ∈ 1:mpD.nmp
+            @simd for nn ∈ 1:meD.nn
+                # compute basis functions
+                id     = mpD.p2n[nn,mp]
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])/meD.h[1] 
+                type   = whichType(meD.xn[id,1],meD.xB[1:2],meD.h[1])
+                ϕx,dϕx = ϕ∇ϕ(ξ,type,meD.h[1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])/meD.h[2]
+                type   = whichType(meD.xn[id,2],meD.xB[3:4],meD.h[2])
+                ϕz,dϕz = ϕ∇ϕ(η,type,meD.h[2])
+                # convolution of basis function
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz        
+            end
+            # B-matrix assembly
+            assemblyB!(mpD,meD,mp)
+        end
+    elseif meD.nD == 3
+        @threads for mp ∈ 1:mpD.nmp
+            @simd for nn ∈ 1:meD.nn
+                # compute basis functions
+                id     = mpD.p2n[nn,mp]
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])/meD.h[1] 
+                type   = whichType(meD.xn[id,1],meD.xB[1:2],meD.h[1])
+                ϕx,dϕx = ϕ∇ϕ(ξ,type,meD.h[1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])/meD.h[2]
+                type   = whichType(meD.xn[id,2],meD.xB[3:4],meD.h[2])
+                ϕy,dϕy = ϕ∇ϕ(η,type,meD.h[2])
+                ζ      = (mpD.x[mp,3]-meD.xn[id,3])/meD.h[3]
+                type   = whichType(meD.xn[id,3],meD.xB[5:6],meD.h[3])
+                ϕz,dϕz = ϕ∇ϕ(ζ,type,meD.h[3])
+                # convolution of basis function
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
+                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz       
+            end
+            # B-matrix assembly
+            assemblyB!(mpD,meD,mp)
+        end
+    end
+    return nothing
+end
+@view function ϕ∂ϕgimpm!(mpD,meD)
+    # calculate shape functions
+    if meD.nD == 2
+        @threads for mp ∈ 1:mpD.nmp
+            @simd for nn ∈ 1:meD.nn
+                # compute basis functions    
+            end
+            # B-matrix assembly
+            assemblyB!(mpD,meD,mp)
+        end
+    elseif meD.nD == 3
+        @threads for mp ∈ 1:mpD.nmp
+            @simd for nn ∈ 1:meD.nn
+                # compute basis functions
 
+                ζ      = (mpD.x[mp,3]-meD.xn[id,3])/meD.h[3]
+                ϕz,dϕz = ϕ∇ϕ(ζ,type,meD.h[3])
+                # convolution of basis function
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
+                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz       
+            end
+            # B-matrix assembly
+            assemblyB!(mpD,meD,mp)
+        end
+    end
+    return nothing
+end
 
-
+@views function shpfun(mpD,meD,ϕ∂ϕType)
+    # get topological relations, i.e., mps-to-elements and elements-to-nodes
+    if meD.nD==2 twoDtplgy! elseif meD.nD==3 threeDtplgy! end
+    # calculate shape functions
+    if ϕ∂ϕType == :bsmpm
+        ϕ∂ϕbsmpm!(mpD,meD)
+    elseif ϕ∂ϕType == :gimpm
+        ϕ∂ϕgimpm!(mpD,meD)
+    elseif ϕ∂ϕType == :smpm
+        ϕ∂ϕsmpm!(mpD,meD)
+    end
+    return nothing
+end
 
 
 
