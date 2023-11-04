@@ -174,24 +174,31 @@ end
     end
     return nothing
 end
-
+#=
+1 xx
+2 yy
+3 zz
+4 yz
+5 xz
+6 xy
+=#
 
 @views function assemblyB!(mpD,meD,mp)
     if meD.nD == 2
-        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
-        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
-        mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
-        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2]
+        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xx
+        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yy
+        mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3] ## zz
+        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xy
     elseif meD.nD == 3
-        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2]
-        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3]
-        mpD.B[3:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,4]
-        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,4]
-        mpD.B[3:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3]
-        mpD.B[1:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,4]
-        mpD.B[3:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,2]
-        mpD.B[1:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,3]
-        mpD.B[2:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,2]
+        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xx
+        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yy
+        mpD.B[3:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,4] ## zz 
+        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,4] ## yz
+        mpD.B[3:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yz
+        mpD.B[1:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,4] ## xz
+        mpD.B[3:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xz
+        mpD.B[1:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,3] ## xy
+        mpD.B[2:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xy
     end
     return nothing
 end
@@ -367,11 +374,3 @@ end
         mpD.B[2:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,2]
     end
 end
-#=
-1 xx
-2 yy
-3 zz
-4 yz
-5 xz
-6 xy
-=#
