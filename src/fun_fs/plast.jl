@@ -1,4 +1,3 @@
-
 @views function getPσ0τ0τII(σ,nstr)
     σ0 = σ
     P  = (σ0[1]+σ0[2]+σ0[3])/3.0
@@ -32,7 +31,7 @@ end
     return σ 
 end
 @views function DPplast!(mpD,cmParam,fwrkDeform)
-    ψ,nstr   = 0.0,size(mpD.σ,1)
+    ψ,nstr   = 0.0*π/180.0,size(mpD.σ,1)
     # create an alias for stress tensor
     if fwrkDeform == :finite
         σ = mpD.τ
@@ -56,7 +55,6 @@ end
             mpD.ϵpII[p]+= ϵII
 
             ϵN = cmParam.Del\(σ0.-σ[:,p])
-            
             if fwrkDeform == :finite
                 mpD.ϵ[:,:,p].-= mutate(ϵN,0.5,:tensor)
                 # update left cauchy green tensor
@@ -64,7 +62,6 @@ end
                 mpD.b[:,:,p] .= n*diagm(exp.(2.0.*λ))*n'
             end
         end
-        #=
         if h<=0.0 && P>=σm
             Δλ          = (P-σm)/cmParam.Kc
             Pn          = σm-P
@@ -72,8 +69,6 @@ end
             Δϵ          = cmParam.Del\(σ0-σ[:,p])
             mpD.ϵpII[p]+= sqrt(2.0)*Δλ/3.0
         end
-        =#
-
     end
     return 0
 end
