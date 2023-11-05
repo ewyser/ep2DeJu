@@ -1,11 +1,10 @@
 # include dependencies
 include("../../src/superInclude.jl")
 # main program
-@views function ϵp23De(nel::Int64,varPlot::String,cmType::String; kwargs...)
+@views function ϵp23De(L::Vector{Float64},nel::Int64,varPlot::String,cmType::String; kwargs...)
     @info "init..."
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
     # mesh setup
-    L       = [64.1584,5.0,12.80]                                               # domain geometry
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
@@ -53,4 +52,5 @@ include("../../src/superInclude.jl")
     return msg("(✓) Done! exiting...")
 end
 # include("./scripts/program/ep23De.jl")
-# ϵp23De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
+# e.g., L = [64.1584,12.80] or L = [64.1584,5.0,12.80]                                                                                        
+# ϵp23De(L,40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
