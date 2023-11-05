@@ -5,42 +5,68 @@ using Test
 # main program
 function meshGeom(L,nel)
     nD = length(L)
-    h   = [L[1],L[2]/nel]
+    if nD == 2
+        h   = [L[1],L[2]/nel]
+    elseif nD == 3
+        h   = [L[1],L[2],L[3]/nel]
+    else 
+        err_msg = "nD = $(nD), L= $(L): unsupported mesh geometry"
+        throw(error(err_msg))
+    end
     return L,h,nD
 end
 function meshCoord(nD,L,h)
-    xn  = collect((0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])) 
-    zn  = reverse(collect((0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])))
-    nno = [length(xn),length(zn),length(xn)*length(zn)] 
-    nel = [nno[1]-1,nno[2]-1,(nno[1]-1)*(nno[2]-1)]
-    nn  = 16
-    xn  = (xn'.*ones(typeD,nno[2],1     ))     
-    zn  = (     ones(typeD,nno[1],1     )'.*zn)
-    x   = hcat(vec(xn),vec(zn))
+    if nD == 2
+        xn  = collect((0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])) 
+        zn  = reverse(collect((0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])))
+        nno = [length(xn),length(zn),length(xn)*length(zn)] 
+        nel = [nno[1]-1,nno[2]-1,(nno[1]-1)*(nno[2]-1)]
+        nn  = 16
+        xn  = (xn'.*ones(typeD,nno[2],1     ))     
+        zn  = (     ones(typeD,nno[1],1     )'.*zn)
+        x   = hcat(vec(xn),vec(zn))
+    elseif nD == 3
+        xn  =         Array(range(0.0-2*h[1],L[1]+2.0*h[1],step=h[1]))
+        yn  =         Array(range(0.0-2*h[2],L[2]+2.0*h[2],step=h[2]))
+        zn  = reverse(Array(range(0.0-2*h[3],L[3]+2.0*h[3],step=h[3])))        
+        nno = [length(xn),length(yn),length(zn),length(xn)*length(yn)*length(zn)] 
+        nel = [nno[1]-1,nno[2]-1,nno[3]-1,(nno[1]-1)*(nno[2]-1)*(nno[3]-1)]
+        nn  = 64
+        xn  = (xn'.*ones(typeD,nno[3],1     ))     .*ones(typeD,1,1,nno[2])
+        zn  = (     ones(typeD,nno[1],1     )'.*zn).*ones(typeD,1,1,nno[2])
+        yn  = (     ones(typeD,nno[3],nno[1]))     .*reshape(yn,1,1,nno[2])
+        xn  = vec(xn)
+        yn  = vec(yn)
+        zn  = vec(zn)
+        x   = hcat(xn,yn,zn)
+    end
     return x,nn,nel,nno
 end
 function meshBCs(xn,h,nno,nD)
     if nD == 2
-        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],0.0,Inf]                                    
+        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],
+               0.0                    ,Inf                    ]                                    
         bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
         bcz = findall(x->x<=xB[3], xn[:,2])
-        bcX = ones(Int64,nno[nD+1],1)
-        bcX[bcx] .= 0
+        bcX = ones(Float64,nno[nD+1],1)
+        bcX[bcx] .= 0.0
         bcZ = ones(nno[nD+1],1)
-        bcZ[bcz] .= 0
-        #bcX[bcz] .= 0
+        bcZ[bcz] .= 0.0
+        #bcX[bcz] .= 0.0
         bc   = hcat(bcX,bcZ)
     elseif nD == 3
-        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],minimum(xn[:,2])+2*h[1],maximum(xn[:,2])-2*h[1],0.0,Inf]                                    
+        xB  = [minimum(xn[:,1])+2*h[1],maximum(xn[:,1])-2*h[1],
+               minimum(xn[:,2])+2*h[2],maximum(xn[:,2])-2*h[2],
+               0.0                    ,Inf                    ]       
         bcx = vcat(findall(x->x<=xB[1], xn[:,1]),findall(x->x>=xB[2], xn[:,1]))
         bcy = vcat(findall(x->x<=xB[3], xn[:,2]),findall(x->x>=xB[4], xn[:,2]))
         bcz = findall(x->x<=xB[5], xn[:,3])
-        bcX = ones(Int64,nno[nD+1],1)
-        bcX[bcx] .= 0
+        bcX = ones(Float64,nno[nD+1],1)
+        bcX[bcx] .= 0.0
         bcY = ones(nno[nD+1],1)
-        bcY[bcy] .= 0
+        bcY[bcy] .= 0.0
         bcZ = ones(nno[nD+1],1)
-        bcZ[bcz] .= 0
+        bcZ[bcz] .= 0.0
         bc   = hcat(bcX,bcY,bcZ)
     end
     return bc,xB
@@ -85,30 +111,46 @@ function meshSetup(nel,L,typeD)
     return meD
 end
 function materialGeomCompact(meD,lz,wl,coh0,cohr,ni)
-    xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
-    zL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
-    npx,npz     = length(xL),length(zL)
-    xp,zp       = ((xL'.*ones(npz,1  )      )),((     ones(npx,1  )'.*zL )) 
-    xp,zp       = vec(xp),vec(zp)
-    id          = shuffle(collect(1:size(xp,1)))
-    return hcat(xp[id,:],zp[id,:])
+    if meD.nD == 2
+        xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
+        zL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:lz-0.5*meD.h[2]/ni
+        npx,npz     = length(xL),length(zL)
+        xp,zp       = ((xL'.*ones(npz,1  )      )),((     ones(npx,1  )'.*zL )) 
+        xp,zp       = vec(xp),vec(zp)
+    elseif meD.nD == 3
+        xL          = meD.xB[1]+(0.5*meD.h[1]/ni):meD.h[1]/ni:meD.xB[2]
+        yL          = meD.xB[3]+(0.5*meD.h[2]/ni):meD.h[2]/ni:meD.xB[4]
+        zL          = meD.xB[5]+(0.5*meD.h[3]/ni):meD.h[3]/ni:lz-0.5*meD.h[3]/ni
+        npx,npy,npz = length(xL),length(yL),length(zL)
+        xp          = (xL'.*ones(npz,1  )      ).*ones(1,1,npy)
+        yp          = (     ones(npz,npx)      ).*reshape(yL,1,1,npy)
+        zp          = (     ones(npx,1  )'.*zL ).*ones(1,1,npy)
+        xp,yp,zp    = vec(xp),vec(yp),vec(zp)
+    end
+    id = shuffle(collect(1:size(xp,1)))
+    return if meD.nD == 2 hcat(xp[id],zp[id]) elseif meD.nD == 3 hcat(xp[id],yp[id],zp[id]) end
 end
 function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     # non-dimensional constant                                                   
-    ni,nstr = 2,4                                                               # number of material point along 1d, number of stresses
+    if meD.nD == 2 ni,nstr = 2,4 elseif meD.nD == 3 ni,nstr = 2,6 end # number of material point along 1d, number of stress components                                                          
     # material geometry
     lz     = L[end]
     wl     = 0.15*lz
     xp     = materialGeomCompact(meD,lz,wl,coh0,cohr,ni)
     # scalars & vectors
     nmp    = size(xp,1)
-    l0,l   = ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni),ones(typeD,nmp,2).*0.5.*(meD.h[1]./ni)
-    v0,v   = ones(typeD,nmp  ).*(2.0.*l0[:,1].*2.0.*l0[:,2]),ones(typeD,nmp  ).*(2.0.*l[:,1].*2.0.*l[:,2])
+    if meD.nD == 2
+        l0,l   = ones(typeD,nmp,meD.nD).*0.5.*(meD.h[1]./ni)  ,ones(typeD,nmp,meD.nD).*0.5.*(meD.h[1]./ni)
+        v0,v   = ones(typeD,nmp).*(2.0.*l0[:,1].*2.0.*l0[:,2]),ones(typeD,nmp  ).*(2.0.*l[:,1].*2.0.*l[:,2])
+    elseif meD.nD == 3
+        l0,l   = ones(typeD,nmp,meD.nD).*0.5.*(meD.h[1]./ni)                ,ones(typeD,nmp,meD.nD).*0.5.*(meD.h[1]./ni)
+        v0,v   = ones(typeD,nmp).*(2.0.*l0[:,1].*2.0.*l0[:,2].*2.0.*l0[:,3]),ones(typeD,nmp  ).*(2.0.*l[:,1].*2.0.*l[:,2].*2.0.*l[:,2])
+    end
     m      = rho0.*v0
     coh    = ones(typeD,nmp ).*coh0
     cohr   = ones(typeD,nmp).*cohr
     phi    = ones(typeD,nmp).*phi0
-    phi[xp[:,2].<=2*wl] .= phir
+    phi[xp[:,end].<=2*wl] .= phir
     # constructor
     mpD = (
         nmp  = nmp,
@@ -202,27 +244,34 @@ end
 @views function compactTest(nel,varPlot,ν,E,ρ0,l0; kwargs...)
     cmType = "MC"
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
+    # mesh & mp setup
+    L       = [l0/nel,l0/nel,l0]                                                # domain geometry
+    L       = [l0/nel,l0       ]                                                # domain geometry
+    meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
-    K,G,Del = D(E,ν,2)                                                          # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
+    K,G,Del = D(E,ν,meD.nD)                                                     # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
     tg      = ceil((1.0/yd)*(2.0*l0)*40.0)
     t,te    = 1.25*tg,1.25*tg
-    # mesh & mp setup
-    L       = [l0/nel,l0]                                                       # domain geometry
-    meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
-    mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
+    mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup 
     z0      = copy(mpD.x[:,end])
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
-    @info "mesh & mp feature(s):" nel=Int64(meD.nel[2]-4)
+    if meD.nD == 2
+        @info "** ϵp2De v$(getVersion()): compaction of a two-dimensional column under self weight **"
+        @info "mesh & mp feature(s):" nel=Int64(meD.nel[2]-4)
+    elseif meD.nD == 3
+        @info "** ϵp2De v$(getVersion()): compaction of a three-dimensional column under self weight **"
+        @info "mesh & mp feature(s):" nel=Int64(meD.nel[3]-4)
+    end
     # plot & time stepping parameters
     tw,tC,it,ctr,ηmax,ηtot = 0.0,1.0,0,0,0,0    
     # action
-    g = [0.0,0.0]
+    if meD.nD == 2 g = [0.0,0.0] elseif meD.nD == 3 g = [0.0,0.0,0.0] end
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<=t
         # set clock on/off
@@ -230,7 +279,7 @@ end
         # adaptative Δt & linear increase in gravity
         Δt,g  = get_Δt(mpD.v,meD.h,yd),get_g(tw,tg,meD.nD)
         # bsmpm cycle
-        ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
+        shpfun!(mpD,meD,ϕ∂ϕType)
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p->n")                  
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p<-n")
@@ -243,7 +292,11 @@ end
     ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
     savefig(path_plot*"$(varPlot)_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     # analytics
-    xN,yN = abs.(mpD.σ[2,:]),z0
+    if meD.nD==2
+        xN,yN = abs.(mpD.σ[2,:]),z0
+    elseif meD.nD==3
+        xN,yN = abs.(mpD.σ[3,:]),z0
+    end
     xA,yA = abs.(ρ0.*g[end].*(l0.-z0)),z0
     err   = sum(sqrt.((xN.-xA).^2).*mpD.V0)/(abs(g[end])*ρ0*l0*sum(mpD.V0))
     return (xN,yN,xA,yA),meD.h,err
@@ -251,7 +304,6 @@ end
 @views function compacTest(trsfrAp)
     ϕ∂ϕType    = :gimpm
     fwrkDeform = :finite
-    @info "** ϵp2De v$(getVersion()): compaction of a two-dimensional column under self weight **"
     store,H,error = [],[],[]
     try
         @testset "convergence using $(ϕ∂ϕType), $(fwrkDeform) deformation, $(trsfrAp) mapping" begin
@@ -292,7 +344,7 @@ end
     return nothing
 end
 compacTest(:mUSL)
-compacTest(:tpicUSL)
+#compacTest(:tpicUSL)
 
 
 
