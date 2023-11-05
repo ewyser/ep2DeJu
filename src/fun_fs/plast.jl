@@ -114,7 +114,7 @@ function plast!(mpD,cmParam,cmType,fwrkDeform)
     elseif cmType == "camC"
 
     elseif cmType == "DP"        
-        ηmax = DPplast!(mpD.σ,mpD.ϵ,mpD.ϵpII,mpD.coh,mpD.phi,0.0,cmParam.Del,cmParam.Kc,cmParam.Gc,cmParam.Hp,mpD.cohr[1],mpD.nmp)
+        ηmax = DPplast!(mpD.σ,mpD.ϵ,mpD.ϵpII,mpD.c0,mpD.ϕ,0.0,cmParam.Del,cmParam.Kc,cmParam.Gc,cmParam.Hp,mpD.cr[1],mpD.nmp)
     else
         @error "invalid plastic model --$(cmType)--"
         exit(1) 
@@ -271,25 +271,6 @@ function MCnoCPAplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
     end
 end
 @views function DPplast!(σ,ϵ,epII,coh,phi,psi,Del,Kc,Gc,Hp,cr,nmp)
-    # pre-processor
-        σxx::Float64 = 0.0
-        σyy::Float64 = 0.0
-        σzz::Float64 = 0.0
-        σxy::Float64 = 0.0
-        P  ::Float64 = 0.0
-        τxx::Float64 = 0.0
-        τyy::Float64 = 0.0
-        τxy::Float64 = 0.0
-        τ  ::Float64 = 0.0
-        η  ::Float64 = 0.0
-        ηB ::Float64 = 0.0
-        ξ  ::Float64 = 0.0
-        σm ::Float64 = 0.0
-        fs ::Float64 = 0.0
-        ft ::Float64 = 0.0
-        τP ::Float64 = 0.0
-        αP ::Float64 = 0.0
-        h  ::Float64 = 0.0
     # action
     for p in 1:nmp
         c   = coh[p]+Hp*epII[p]
@@ -339,9 +320,6 @@ end
             σ[4,p]  = 0.0
             epII[p]+= sqrt(2.0)*Δλ/3.0
         end
-        #Δσ = [σxx-σ[1,p],σyy-σ[2,p],σzz-σ[3,p],σxy-σ[4,p]]
-        #println(size(Δσ))
-        #ϵ[:,p] .-= Del\Δσ
     end
     ηmax = 0
     return ηmax
