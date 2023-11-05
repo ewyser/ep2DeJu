@@ -52,5 +52,5 @@ include("../../src/superInclude.jl")
     @info "Figs saved in" path_plot
     return msg("(✓) Done! exiting...")
 end
-# include("./scripts/program/ep3De.jl")
+# include("./scripts/program/epNDe.jl")
 # ϵpNDe(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
