@@ -42,21 +42,27 @@ end
     # closed-form solution return-mapping for D-P
     for p ∈ 1:mpD.nmp
         c   = mpD.c0[p]+cmParam.Hp*mpD.ϵpII[p]
-        if c<mpD.cr[p]
-            c = mpD.cr[p]
-        end
+        if c<mpD.cr[p] c = mpD.cr[p] end
         P,σ0,τ0,τII = getPσ0τ0τII(σ[:,p],nstr)
         η,ηB,ξ      = getηηBξ(mpD.ϕ[p],ψ,c,nstr)
         σm,τP       = ξ/η,ξ-η*(ξ/η)
         fs,ft       = τII+η*P-ξ,P-σm         
         αP,h        = sqrt(1.0+η^2)-η,τII-τP-(sqrt(1.0+η^2))*(P-σm)  
-        Δϵ          = zeros(nstr)
         if fs>0.0 && P<σm || h>0.0 && P>=σm
             Δλ          = fs/(cmParam.Gc+cmParam.Kc*η*ηB)
             Pn,τn       = P-cmParam.Kc*ηB*Δλ,ξ-η*(P-cmParam.Kc*ηB*Δλ)
             σ[:,p]     .= σNew!(Pn,τ0,τn,τII,nstr)
-            Δϵ          = cmParam.Del\(σ0-σ[:,p])
-            mpD.ϵpII[p]+= Δλ*sqrt(1/3+2/9*ηB^2)
+            ϵII         = Δλ*sqrt(1/3+2/9*ηB^2)
+            mpD.ϵpII[p]+= ϵII
+
+            ϵN = cmParam.Del\(σ0.-σ[:,p])
+            
+            if fwrkDeform == :finite
+                mpD.ϵ[:,:,p].-= mutate(ϵN,0.5,:tensor)
+                # update left cauchy green tensor
+                λ,n           = eigen(mpD.ϵ[:,:,p],sortby=nothing)
+                mpD.b[:,:,p] .= n*diagm(exp.(2.0.*λ))*n'
+            end
         end
         #=
         if h<=0.0 && P>=σm
@@ -67,12 +73,7 @@ end
             mpD.ϵpII[p]+= sqrt(2.0)*Δλ/3.0
         end
         =#
-        if fwrkDeform == :finite
-            mpD.ϵ[:,:,p].-= mutate(Δϵ,0.5,:tensor)
-            # update left cauchy green tensor
-            λ,n           = eigen(mpD.ϵ[:,:,p],sortby=nothing)
-            mpD.b[:,:,p] .= n*diagm(exp.(2.0.*λ))*n'
-        end
+
     end
     return 0
 end
