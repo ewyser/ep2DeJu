@@ -114,7 +114,7 @@ function plast!(mpD,cmParam,cmType,fwrkDeform)
     elseif cmType == "camC"
 
     elseif cmType == "DP"        
-        ηmax = DPplast!(mpD.σ,mpD.ϵ,mpD.ϵpII,mpD.c0,mpD.ϕ,0.0,cmParam.Del,cmParam.Kc,cmParam.Gc,cmParam.Hp,mpD.cr[1],mpD.nmp)
+        ηmax = DPplast!(mpD,cmParam,fwrkDeform)
     else
         @error "invalid plastic model --$(cmType)--"
         exit(1) 
@@ -270,59 +270,65 @@ function MCnoCPAplast!(τ,ϵ,epII,coh,phi,nmp,Del,Hp,cr)
         epII[mp]+= sqrt(2/3*(ϵp[1]^2+ϵp[2]^2+ϵp[3]^2)+2*ϵp[4]^2) 
     end
 end
-@views function DPplast!(σ,ϵ,epII,coh,phi,psi,Del,Kc,Gc,Hp,cr,nmp)
+@views function getPσ0τ0τII(σ,nstr)
+    σ0 = σ
+    P  = (σ0[1]+σ0[2]+σ0[3])/3.0
+    if nstr == 4
+        τ0     = σ0.-[P,P,P,0.0]
+        τII    = sqrt(0.5*(τ0[1]^2+τ0[2]^2+τ0[3]^2)+τ0[4]^2)
+    elseif nstr == 6
+        τ0     = σ0.-[P,P,P,0.0,0.0,0.0]
+        τII    = sqrt(0.5*(τ0[1]^2+τ0[2]^2+τ0[3]^2)+τ0[4]^2+τ0[5]^2+τ0[6]^2)
+    end
+    return P,σ0,τ0,τII
+end
+@views function getηηBξ(ϕ,ψ,c,nstr)
+    if nstr == 4
+        η   = 3.0*tan(ϕ)/(sqrt(9.0+12.0*tan(ϕ)*tan(ϕ)))
+        ηB  = 3.0*tan(ψ)/(sqrt(9.0+12.0*tan(ψ)*tan(ψ)))
+        ξ   = 3.0*c     /(sqrt(9.0+12.0*tan(ϕ)*tan(ϕ)))
+    elseif nstr == 6
+        η   = 6.0  *sin(ϕ)/(sqrt(3.0)*(3.0+sin(ϕ)))
+        ηB  = 6.0  *sin(ψ)/(sqrt(3.0)*(3.0+sin(ψ)))
+        ξ   = 6.0*c*cos(ϕ)/(sqrt(3.0)*(3.0+sin(ϕ))) 
+    end
+    return η,ηB,ξ
+end
+@views function σNew!(Pn,τ0,τn,τII,nstr)
+    if nstr == 4
+        σ = τ0.*(τn/τII).+[Pn,Pn,Pn,0.0]
+    elseif nstr == 6
+        σ = τ0.*(τn/τII).+[Pn,Pn,Pn,0.0,0.0,0.0]
+    end
+    return σ 
+end
+@views function DPplast!(mpD,cmParam,fwrkDeform)
+    ψ,dim   = 0.0,size(mpD.σ,1)
     # action
-    for p in 1:nmp
-        c   = coh[p]+Hp*epII[p]
-        if c<cr
-            c = cr
+    for p ∈ 1:mpD.nmp
+        c   = mpD.c0[p]+cmParam.Hp*mpD.ϵpII[p]
+        if c<mpD.cr[p]
+            c = mpD.cr[p]
         end
-        σxx = σ[1,p] 
-        σyy = σ[2,p]
-        σzz = σ[3,p]
-        σxy = σ[4,p]
-        P   = (σxx+σyy+σzz)/3.0
-        τxx = σxx - P 
-        τyy = σyy - P
-        τzz = σzz - P
-        τxy = σxy
-        τ   = sqrt(0.5*(τxx^2+τyy^2+τzz^2)+τxy^2)
-        η   = 6.0  *sin(phi[p])/(sqrt(3.0)*(3.0+sin(phi[p])))
-        ηB  = 6.0  *sin(psi   )/(sqrt(3.0)*(3.0+sin(psi   )))
-        ξ   = 6.0*c*cos(phi[p])/(sqrt(3.0)*(3.0+sin(phi[p]))) 
-
-        η   = 3.0*tan(phi[p])/(sqrt(9.0+12.0*tan(phi[p])*tan(phi[p])))
-        ηB  = 3.0*tan(psi   )/(sqrt(9.0+12.0*tan(psi   )*tan(psi    )))
-        ξ   = 3.0*c          /(sqrt(9.0+12.0*tan(phi[p])*tan(phi[p])))
-
-
-        σm  = ξ/η
-        fs  = τ+η*P-ξ
-        ft  = P-σm         
-        τP  = ξ-η*σm  
-        αP  = sqrt(1.0+η^2)-η
-        h   = τ-τP-αP*(P-σm)
+        P,σ0,τ0,τII = getPσ0τ0τII(mpD.σ[:,p],dim)
+        η,ηB,ξ      = getηηBξ(mpD.ϕ[p],ψ,c,dim)
+        σm,τP       = ξ/η,ξ-η*(ξ/η)
+        fs,ft       = τII+η*P-ξ,P-σm         
+        αP,h        = sqrt(1.0+η^2)-η,τII-τP-(sqrt(1.0+η^2))*(P-σm)  
         if fs>0.0 && P<σm || h>0.0 && P>=σm
-            Δλ      = fs/(Gc+Kc*η*ηB)
-            Pn      = P-Kc*ηB*Δλ
-            τn      = ξ-η*Pn
-            σ[1,p]  = τxx*(τn/τ)+Pn
-            σ[2,p]  = τyy*(τn/τ)+Pn
-            σ[3,p]  = τzz*(τn/τ)+Pn
-            σ[4,p]  = τxy*(τn/τ)
-            epII[p]+= Δλ*sqrt(1/3+2/9*ηB^2)
+            Δλ          = fs/(cmParam.Gc+cmParam.Kc*η*ηB)
+            Pn,τn       = P-cmParam.Kc*ηB*Δλ,ξ-η*(P-cmParam.Kc*ηB*Δλ)
+            mpD.σ[:,p] .= σNew!(Pn,τ0,τn,τII,dim)
+            mpD.ϵpII[p]+= Δλ*sqrt(1/3+2/9*ηB^2)
         end
         if h<=0.0 && P>=σm
-            Δλ      = (P-σm)/Kc
-            σ[1,p]  = σm-P
-            σ[2,p]  = σm-P
-            σ[3,p]  = σm-P
-            σ[4,p]  = 0.0
-            epII[p]+= sqrt(2.0)*Δλ/3.0
+            Δλ          = (P-σm)/cmParam.Kc
+            Pn          = σm-P
+            mpD.σ[:,p] .= σNew!(Pn,τ0,0.0,τII,dim)
+            mpD.ϵpII[p]+= sqrt(2.0)*Δλ/3.0
         end
     end
-    ηmax = 0
-    return ηmax
+    return 0
 end
 @views function MCC3plast!(σ,ϵ,epII,epV,coh,phi,nmp,Del,Kc,Hp,cr) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
     ηmax = 20

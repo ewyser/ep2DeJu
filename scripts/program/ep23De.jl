@@ -13,7 +13,7 @@ include("../../src/superInclude.jl")
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
-    t,te,tg = 10.0,10.0,15.0/1.5                                                # simulation time [s], elastic loading [s], gravity load
+    t,te,tg = 15.0,10.0,15.0/1.5                                                # simulation time [s], elastic loading [s], gravity load
     # mp setup
     mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
@@ -38,7 +38,7 @@ include("../../src/superInclude.jl")
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p->n")                  
         solve!(meD,Δt)
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p<-n")
-        ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,false)
+        ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,tw>te)
         # update sim time
         tw,it,toc,ηtot = tw+Δt,it+1,((time_ns()-tic)),max(ηmax,ηtot)
         # update progress bas
@@ -53,4 +53,4 @@ include("../../src/superInclude.jl")
 end
 # include("./scripts/program/ep23De.jl")
 # e.g., L = [64.1584,12.80] or L = [64.1584,5.0,12.80]                                                                                        
-# ϵp23De(L,40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
+# ϵp23De(L,40,"P","DP";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
