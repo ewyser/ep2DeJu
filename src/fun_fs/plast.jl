@@ -135,10 +135,6 @@ end
 function plast!(mpD,cmParam,cmType,fwrkDeform)
     if cmType == "MC"
         ηmax = MCplast!(mpD,cmParam,fwrkDeform)
-    elseif cmType == "J2"
-        ηmax = J2plast!(mpD,cmParam.Del,cmParam.Kc,cmParam.Hp,fwrkDeform)
-    elseif cmType == "camC"
-
     elseif cmType == "DP"        
         ηmax = DPplast!(mpD,cmParam,fwrkDeform)
     else
