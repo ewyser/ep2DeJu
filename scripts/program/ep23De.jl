@@ -1,7 +1,7 @@
 # include dependencies
 include("../../src/superInclude.jl")
 # main program
-@views function ϵpNDe(nel::Int64,varPlot::String,cmType::String; kwargs...)
+@views function ϵp23De(nel::Int64,varPlot::String,cmType::String; kwargs...)
     @info "init..."
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
     # mesh setup
@@ -52,5 +52,5 @@ include("../../src/superInclude.jl")
     @info "Figs saved in" path_plot
     return msg("(✓) Done! exiting...")
 end
-# include("./scripts/program/epNDe.jl")
-# ϵpNDe(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
+# include("./scripts/program/ep23De.jl")
+# ϵp23De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
