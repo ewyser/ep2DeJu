@@ -82,9 +82,9 @@ end
         mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-mpD.I
         mpD.ω[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]-mpD.ΔF[:,:,p]')
         # update cauchy stress tensor
-        σJ          = mutate(mpD.σ[:,p],1.0,:tensor)
-        σJ         .= σJ*mpD.ω[:,:,p]'+σJ'*mpD.ω[:,:,p]
-        mpD.σ[:,p].+= Del*mutate(mpD.ϵ[:,:,p],2.0,:voigt).+mutate(σJ,1.0,:voigt)
+        mpD.σJ[:,:,p] = mutate(mpD.σ[:,p],1.0,:tensor)
+        mpD.σJ[:,:,p].= mpD.σJ[:,:,p]*mpD.ω[:,:,p]'+mpD.σJ[:,:,p]'*mpD.ω[:,:,p]
+        mpD.σ[:,p]  .+= Del*mutate(mpD.ϵ[:,:,p],2.0,:voigt).+mutate(mpD.σJ[:,:,p],1.0,:voigt)
     end   
     return nothing
 end

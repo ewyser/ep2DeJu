@@ -352,6 +352,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         ∇v   = zeros(typeD,meD.nD,meD.nD,nmp),
         ϵ    = zeros(typeD,meD.nD,meD.nD,nmp),
         ω    = zeros(typeD,meD.nD,meD.nD,nmp),
+        σJ   = zeros(typeD,meD.nD,meD.nD,nmp),
         b    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
         # tensor in voigt notation
         σR   = zeros(typeD,nstr,nmp),
