@@ -283,8 +283,6 @@ function meshSetup(nel,L,typeD)
         xn   = x,
         mn   = zeros(typeD,nno[nD+1]             ), # lumped mass vector
         Mn   = zeros(typeD,nno[nD+1],nno[nD+1]   ), # consistent mass matrix
-        fext = zeros(typeD,nno[nD+1],nD          ), 
-        fint = zeros(typeD,nno[nD+1],nD          ),
         oobf = zeros(typeD,nno[nD+1],nD          ),
         Dn   = zeros(typeD,nno[nD+1],nD          ),
         fn   = zeros(typeD,nno[nD+1],nD          ),
@@ -355,11 +353,8 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         σJ   = zeros(typeD,meD.nD,meD.nD,nmp),
         b    = repeat(Matrix(1.0I,meD.nD,meD.nD),1,1,nmp),
         # tensor in voigt notation
-        σR   = zeros(typeD,nstr,nmp),
         σ    = zeros(typeD,nstr,nmp),
         τ    = zeros(typeD,nstr,nmp),
-        dev  = zeros(typeD,nstr,nmp),
-        ep   = zeros(typeD,nstr,nmp),
         # additional quantities
         ϕ∂ϕ  = zeros(typeD,meD.nn,nmp ,meD.nD+1   ),
         δnp  = zeros(typeD,meD.nn,meD.nD,nmp      ),
