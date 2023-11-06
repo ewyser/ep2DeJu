@@ -6,7 +6,7 @@
     meD.an.= 0.0
     meD.vn.= 0.0
     # solve momentum equation on the mesh
-    for dim ∈ 1:meD.nD
+    @simd for dim ∈ 1:meD.nD
         @threads for n ∈ 1:meD.nno[meD.nD+1]
             if meD.mn[n]>0.0 
                 m             = (1.0/meD.mn[n])*meD.bc[n,dim]                   #(2,)
