@@ -50,7 +50,7 @@ end
         if fs>0.0 && P<σm || h>0.0 && P>=σm
             Δλ          = fs/(cmParam.Gc+cmParam.Kc*η*ηB)
             Pn,τn       = P-cmParam.Kc*ηB*Δλ,ξ-η*(P-cmParam.Kc*ηB*Δλ)
-            σ[:,p]     .= σNew!(Pn,τ0,τn,τII,nstr)
+            σ[:,p]     .= σn(Pn,τ0,τn,τII,nstr)
             ϵpII        = Δλ*sqrt(1/3+2/9*ηB^2)
             mpD.ϵpII[p]+= ϵpII
             if fwrkDeform == :finite
