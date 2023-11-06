@@ -23,19 +23,16 @@ function meshCoord(nD,L,h)
         zn  = (     ones(typeD,nno[1],1     )'.*zn)
         x   = hcat(vec(xn),vec(zn))
     elseif nD == 3
-        xn  =         Array(range(0.0-2*h[1],L[1]+2.0*h[1],step=h[1]))
-        yn  =         Array(range(0.0-2*h[2],L[2]+2.0*h[2],step=h[2]))
-        zn  = reverse(Array(range(0.0-2*h[3],L[3]+2.0*h[3],step=h[3])))        
+        xn  = collect((0.0-2*h[1]):h[1]:(L[1]+2.0*h[1])) 
+        yn  = collect((0.0-2*h[2]):h[2]:(L[2]+2.0*h[2])) 
+        zn  = reverse(collect((0.0-2*h[3]):h[3]:(L[3]+2.0*h[3])))        
         nno = [length(xn),length(yn),length(zn),length(xn)*length(yn)*length(zn)] 
         nel = [nno[1]-1,nno[2]-1,nno[3]-1,(nno[1]-1)*(nno[2]-1)*(nno[3]-1)]
         nn  = 64
         xn  = (xn'.*ones(typeD,nno[3],1     ))     .*ones(typeD,1,1,nno[2])
         zn  = (     ones(typeD,nno[1],1     )'.*zn).*ones(typeD,1,1,nno[2])
         yn  = (     ones(typeD,nno[3],nno[1]))     .*reshape(yn,1,1,nno[2])
-        xn  = vec(xn)
-        yn  = vec(yn)
-        zn  = vec(zn)
-        x   = hcat(xn,yn,zn)
+        x   = hcat(vec(xn),vec(yn),vec(zn))
     end
     return x,nn,nel,nno
 end
