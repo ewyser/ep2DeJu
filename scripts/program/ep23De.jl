@@ -2,8 +2,9 @@
 include("../../src/superInclude.jl")
 # main program
 @views function ϵp23De(L::Vector{Float64},nel::Int64,varPlot::String,cmType::String; kwargs...)
-    @info "init..."
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
+    @info "** ϵp$(length(L))De v$(getVersion()): $(fwrkDeform) strain formulation **"
+    @info "init..."
     # mesh setup
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     # independant physical constant
@@ -22,9 +23,8 @@ include("../../src/superInclude.jl")
     # plot & time stepping parameters
     tw,tC,it,ctr,ηmax,ηtot = 0.0,1.0,0,0,0,0    
     # action
-    @info "** ϵp$(meD.nD)De v$(getVersion()): $(fwrkDeform) strain formulation **"
     @info "mesh & mp feature(s):" nel=Tuple(meD.nel) nno=Tuple(meD.nno) nmp=mpD.nmp
-    @info "launch $(ϕ∂ϕType) calculation cycle..."
+    @info "launch $(ϕ∂ϕType) calculation cycle using $(nthreads()) thread(s)..."
     prog  = ProgressUnknown("working hard:", spinner=true,showspeed=true)
     while tw<=t
         # plot/save
