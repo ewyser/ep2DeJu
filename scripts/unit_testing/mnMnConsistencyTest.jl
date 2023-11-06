@@ -31,7 +31,7 @@ const typeD     = Float64
     @info "mesh & mp feature(s):" dim=meD.nD nel=Int64(meD.nel[end]) nno=meD.nno[end] nmp=mpD.nmp
     
     # calculate shape functions
-    ϕ∂ϕ!(mpD,meD,ϕ∂ϕType)
+    shpfun!(mpD,meD,ϕ∂ϕType)
     # initialize nodal quantities
     meD.Mn  .= 0.0
     meD.mn  .= 0.0
