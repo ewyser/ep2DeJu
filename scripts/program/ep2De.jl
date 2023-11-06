@@ -6,7 +6,8 @@ include("../../src/superInclude.jl")
     @info "** ϵp2De v$(getVersion()): $(fwrkDeform) strain formulation **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
-    K,G,Del = D(1.0e6,0.3,2)                                                    # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
+    E,ν     = 1.0e6,0.3                                                         # Young's mod. [Pa], Poisson's ratio [-]
+    K,G,Del = D(E,ν,meD.nD)                                                     # elastic matrix D(E,ν) Young's mod. [Pa] + Poisson's ratio [-]    
     ρ0      = 2700.0                                                            # density [kg/m^3]
     yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # elastic wave speed [m/s]
     c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
@@ -18,7 +19,7 @@ include("../../src/superInclude.jl")
     mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
-    cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
+    cmParam = (E = E, ν = ν, Kc = K, Gc = G, Del = Del, Hp = Hp,)
     @info "mesh & mp feature(s):" nel=Tuple(meD.nel) nno=Tuple(meD.nno) nmp=mpD.nmp
     # plot & time stepping parameters
     tw,tC,it,ctr,ηmax,ηtot = 0.0,1.0,0,0,0,0    
