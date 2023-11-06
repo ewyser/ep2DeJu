@@ -18,7 +18,7 @@ end
     end
     return nothing
 end
-function S∂S(δx::Float64,h::Float64,lp::Float64)                                                         
+function S∂S(δx,h,lp)                                                         
     if abs(δx) < lp                       
         S  = 1.0-((4.0*δx^2+(2.0*lp)^2)/(8.0*h*lp))                                   
         ∂S = -((8.0*δx)/(8.0*h*lp))                                     
@@ -207,7 +207,48 @@ end
     end
     return nothing
 end
-
+@views function ϕ∂ϕsmpm!(mpD,meD)
+    # calculate shape functions
+    if meD.nD == 2
+        @threads for mp ∈ 1:mpD.nmp
+            @simd for nn ∈ 1:meD.nn
+                # compute basis functions
+                id     = mpD.p2n[nn,mp]
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])
+                ϕx,dϕx = S∂S(ξ,meD.h[1],mpD.l[mp,1])
+                ϕz,dϕz = S∂S(η,meD.h[2],mpD.l[mp,2])
+                # convolution of basis function
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
+            end
+            # B-matrix assembly
+            assemblyB!(mpD,meD,mp)
+        end
+    elseif meD.nD == 3
+        @threads for mp ∈ 1:mpD.nmp
+            @simd for nn ∈ 1:meD.nn
+                # compute basis functions
+                id     = mpD.p2n[nn,mp]
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])
+                ζ      = (mpD.x[mp,3]-meD.xn[id,3])
+                ϕx,dϕx = S∂S(ξ,meD.h[1],0.0       )
+                ϕy,dϕy = S∂S(η,meD.h[2],0.0       )
+                ϕz,dϕz = S∂S(ζ,meD.h[3],0.0       )
+                # convolution of basis function
+                mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
+                mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
+                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz       
+            end
+            # B-matrix assembly
+            assemblyB!(mpD,meD,mp)
+        end
+    end
+    return nothing
+end
 @views function shpfun!(mpD,meD,ϕ∂ϕType)
     # get topological relations, i.e., mps-to-elements and elements-to-nodes
     if meD.nD==2 twoDtplgy!(mpD,meD) elseif meD.nD==3 threeDtplgy!(mpD,meD) end
