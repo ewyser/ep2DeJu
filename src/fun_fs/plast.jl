@@ -1,4 +1,4 @@
-@views function getInitial(σ,nstr)
+@views function getInitialσ(σ,nstr)
     σ0 = σ
     P  = (σ0[1]+σ0[2]+σ0[3])/3.0
     if nstr == 4
@@ -9,6 +9,19 @@
         τII    = sqrt(0.5*(τ0[1]^2+τ0[2]^2+τ0[3]^2)+τ0[4]^2+τ0[5]^2+τ0[6]^2)
     end
     return P,σ0,τ0,τII
+end
+@views function getInitialϵ(ϵ,nstr)
+    ϵ0 = ϵ
+    ϵV  = ϵ0[1]+ϵ0[2]+ϵ0[3]
+    γ0  = ϵ0.-[ϵV,ϵV,ϵV,0.0]
+    if nstr == 4
+        γ0  = ϵ0.-[ϵV,ϵV,ϵV,0.0]
+        γII = sqrt(0.5*(γ0[1]^2+γ0[2]^2+γ0[3]^2)+γ0[4]^2)    
+    elseif nstr == 6
+        γ0  = ϵ0.-[ϵV,ϵV,ϵV,0.0]
+        γII = sqrt(0.5*(ϵ0[1]^2+ϵ0[2]^2+ϵ0[3]^2)+ϵ0[4]^2+ϵ0[5]^2+ϵ0[6]^2)
+    end
+    return ϵV,ϵ0,γ0,γII
 end
 @views function getDPParam(ϕ,ψ,c,nstr)
     if nstr == 4
@@ -42,7 +55,8 @@ end
     for p ∈ 1:mpD.nmp
         c   = mpD.c0[p]+cmParam.Hp*mpD.ϵpII[p]
         if c<mpD.cr[p] c = mpD.cr[p] end
-        P,σ0,τ0,τII = getInitial(σ[:,p],nstr)
+        ϵV,ϵ0,γ0,γII= getInitialϵ(mutate(mpD.ϵ[:,:,p],2.0,:voigt),nstr)
+        P,σ0,τ0,τII = getInitialσ(σ[:,p],nstr)
         η,ηB,ξ      = getDPParam(mpD.ϕ[p],ψ,c,nstr)
         σm,τP       = ξ/η,ξ-η*(ξ/η)
         fs,ft       = τII+η*P-ξ,P-σm         
