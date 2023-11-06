@@ -43,6 +43,15 @@ end
     end
     return σ 
 end
+@views function ϵn(ϵVn,γ0,γn,γII,nstr)
+    if nstr == 4
+        ϵ = γ0.*(γn/γII).+[ϵVn,ϵVn,ϵVn,0.0]
+    elseif nstr == 6
+        ϵ = γ0.*(γn/γII).+[ϵVn,ϵVn,ϵVn,0.0,0.0,0.0]
+    end
+    return ϵ 
+end
+
 @views function DPplast!(mpD,cmParam,fwrkDeform)
     ψ,nstr   = 0.0*π/180.0,size(mpD.σ,1)
     # create an alias for stress tensor
@@ -68,8 +77,8 @@ end
             ΔϵpII       = Δλ*sqrt(1/3+2/9*ηB^2)
             mpD.ϵpII[p]+= ΔϵpII
             if fwrkDeform == :finite
-                ϵn            = cmParam.Del\(σ0.-σ[:,p])
-                mpD.ϵ[:,:,p].-= mutate(ϵn,0.5,:tensor)
+                ϵN            = ϵn(ϵV,γ0,γII,γII,nstr)
+                mpD.ϵ[:,:,p]  = mutate(ϵN,0.5,:tensor)
                 # update left cauchy green tensor
                 λ,n           = eigen(mpD.ϵ[:,:,p],sortby=nothing)
                 mpD.b[:,:,p] .= n*diagm(exp.(2.0.*λ))*n'
