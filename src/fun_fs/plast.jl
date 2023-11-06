@@ -51,8 +51,8 @@ end
             Δλ          = fs/(cmParam.Gc+cmParam.Kc*η*ηB)
             Pn,τn       = P-cmParam.Kc*ηB*Δλ,ξ-η*(P-cmParam.Kc*ηB*Δλ)
             σ[:,p]     .= σn(Pn,τ0,τn,τII,nstr)
-            ϵpII        = Δλ*sqrt(1/3+2/9*ηB^2)
-            mpD.ϵpII[p]+= ϵpII
+            ΔϵpII       = Δλ*sqrt(1/3+2/9*ηB^2)
+            mpD.ϵpII[p]+= ΔϵpII
             if fwrkDeform == :finite
                 ϵn            = cmParam.Del\(σ0.-σ[:,p])
                 mpD.ϵ[:,:,p].-= mutate(ϵn,0.5,:tensor)
