@@ -91,8 +91,7 @@ end
                     # consistent mass matrix
                     meD.Mn[mpD.p2n[:,p],mpD.p2n[:,p]].+= (mpD.ϕ∂ϕ[:,p,1].*mpD.ϕ∂ϕ[:,p,1]').*mpD.m[p] 
                 end
-                δx = meD.xn[mpD.p2n[:,p],:].-repeat(mpD.x[p,:]',meD.nn,1)
-                δv = mpD.∇v[:,:,p]*δx'
+                δv = mpD.∇v[:,:,p]*mpD.δnp[:,:,p]'
                 meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*(mpD.v[p,dim].+δv[dim,:])
                 meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
                 meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])

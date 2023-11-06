@@ -130,14 +130,16 @@ end
             @simd for nn ∈ 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[nn,mp]
-                ξ      = (mpD.x[mp,1]-meD.xn[id,1])/meD.h[1] 
-                η      = (mpD.x[mp,2]-meD.xn[id,2])/meD.h[2]
-                ϕx,dϕx = ϕ∂ϕ(ξ,meD.xn[id,1],meD.xB[1:2],meD.h[1])
-                ϕz,dϕz = ϕ∂ϕ(η,meD.xn[id,2],meD.xB[3:4],meD.h[2])
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1]) 
+                η      = (mpD.x[mp,2]-meD.xn[id,2])
+                ϕx,dϕx = ϕ∂ϕ(ξ/meD.h[1],meD.xn[id,1],meD.xB[1:2],meD.h[1])
+                ϕz,dϕz = ϕ∂ϕ(η/meD.h[2],meD.xn[id,2],meD.xB[3:4],meD.h[2])
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
-                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz        
+                mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz   
+                mpD.δnp[nn,1,mp] = -ξ
+                mpD.δnp[nn,2,mp] = -η
             end
             # B-matrix assembly
             assemblyB!(mpD,meD,mp)
@@ -147,17 +149,20 @@ end
             @simd for nn ∈ 1:meD.nn
                 # compute basis functions
                 id     = mpD.p2n[nn,mp]
-                ξ      = (mpD.x[mp,1]-meD.xn[id,1])/meD.h[1] 
-                η      = (mpD.x[mp,2]-meD.xn[id,2])/meD.h[2]
-                ζ      = (mpD.x[mp,3]-meD.xn[id,3])/meD.h[3]
-                ϕx,dϕx = ϕ∂ϕ(ξ,meD.xn[id,1],meD.xB[1:2],meD.h[1])
-                ϕy,dϕy = ϕ∂ϕ(η,meD.xn[id,2],meD.xB[3:4],meD.h[2])
-                ϕz,dϕz = ϕ∂ϕ(ζ,meD.xn[id,3],meD.xB[5:6],meD.h[3])
+                ξ      = (mpD.x[mp,1]-meD.xn[id,1])
+                η      = (mpD.x[mp,2]-meD.xn[id,2])
+                ζ      = (mpD.x[mp,3]-meD.xn[id,3])
+                ϕx,dϕx = ϕ∂ϕ(ξ/meD.h[1],meD.xn[id,1],meD.xB[1:2],meD.h[1])
+                ϕy,dϕy = ϕ∂ϕ(η/meD.h[2],meD.xn[id,2],meD.xB[3:4],meD.h[2])
+                ϕz,dϕz = ϕ∂ϕ(ζ/meD.h[3],meD.xn[id,3],meD.xB[5:6],meD.h[3])
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
                 mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
-                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz       
+                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz
+                mpD.δnp[nn,1,mp]  = -ξ
+                mpD.δnp[nn,2,mp]  = -η
+                mpD.δnp[nn,3,mp]  = -ζ
             end
             # B-matrix assembly
             assemblyB!(mpD,meD,mp)
@@ -180,6 +185,8 @@ end
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
+                mpD.δnp[nn,1,mp] = -ξ
+                mpD.δnp[nn,2,mp] = -η
             end
             # B-matrix assembly
             assemblyB!(mpD,meD,mp)
@@ -199,7 +206,10 @@ end
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
                 mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
-                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz       
+                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz    
+                mpD.δnp[nn,1,mp]  = -ξ
+                mpD.δnp[nn,2,mp]  = -η
+                mpD.δnp[nn,3,mp]  = -ζ
             end
             # B-matrix assembly
             assemblyB!(mpD,meD,mp)
@@ -222,6 +232,8 @@ end
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz
+                mpD.δnp[nn,1,mp] = -ξ
+                mpD.δnp[nn,2,mp] = -η
             end
             # B-matrix assembly
             assemblyB!(mpD,meD,mp)
@@ -241,7 +253,10 @@ end
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
                 mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
-                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz       
+                mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz  
+                mpD.δnp[nn,1,mp]  = -ξ
+                mpD.δnp[nn,2,mp]  = -η
+                mpD.δnp[nn,3,mp]  = -ζ
             end
             # B-matrix assembly
             assemblyB!(mpD,meD,mp)

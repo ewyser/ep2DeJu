@@ -361,7 +361,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         ep   = zeros(typeD,nstr,nmp),
         # additional quantities
         ϕ∂ϕ  = zeros(typeD,meD.nn,nmp ,meD.nD+1   ),
-        δx   = zeros(typeD,meD.nn,meD.nD,nmp      ),
+        δnp  = zeros(typeD,meD.nn,meD.nD,nmp      ),
         B    = zeros(typeD,meD.nn.*meD.nD,nstr,nmp),
         Bapic= zeros(typeD,meD.nD,meD.nD,nmp),
         Dapic= zeros(typeD,meD.nD,meD.nD,nmp),
