@@ -132,7 +132,7 @@ function materialGeomCompact(meD,lz,wl,coh0,cohr,ni)
 end
 function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
     # non-dimensional constant                                                   
-    if meD.nD == 2 ni,nstr = 2,4 elseif meD.nD == 3 ni,nstr = 2,6 end # number of material point along 1d, number of stress components                                                          
+    if meD.nD == 2 ni,nstr = 2,3 elseif meD.nD == 3 ni,nstr = 2,6 end # number of material point along 1d, number of stress components                                                          
     # material geometry
     lz     = L[end]
     wl     = 0.15*lz
