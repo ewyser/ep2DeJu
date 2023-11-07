@@ -113,8 +113,8 @@ end
                 σm,τII  = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[3,p]^2)
                 f       = τII+σm*sin(ϕ)-c0*cos(ϕ)
                 if ηit>ηtol
-                    @error "CPA: η_it>$(ηit): program killed..."
-                    exit(1)
+                    err_msg = "CPA: η_it>$(ηit): program killed..."
+                    throw(error(err_msg))
                 end
                 ηmax = max(ηit,ηmax)
             end
@@ -135,7 +135,7 @@ function plast!(mpD,cmParam,cmType,fwrkDeform)
     elseif cmType == "DP"        
         ηmax = DPRetMap!(mpD,cmParam,fwrkDeform)
     else
-        err_msg = "$(cmType): invalid plastic model"
+        err_msg = "$(cmType): invalid return mapping for plastic correction"
         throw(error(err_msg))
     end
     return ηmax::Int64
