@@ -242,12 +242,15 @@ end
     return vals
 end
 
-@views function compactTest(nel,varPlot,ν,E,ρ0,l0; kwargs...)
+@views function compactTest(dim,nel,varPlot,ν,E,ρ0,l0; kwargs...)
     cmType = "MC"
     ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
     # mesh & mp setup
-    L       = [l0/nel,l0/nel,l0]                                                # domain geometry
-    L       = [l0/nel,l0       ]                                                # domain geometry
+    if dim == 2
+        L       = [l0/nel,l0       ]                                                # domain geometry
+    elseif dim == 3
+        L       = [l0/nel,l0/nel,l0]                                                # domain geometry
+    end
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
@@ -263,10 +266,10 @@ end
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
     if meD.nD == 2
-        @info "** ϵp2De v$(getVersion()): compaction of a two-dimensional column under self weight **"
+        @info "** ϵp$(length(L))D_De v$(getVersion()): compaction of a two-dimensional column under self weight **"
         @info "mesh & mp feature(s):" nel=Int64(meD.nel[2]-4)
     elseif meD.nD == 3
-        @info "** ϵp2De v$(getVersion()): compaction of a three-dimensional column under self weight **"
+        @info "** ϵp$(length(L))D_De v$(getVersion()): compaction of a three-dimensional column under self weight **"
         @info "mesh & mp feature(s):" nel=Int64(meD.nel[3]-4)
     end
     # plot & time stepping parameters
@@ -291,7 +294,7 @@ end
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(it,1.0,"(✓)"))
     ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
-    savefig(path_plot*"$(varPlot)_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
+    savefig(path_plot*"$(length(L))D_$(varPlot)_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     # analytics
     if meD.nD==2
         xN,yN = abs.(mpD.σ[2,:]),z0
@@ -302,7 +305,7 @@ end
     err   = sum(sqrt.((xN.-xA).^2).*mpD.V0)/(abs(g[end])*ρ0*l0*sum(mpD.V0))
     return (xN,yN,xA,yA),meD.h,err
 end
-@views function compacTest(trsfrAp)
+@views function compacTest(dim,trsfrAp)
     ϕ∂ϕType    = :gimpm
     fwrkDeform = :finite
     store,H,error = [],[],[]
@@ -317,7 +320,7 @@ end
             ϵ         = 1.0
             for (it,nel) in enumerate(nel)
                 #action
-                DAT,h,err = compactTest(nel,"P",ν,E,ρ0,l0;shpfun=ϕ∂ϕType,fwrk=fwrkDeform,trsf=trsfrAp,vollock=true)
+                DAT,h,err = compactTest(dim,nel,"P",ν,E,ρ0,l0;shpfun=ϕ∂ϕType,fwrk=fwrkDeform,trsf=trsfrAp,vollock=true)
                 push!(store,DAT )
                 push!(H ,h[end])
                 push!(error,err)
@@ -329,23 +332,25 @@ end
         gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
         p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
         display(plot(p1; layout=(1,1), size=(450,250)))
-        savefig(path_plot*"convergence_pass_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
+        savefig(path_test*"$(dim)D_convergence_pass_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     catch
         gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
         p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
         display(plot(p1; layout=(1,1), size=(450,250)))
-        savefig(path_plot*"convergence_fail_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
+        savefig(path_test*"$(dim)D_convergence_fail_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     end
     xN,yN,xA,yA = store[end]
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
     p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="numerical approximation")
     p1 = plot!(xA.*1e-3,yA,label="analytical solution",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
     display(plot(p1; layout=(1,1), size=(450,250)))
-    savefig(path_plot*"numericVsAnalytic_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
+    savefig(path_test*"$(dim)D_numericVsAnalytic_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     return nothing
 end
-compacTest(:mUSL)
-#compacTest(:tpicUSL)
+compacTest(2,:mUSL)
+compacTest(3,:mUSL)
+compacTest(2,:tpicUSL)
+compacTest(3,:tpicUSL)
 
 
 

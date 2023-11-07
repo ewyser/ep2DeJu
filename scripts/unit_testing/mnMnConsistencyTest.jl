@@ -7,7 +7,7 @@ include("../../src/misc/setup.jl")
 include("../../src/misc/physics.jl")
 include("../../src/misc/plot.jl")
 include("../../src/fun_fs/shpfun.jl")
-const path_plot = "./docs/out/"
+const path_test = "./docs/test/"
 const typeD     = Float64 
 # main program
 @views function mnMn(nel::Int64,varPlot::String,cmType::String; kwargs...)

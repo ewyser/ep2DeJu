@@ -1,7 +1,7 @@
 # include("./scripts/unit_testing/shpfunTest.jl")
 # Initialisation
 using LinearAlgebra, Plots, Test, Pkg, LaTeXStrings, Base.Threads
-const path_plot = "./docs/out/"
+const path_test = "./docs/test/"
 include("../../src/fun_fs/shpfun.jl")
 include("../../src/misc/plot.jl")
 include("../../src/misc/utilities.jl")
