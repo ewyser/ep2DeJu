@@ -1,9 +1,9 @@
 @views function getInitialσ(σ,nstr)
     σ0 = σ
-    P  = (σ0[1]+σ0[2]+σ0[3])/3.0
-    if nstr == 4
-        τ0     = σ0.-[P,P,P,0.0]
-        τII    = sqrt(0.5*(τ0[1]^2+τ0[2]^2+τ0[3]^2)+τ0[4]^2)
+    P  = (σ0[1]+σ0[2])/2.0
+    if nstr == 3
+        τ0     = σ0.-[P,P,0.0]
+        τII    = sqrt(0.5*(τ0[1]^2+τ0[2]^2)+τ0[4]^2)
     elseif nstr == 6
         τ0     = σ0.-[P,P,P,0.0,0.0,0.0]
         τII    = sqrt(0.5*(τ0[1]^2+τ0[2]^2+τ0[3]^2)+τ0[4]^2+τ0[5]^2+τ0[6]^2)
@@ -12,11 +12,11 @@
 end
 @views function getInitialϵ(ϵ,nstr)
     ϵ0 = ϵ
-    ϵV  = ϵ0[1]+ϵ0[2]+ϵ0[3]
-    γ0  = ϵ0.-[ϵV,ϵV,ϵV,0.0]
-    if nstr == 4
-        γ0  = ϵ0.-[ϵV,ϵV,ϵV,0.0]
-        γII = sqrt(0.5*(γ0[1]^2+γ0[2]^2+γ0[3]^2)+γ0[4]^2)    
+    ϵV  = ϵ0[1]+ϵ0[2]
+    γ0  = ϵ0.-[ϵV,ϵV,0.0]
+    if nstr == 3
+        γ0  = ϵ0.-[ϵV,ϵV,0.0]
+        γII = sqrt(0.5*(γ0[1]^2+γ0[2]^2)+γ0[3]^2)    
     elseif nstr == 6
         γ0  = ϵ0.-[ϵV,ϵV,ϵV,0.0]
         γII = sqrt(0.5*(γ0[1]^2+γ0[2]^2+γ0[3]^2)+γ0[4]^2+γ0[5]^2+γ0[6]^2)
@@ -24,7 +24,7 @@ end
     return ϵV,ϵ0,γ0,γII
 end
 @views function getDPParam(ϕ,ψ,c,nstr)
-    if nstr == 4
+    if nstr == 3
         η   = 3.0*tan(ϕ)/(sqrt(9.0+12.0*tan(ϕ)*tan(ϕ)))
         ηB  = 3.0*tan(ψ)/(sqrt(9.0+12.0*tan(ψ)*tan(ψ)))
         ξ   = 3.0*c     /(sqrt(9.0+12.0*tan(ϕ)*tan(ϕ)))
@@ -36,16 +36,16 @@ end
     return η,ηB,ξ
 end
 @views function σn(Pn,τ0,τn,τII,nstr)
-    if nstr == 4
-        σ = τ0.*(τn/τII).+[Pn,Pn,Pn,0.0]
+    if nstr == 3
+        σ = τ0.*(τn/τII).+[Pn,Pn,0.0]
     elseif nstr == 6
         σ = τ0.*(τn/τII).+[Pn,Pn,Pn,0.0,0.0,0.0]
     end
     return σ 
 end
 @views function ϵn(ϵVn,γ0,γn,γII,nstr)
-    if nstr == 4
-        ϵ = γ0.*(γn/γII).+[ϵVn,ϵVn,ϵVn,0.0]
+    if nstr == 3
+        ϵ = γ0.*(γn/γII).+[ϵVn,ϵVn,0.0]
     elseif nstr == 6
         ϵ = γ0.*(γn/γII).+[ϵVn,ϵVn,ϵVn,0.0,0.0,0.0]
     end
