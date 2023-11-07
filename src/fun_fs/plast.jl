@@ -139,8 +139,8 @@ end
                 end
                 ηmax = max(ηit,ηmax)
             end
-            mpD.ϵ[:,:,p].-= mutate(Δϵ,0.5,:tensor)
-            mpD.ϵpII[p]   = ϵII 
+            mpD.ϵ[:,:,p].= mutate(cmParam.Del\σ[:,p],0.5,:tensor)
+            mpD.ϵpII[p]  = ϵII 
             if fwrkDeform == :finite
                 # update left cauchy green tensor
                 λ,n           = eigen(mpD.ϵ[:,:,p],sortby=nothing)
