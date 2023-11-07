@@ -356,8 +356,6 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         ϕ∂ϕ  = zeros(typeD,meD.nn,nmp ,meD.nD+1   ),
         δnp  = zeros(typeD,meD.nn,meD.nD,nmp      ),
         B    = zeros(typeD,meD.nn.*meD.nD,nstr,nmp),
-        Bapic= zeros(typeD,meD.nD,meD.nD,nmp),
-        Dapic= zeros(typeD,meD.nD,meD.nD,nmp),
         # connectivity
         p2e  = zeros(Int64,nmp),
         p2n  = zeros(Int64,meD.nn,nmp),

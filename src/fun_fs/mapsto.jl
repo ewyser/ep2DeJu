@@ -112,44 +112,6 @@ end
     end
     return nothing
 end
-@views function apicMapping!(mpD,meD,g,Δt,mapsto)
-    if mapsto == "p->n"
-        # initialize nodal quantities
-        meD.Mn  .= 0.0
-        meD.mn  .= 0.0
-        meD.pn  .= 0.0
-        meD.oobf.= 0.0
-        # mapping back to mesh
-        @threads for dim ∈ 1:meD.nD
-            @simd for p ∈ 1:mpD.nmp
-                # accumulation
-                if dim == 1 
-                    # lumped mass matrix
-                    meD.mn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p]
-                    # consistent mass matrix
-                    meD.Mn[mpD.p2n[:,p],mpD.p2n[:,p]].+= (mpD.ϕ∂ϕ[:,p,1].*mpD.ϕ∂ϕ[:,p,1]').*mpD.m[p] 
-                end
-                A = mpD.v[p,:].+(mpD.Bapic[:,:,p]*inv(mpD.Dapic[:,:,p])*mpD.δnp[:,:,p]')
-
-                meD.pn[  mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*mpD.m[p].*A[dim,:]
-                meD.oobf[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p]*g[dim]      )
-                meD.oobf[mpD.p2n[:,p],dim].-= mpD.V[p].*(mpD.B[dim:meD.nD:end,:,p]*mpD.σ[:,p])
-            end
-        end
-        # lumped mass matrix
-        #meD.mn .= sum(meD.Mn,dims=2)
-    elseif mapsto == "p<-n"
-        # mapping back to mp's
-        @simd for dim ∈ 1:meD.nD
-            @threads for p ∈ 1:mpD.nmp        
-                # pic update
-                mpD.v[p,dim] =    (mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
-                mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
-            end          
-        end
-    end
-    return nothing
-end
 @views function DM!(mpD,meD,Δt)
     # initialize for DM
     meD.pn.= 0.0
@@ -177,28 +139,6 @@ end
     end
     return nothing
 end
-@views function getB!(mpD,meD)
-    # initialize
-    mpD.Bapic.= 0.0
-    @threads for p ∈ 1:mpD.nmp
-        for nn ∈ 1:meD.nn
-            δx = meD.xn[mpD.p2n[nn,p],:].-mpD.x[p,:]
-            mpD.Bapic[:,:,p].+= mpD.ϕ∂ϕ[nn,p,1].*(meD.vn[mpD.p2n[nn,p],:]'.*δx)
-        end
-    end  
-    return nothing
-end
-@views function getD!(mpD,meD)
-    # initialize
-    mpD.Dapic.= 0.0
-    @threads for p ∈ 1:mpD.nmp
-        for nn ∈ 1:meD.nn
-            δx = meD.xn[mpD.p2n[nn,p],:].-mpD.x[p,:]
-            mpD.Dapic[:,:,p].+= mpD.ϕ∂ϕ[nn,p,1].*(δx'.*δx)
-        end
-    end  
-    return nothing
-end
 #--------------------------------------------------------------------------------------------
 ## dispatcher functions
 #--------------------------------------------------------------------------------------------
@@ -209,9 +149,6 @@ end
         picflipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :tpicUSL
         tpicMapping!(mpD,meD,g,Δt,whereto)
-    elseif trsfrAp == :apicUSL
-        getD!(mpD,meD)
-        apicMapping!(mpD,meD,g,Δt,whereto)
     end
     return nothing
 end
