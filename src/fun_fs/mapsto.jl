@@ -160,9 +160,6 @@ end
         picflipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :tpicUSL
         tpicMapping!(mpD,meD,g,Δt,whereto)
-    elseif trsfrAp == :apicUSL
-        getB!(mpD,meD)
-        apicMapping!(mpD,meD,g,Δt,whereto)
     end
     return nothing
 end
