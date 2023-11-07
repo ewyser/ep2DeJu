@@ -16,6 +16,8 @@ end
 const typeD     = Float64  
 const path_plot = "./docs/out/"
 if isdir(path_plot)==false mkdir(path_plot) end
+const path_test = "./docs/test/"
+if isdir(path_test)==false mkdir(path_test) end
 # include doc for: help?> ϵp2De()
 include("./misc/doc.jl")
 # include init
@@ -46,5 +48,6 @@ else
     include("./fun_fs/mapsto.jl")
     include("./fun_fs/solve.jl")
     include("./fun_fs/elastoplast.jl")
-    include("./fun_fs/plast.jl")
+        include("./fun_fs/RetMap/MCRetMap.jl")
+        include("./fun_fs/RetMap/DPRetMap.jl")
 end

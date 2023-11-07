@@ -96,6 +96,17 @@ end
     end
     return nothing
 end
+function plast!(mpD,cmParam,cmType,fwrkDeform)
+    if cmType == "MC"
+        ηmax = MCRetMap!(mpD,cmParam,fwrkDeform)
+    elseif cmType == "DP"        
+        ηmax = DPRetMap!(mpD,cmParam,fwrkDeform)
+    else
+        err_msg = "$(cmType): invalid return mapping for plastic correction"
+        throw(error(err_msg))
+    end
+    return ηmax::Int64
+end
 @views function elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,plastOn)
     # get incremental deformation tensor & logarithmic strains
     deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
