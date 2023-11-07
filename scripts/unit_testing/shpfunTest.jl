@@ -66,8 +66,8 @@ include("../../src/misc/utilities.jl")
                 # compute basis functions
                 ξ      = xp[mp] - xn[nn]
                 η      = (xp[mp] - xn[nn])
-                ϕx,dϕx = S∂S(ξ,dx,0.0)
-                ϕz,dϕz = S∂S(η,dx,0.0)
+                ϕx,dϕx = N∂N(ξ,dx)
+                ϕz,dϕz = N∂N(η,dx)
                 # convolution of basis function
                 PoU[mp]+= ϕx
                 a[mp,nn,1] = ϕx
@@ -107,7 +107,7 @@ include("../../src/misc/utilities.jl")
         p2=scatter!(xn,zeros(size(xn)),color="black",markersize=5,markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-1,1),colorbar_title="type",levels=5,title=Title[2])
         p3=scatter(xp,PoU,zcolor=c,markershape=:circle,label="",cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0)
         p3=scatter!(xn,zeros(size(xn)),color="black",markersize=5,markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.5),colorbar_title="type",levels=5,title=Title[3])
-        p4=scatter(xp,LFR,zcolor=c,markershape=:circle,label="",cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0,ylim=(-maximum(LFR),maximum(LFR)))
+        p4=scatter(xp,LFR,zcolor=c,markershape=:circle,label="",cmap=cgrad(CM,4;categorical=true),markerstrokecolor=:auto,markerstrokewidth=0,ylim=(-2e-14,2e-14))
         p4=scatter!(xn,zeros(size(xn)),color="black",markersize=2.5,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),colorbar_title="type",levels=5,title=Title[4])
     
     else
@@ -117,7 +117,7 @@ include("../../src/misc/utilities.jl")
         p2=scatter!(xn,zeros(size(xn)),color="red",markersize=5,markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-1,1),colorbar_title="type",levels=5,title=Title[2])
         p3=scatter(xp,PoU,markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0)
         p3=scatter!(xn,zeros(size(xn)),color="red",markersize=5,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),ylim=(-0.1,1.5),colorbar_title="type",levels=5,title=Title[3])
-        p4=scatter(xp,(LFR),markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0,ylim=(-maximum(LFR),maximum(LFR)))
+        p4=scatter(xp,(LFR),markershape=:circle,color="black",label="",markerstrokecolor=:auto,markerstrokewidth=0,ylim=(-2e-14,2e-14))
         p4=scatter!(xn,zeros(size(xn)),color="red",markersize=2.5,xlabel=L"$x$ [m]",markershape=:square,label="",c=:viridis,markerstrokecolor=:auto,markerstrokewidth=0,xlim=(xn[3]-dx/8,xn[end-2]+dx/8),colorbar_title="type",levels=5,title=Title[4])
     end
     display(plot(p1,p2,p3,p4; layout=(4,1), size=(550,600)))

@@ -18,6 +18,16 @@ end
     end
     return nothing
 end
+function N∂N(δx,h)                                                       
+    if -h<δx<=0.0                       
+        N,∂N = 1.0+δx/h,1.0/h                                                                         
+    elseif 0.0<δx<=h
+        N,∂N = 1.0-δx/h,-1.0/h                                                                                                          
+    else
+        N,∂N = 0.0,0.0                                                                                                  
+    end
+    return N,∂N    
+end
 function S∂S(δx,h,lp)                                                         
     if abs(δx) < lp                       
         S  = 1.0-((4.0*δx^2+(2.0*lp)^2)/(8.0*h*lp))                                   
@@ -226,8 +236,8 @@ end
                 id     = mpD.p2n[nn,mp]
                 ξ      = (mpD.x[mp,1]-meD.xn[id,1])
                 η      = (mpD.x[mp,2]-meD.xn[id,2])
-                ϕx,dϕx = S∂S(ξ,meD.h[1],0.0       )
-                ϕz,dϕz = S∂S(η,meD.h[2],0.0       )
+                ϕx,dϕx = N∂N(ξ,meD.h[1]           )
+                ϕz,dϕz = N∂N(η,meD.h[2]           )
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
@@ -246,9 +256,9 @@ end
                 ξ      = (mpD.x[mp,1]-meD.xn[id,1])
                 η      = (mpD.x[mp,2]-meD.xn[id,2])
                 ζ      = (mpD.x[mp,3]-meD.xn[id,3])
-                ϕx,dϕx = S∂S(ξ,meD.h[1],0.0       )
-                ϕy,dϕy = S∂S(η,meD.h[2],0.0       )
-                ϕz,dϕz = S∂S(ζ,meD.h[3],0.0       )
+                ϕx,dϕx = N∂N(ξ,meD.h[1]           )
+                ϕy,dϕy = N∂N(η,meD.h[2]           )
+                ϕz,dϕz = N∂N(ζ,meD.h[3]           )
                 # convolution of basis function
                 mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
                 mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
