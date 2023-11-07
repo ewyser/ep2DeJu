@@ -294,7 +294,7 @@ end
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(it,1.0,"(✓)"))
     ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
-    savefig(path_plot*"$(length(L))D_$(varPlot)_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
+    savefig(path_test*"$(length(L))D_$(varPlot)_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     # analytics
     if meD.nD==2
         xN,yN = abs.(mpD.σ[2,:]),z0
