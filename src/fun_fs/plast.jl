@@ -31,7 +31,7 @@ end
     end
     return σ 
 end
-@views function DPplast!(mpD,cmParam,fwrkDeform)
+@views function DPRetMap!(mpD,cmParam,fwrkDeform)
     ψ,nstr   = 0.0*π/180.0,size(mpD.σ,1)
     # create an alias for stress tensor
     if fwrkDeform == :finite
@@ -75,7 +75,7 @@ end
     end
     return 0
 end
-@views function MCplast!(mpD,cmParam,fwrkDeform)
+@views function MCRetMap!(mpD,cmParam,fwrkDeform)
     ftol,ηtol,ηmax = 1e-6,1e4,0
     ψ              = 0.5*π/180.0
     # create an alias
@@ -131,9 +131,9 @@ end
 end
 function plast!(mpD,cmParam,cmType,fwrkDeform)
     if cmType == "MC"
-        ηmax = MCplast!(mpD,cmParam,fwrkDeform)
+        ηmax = MCRetMap!(mpD,cmParam,fwrkDeform)
     elseif cmType == "DP"        
-        ηmax = DPplast!(mpD,cmParam,fwrkDeform)
+        ηmax = DPRetMap!(mpD,cmParam,fwrkDeform)
     else
         err_msg = "$(cmType): invalid plastic model"
         throw(error(err_msg))
