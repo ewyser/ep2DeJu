@@ -200,7 +200,7 @@ end
     gr(size=(2*250,2*125),legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.0,markerstrokecolor=:match,)
     temp = title
     if type == "P"
-        p = -mpD.σ[2,:]/1e3
+        p = -mpD.σ[end,:]/1e3
         scatter(mpD.x[:,1],mpD.x[:,2],zcolor=p,
             xlabel = xlab,
             ylabel = ylab,

@@ -8,6 +8,7 @@ include("../../src/misc/physics.jl")
 include("../../src/misc/plot.jl")
 include("../../src/fun_fs/shpfun.jl")
 const path_test = "./docs/test/"
+const path_plot = "./docs/out/"
 const typeD     = Float64 
 # main program
 @views function mnMn(nel::Int64,varPlot::String,cmType::String; kwargs...)
@@ -66,7 +67,7 @@ const typeD     = Float64
     p2 = heatmap(x,z,mn_L_plot,yflip=true, title=L"$m_{i,\mathrm{lump}}=\sum m_{ij} = \sum m_p \phi_{i}(x_p)\phi_{j}(x_p)$")
     p3 = heatmap(x,z,log10.(abs.(mn_L_plot-mn_plot)),yflip=true,title=L"\mathrm{log}_{10}(|m_n-m_{i,\mathrm{lump}}|)")
     display(plot(p1,p2,p3; layout=(3,1), size=(450,550)))
-    savefig(path_plot*"mnVsMn.png")
+    savefig(path_test*"mnVsMn.png")
 
     return abs.(mn_lumped.-mn)
 end
