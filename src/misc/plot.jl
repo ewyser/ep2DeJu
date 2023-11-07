@@ -63,7 +63,7 @@ end
 @views function plotStuff(mpD,t,type,ctr)
     temp = L"$t = $"*string(round(t,digits=1))*" [s]"
     if type == "P"
-        d   = -(mpD.σ[1,:]+mpD.σ[2,:]+mpD.σ[3,:])/3/1e3
+        d   = -(mpD.σ[1,:]+mpD.σ[2,:])/2/1e3
         lab = L"$p=-\left(\sigma_{xx,p}+\sigma_{yy,p}+\sigma_{zz,p}\right)/3$"
         tit = "pressure, "*temp
     elseif type == "epII"

@@ -108,8 +108,8 @@ end
     if meD.nD == 2
         mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xx
         mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yy
-        mpD.B[1:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3] ## zz
-        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xy
+        mpD.B[1:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,3] ## zz
+        mpD.B[2:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xy
     elseif meD.nD == 3
         mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xx
         mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yy

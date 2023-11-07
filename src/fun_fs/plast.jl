@@ -108,31 +108,29 @@ end
         ϕ,H,ϵII0 = mpD.ϕ[p],cos(mpD.ϕ[p])*cmParam.Hp,mpD.ϵpII[p]
         c0,cr    = mpD.c0[p]+cmParam.Hp*ϵII0,mpD.cr[p]
         if c0<cr c0 = cr end
-        σm,τII   = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
+        σm,τII   = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[3,p]^2)
         f        = τII+σm*sin(ϕ)-c0*cos(ϕ)    
         if f>0.0
             ϵII = ϵII0
-            Δϵ  = zeros(Float64,4)
+            Δϵ  = zeros(Float64,3)
             ηit = 0
             while abs(f)>ftol
                 ηit+= 1
                 ∂σf = [ (σ[1,p]-σ[2,p])/(4*τII)+sin(ϕ)/2;
                        -(σ[1,p]-σ[2,p])/(4*τII)+sin(ϕ)/2;
-                        0.0                             ;
-                        σ[4,p]/τII                      ]
+                         σ[3,p]/τII                     ]
                 ∂σg = [ (σ[1,p]-σ[2,p])/(4*τII)+sin(ψ)/2;
                        -(σ[1,p]-σ[2,p])/(4*τII)+sin(ψ)/2;
-                        0.0                             ;
-                        σ[4,p]/τII                      ] 
+                         σ[3,p]/τII                     ] 
 
                 Δγ  = f/(H+∂σf'*cmParam.Del*∂σg)
                 Δσ  = Δγ*cmParam.Del*∂σg
                 Δϵ.+= cmParam.Del\Δσ
-                ϵII = ϵII0+sqrt(2/3*(Δϵ[1]^2+Δϵ[2]^2+Δϵ[3]^2+2*Δϵ[4]^2))
+                ϵII = ϵII0+sqrt(2/3*(Δϵ[1]^2+Δϵ[2]^2+2*Δϵ[3]^2))
                 c0  = mpD.c0[p]+cmParam.Hp*ϵII
                 if c0<cr c0 = cr end
                 σ[:,p].-= Δσ
-                σm,τII  = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[4,p]^2)
+                σm,τII  = 0.5*(σ[1,p]+σ[2,p]),sqrt(0.25*(σ[1,p]-σ[2,p])^2+σ[3,p]^2)
                 f       = τII+σm*sin(ϕ)-c0*cos(ϕ)
                 if ηit>ηtol
                     @error "CPA: η_it>$(ηit): program killed..."
