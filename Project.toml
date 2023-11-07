@@ -1,7 +1,7 @@
 name = "ep2DeJu"
 uuid = "66defce3-ab3e-4542-854d-c8a2fb1a7b72"
 authors = ["ewyser <manuwyser@gmail.com>"]
-version = "0.1.0"
+version = "0.3.0"
 
 [compat]
 julia = "1.6"
