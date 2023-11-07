@@ -11,20 +11,7 @@
     end
     return P,σ0,τ0,τII
 end
-@views function ϵTr(ϵ,nstr)
-    ϵ0 = copy(ϵ)
-    if nstr == 3
-        ϵV  = ϵ0[1]+ϵ0[2]
-        γ0  = ϵ0.-[ϵV,ϵV,0.0]
-        γII = sqrt(0.5*(γ0[1]^2+γ0[2]^2)+γ0[3]^2)    
-    elseif nstr == 6
-        ϵV  = ϵ0[1]+ϵ0[2]+ϵ0[3]
-        γ0  = ϵ0.-[ϵV,ϵV,ϵV,0.0,0.0,0.0]
-        γII = sqrt(0.5*(γ0[1]^2+γ0[2]^2+γ0[3]^2)+γ0[4]^2+γ0[5]^2+γ0[6]^2)
-    end
-    return ϵV,ϵ0,γ0,γII
-end
-@views function DPParam(ϕ,ψ,c,nstr)
+@views function materialParam(ϕ,ψ,c,nstr)
     if nstr == 3
         η   = 3.0*tan(ϕ)/(sqrt(9.0+12.0*tan(ϕ)*tan(ϕ)))
         ηB  = 3.0*tan(ψ)/(sqrt(9.0+12.0*tan(ψ)*tan(ψ)))
@@ -44,15 +31,6 @@ end
     end
     return σ 
 end
-@views function ϵn(ϵVn,γ0,γn,γII,nstr)
-    if nstr == 3
-        ϵ = γ0.*(γn/γII).+[ϵVn,ϵVn,0.0]
-    elseif nstr == 6
-        ϵ = γ0.*(γn/γII).+[ϵVn,ϵVn,ϵVn,0.0,0.0,0.0]
-    end
-    return ϵ 
-end
-
 @views function DPplast!(mpD,cmParam,fwrkDeform)
     ψ,nstr   = 0.0*π/180.0,size(mpD.σ,1)
     # create an alias for stress tensor
@@ -65,9 +43,8 @@ end
     for p ∈ 1:mpD.nmp
         c   = mpD.c0[p]+cmParam.Hp*mpD.ϵpII[p]
         if c<mpD.cr[p] c = mpD.cr[p] end
-        ϵV,ϵ0,γ0,γII= ϵTr(mutate(mpD.ϵ[:,:,p],2.0,:voigt),nstr)
         P,σ0,τ0,τII = σTr(σ[:,p],nstr)
-        η,ηB,ξ      = DPParam(mpD.ϕ[p],ψ,c,nstr)
+        η,ηB,ξ      = materialParam(mpD.ϕ[p],ψ,c,nstr)
         σm,τP       = ξ/η,ξ-η*(ξ/η)
         fs,ft       = τII+η*P-ξ,P-σm         
         αP,h        = sqrt(1.0+η^2)-η,τII-τP-(sqrt(1.0+η^2))*(P-σm)  
@@ -75,12 +52,9 @@ end
             Δλ          = fs/(cmParam.Gc+cmParam.Kc*η*ηB)
             Pn,τn       = P-cmParam.Kc*ηB*Δλ,ξ-η*(P-cmParam.Kc*ηB*Δλ)
             σ[:,p]     .= σn(Pn,τ0,τn,τII,nstr)
-            ΔϵpII       = Δλ*sqrt(1/3+2/9*ηB^2)
-            mpD.ϵpII[p]+= ΔϵpII
+            mpD.ϵpII[p]+= Δλ*sqrt(1/3+2/9*ηB^2)
             if fwrkDeform == :finite
-                γn           = γII
-                ϵN           = ϵn(ϵV,γ0,γn,γII,nstr)
-                mpD.ϵ[:,:,p].= mutate(ϵN,0.5,:tensor)
+                mpD.ϵ[:,:,p].= mutate(cmParam.Del\σ[:,p],0.5,:tensor)
                 # update left cauchy green tensor
                 λ,n          = eigen(mpD.ϵ[:,:,p],sortby=nothing)
                 mpD.b[:,:,p].= n*diagm(exp.(2.0.*λ))*n'
@@ -90,8 +64,13 @@ end
             Δλ          = (P-σm)/cmParam.Kc
             Pn          = σm-P
             σ[:,p]     .= σn(Pn,τ0,0.0,τII,nstr)
-            ΔϵpII       = sqrt(2.0)*Δλ/3.0
-            mpD.ϵpII[p]+= ΔϵpII
+            mpD.ϵpII[p]+= sqrt(2.0)*Δλ/3.0
+            if fwrkDeform == :finite
+                mpD.ϵ[:,:,p].= mutate(cmParam.Del\σ[:,p],0.5,:tensor)
+                # update left cauchy green tensor
+                λ,n          = eigen(mpD.ϵ[:,:,p],sortby=nothing)
+                mpD.b[:,:,p].= n*diagm(exp.(2.0.*λ))*n'
+            end
         end
     end
     return 0
