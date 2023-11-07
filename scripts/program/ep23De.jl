@@ -48,10 +48,11 @@ include("../../src/superInclude.jl")
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(meD,mpD,it,ηmax,ηtot,1.0,"(✓)"))
     ctr     = plotStuff(mpD,tw,varPlot,ctr)
     sleep(2.5)
-    savefig(path_plot*"$(varPlot)_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp)_$(isΔFbar)_$(cmType).png")
+    savefig(path_plot*"$(length(L))D_$(varPlot)_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp)_$(isΔFbar)_$(cmType).png")
     @info "Figs saved in" path_plot
     return msg("(✓) Done! exiting...")
 end
 # include("./scripts/program/ep23De.jl")
 # e.g., L = [64.1584,12.80] or L = [64.1584,5.0,12.80]                                                                                        
 # ϵp23De(L,40,"P","DP";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
+# ϵp23De([64.1584,12.80],40,"P","DP";shpfun=:bsmpm,fwrk=:infinitesimal,trsf=:mUSL,vollock=true)
