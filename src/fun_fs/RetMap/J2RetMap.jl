@@ -13,7 +13,7 @@
     return ξ,ξn,J2
 end
 @views function J2RetMap!(mpD,cmParam,fwrkDeform) # Borja (1990); De Souza Neto (2008)
-    ftol,ηtol,ηit,ηmax = 1e-6,1e4,0,0
+    ftol,ηtol,ηmax = 1e-9,1e4,20
     Hp,χ = 0.35*cmParam.Hp,3.0/2.0
     # create an alias
     if fwrkDeform == :finite
@@ -29,7 +29,7 @@ end
         if f>0.0 
             γ0,σ0 = copy(mpD.ϵpII[p]),copy(σ[:,p])
             ηit  = 1
-            while abs(f)>1e-9 && ηit < 20
+            while abs(f)>ftol && ηit<ηmax
                 ∂f∂σ    = n
                 Δλ      = f/(∂f∂σ'*cmParam.Del*∂f∂σ)
                 Δσ      = (Δλ*cmParam.Del*∂f∂σ)        
@@ -44,6 +44,7 @@ end
             mpD.ϵpII[p] = γ0
             σ[:,p]     .= σ0
             if fwrkDeform == :finite
+                # update strain tensor
                 mpD.ϵ[:,:,p].= mutate(cmParam.Del\σ[:,p],0.5,:tensor)
                 # update left cauchy green tensor
                 λ,n          = eigen(mpD.ϵ[:,:,p],sortby=nothing)
