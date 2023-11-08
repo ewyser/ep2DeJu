@@ -1,18 +1,18 @@
 function getKwargs(kwargs)
     if isempty(kwargs)
         # ϵp2De(40,"P","MC")
-        ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = :bsmpm,:finite,:mUSL,true
+        ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar,isGRF = :bsmpm,:finite,:mUSL,true,false
     else
-        #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
-        kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :trsf => :mUSL, :vollock => true)
-        arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2],kwargs0[4][2]]
+        #ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true,GRF=false)
+        kwargs0 = (:shpfun => :bsmpm, :fwrk => :finite, :trsf => :mUSL, :vollock => true, :GRF => false,)
+        arg     = [kwargs0[1][2],kwargs0[2][2],kwargs0[3][2],kwargs0[4][2],kwargs0[5][2]]
         for (it,args0) ∈ enumerate(kwargs0), argin ∈ (kwargs)  
             if argin.first==args0[1]
                 arg[it] = argin.second
             end
         end
 
-        ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = arg
+        ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar,isGRF = arg
         if ϕ∂ϕType != :bsmpm && ϕ∂ϕType != :gimpm && ϕ∂ϕType != :smpm
             err_msg = "$(ϕ∂ϕType): shape function undefined"
             throw(error(err_msg))
@@ -25,9 +25,12 @@ function getKwargs(kwargs)
         elseif eltype(isΔFbar) != Bool
             err_msg = "$(isΔFbar): not a valid boolean"
             throw(error(err_msg))
+        elseif eltype(isGRF) != Bool
+            err_msg = "$(isGRF): not a valid boolean"
+            throw(error(err_msg))
         end
     end
-    return ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar
+    return ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar,isGRF
 end
 function getVersion()
     return string(Pkg.project().version)

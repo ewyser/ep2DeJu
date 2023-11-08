@@ -244,12 +244,12 @@ end
 
 @views function compactTest(dim,nel,varPlot,ν,E,ρ0,l0; kwargs...)
     cmType = "MC"
-    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
+    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar,isGRF = getKwargs(kwargs)
     # mesh & mp setup
     if dim == 2
-        L       = [l0/nel,l0       ]                                                # domain geometry
+        L       = [l0/nel,l0       ]                                           # domain geometry
     elseif dim == 3
-        L       = [l0/nel,l0/nel,l0]                                                # domain geometry
+        L       = [l0/nel,l0/nel,l0]                                            # domain geometry
     end
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
     # independant physical constant
@@ -260,7 +260,7 @@ end
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
     tg      = ceil((1.0/yd)*(2.0*l0)*40.0)
     t,te    = 1.25*tg,1.25*tg
-    mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup 
+    mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,isGRF,typeD)                      # material point geometry setup 
     z0      = copy(mpD.x[:,end])
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
@@ -350,7 +350,9 @@ end
     end
     return "all tests passed...exit"
 end
-runCompacTest([2,3,2,3,2,3],[:mUSL,:mUSL,:picflipUSL,:picflipUSL,:tpicUSL,:tpicUSL])
+
+runCompacTest([2,3,2,3],[:mUSL,:mUSL,:tpicUSL,:tpicUSL])
+#runCompacTest([2,3,2,3,2,3],[:mUSL,:mUSL,:picflipUSL,:picflipUSL,:tpicUSL,:tpicUSL])
 #runCompacTest([2,2,2],[:picflipUSL,:mUSL,:tpicUSL])
 
 

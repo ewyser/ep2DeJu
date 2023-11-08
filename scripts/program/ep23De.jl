@@ -2,7 +2,7 @@
 include("../../src/superInclude.jl")
 # main program
 @views function ϵp23De(L::Vector{Float64},nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
+    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar,isGRF = getKwargs(kwargs)
     @info "** ϵp$(length(L))De v$(getVersion()): $(fwrkDeform) strain formulation **"
     @info "init..."
     # mesh setup
@@ -17,7 +17,7 @@ include("../../src/superInclude.jl")
     ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
     t,te,tg = 15.0,10.0,15.0/1.5                                                # simulation time [s], elastic loading [s], gravity load
     # mp setup
-    mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
+    mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,isGRF,typeD)                    # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (E = E, ν = ν, Kc = K, Gc = G, Del = Del, Hp = Hp,)

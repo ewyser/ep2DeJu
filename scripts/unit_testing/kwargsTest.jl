@@ -4,7 +4,7 @@
 include("../../src/superInclude.jl")
 # main program
 @views function kwargsCheck(nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
+    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar,isGRF = getKwargs(kwargs)
     println(ϕ∂ϕType)
     println(fwrkDeform)
     println(trsfrAp)

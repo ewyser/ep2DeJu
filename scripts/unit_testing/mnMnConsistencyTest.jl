@@ -12,7 +12,7 @@ const path_plot = "./docs/out/"
 const typeD     = Float64 
 # main program
 @views function mnMn(nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
+    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar,isGRF = getKwargs(kwargs)
     @info "** ϵp2De v$(getVersion()): lumped consistent mass matrix **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            

@@ -4,7 +4,7 @@
 include("../../src/superInclude.jl")
 using BenchmarkTools
 @views function allocCheck(nel::Int64,varPlot::String,cmType::String; kwargs...)
-    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar = getKwargs(kwargs)
+    ϕ∂ϕType,fwrkDeform,trsfrAp,isΔFbar,isGRF = getKwargs(kwargs)
     @info "** ϵp2-3De v$(getVersion()): time & allocation evaluation **"
     # independant physical constant
     g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
@@ -17,7 +17,7 @@ using BenchmarkTools
     # mesh & mp setup
     L       = [64.1584,12.80]                                                   # domain geometry
     meD     = meshSetup(nel,L,typeD)                                            # mesh geometry setup
-    mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,typeD)                            # material point geometry setup
+    mpD     = pointSetup(meD,L,c0,cr,ϕ0,ϕr,ρ0,isGRF,typeD)                      # material point geometry setup
     Hp      = -60.0e3*meD.h[1]                                                  # softening modulus
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)

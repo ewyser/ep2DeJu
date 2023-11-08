@@ -297,7 +297,7 @@ function meshSetup(nel,L,typeD)
     )
     return meD
 end
-function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
+function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,isGRF,typeD)
     # non-dimensional constant                                                   
     if meD.nD == 2 ni,nstr = 2,3 elseif meD.nD == 3 ni,nstr = 2,6 end # number of material point along 1d, number of stress components                                                          
     # material geometry
@@ -314,8 +314,7 @@ function pointSetup(meD,L,coh0,cohr,phi0,phir,rho0,typeD)
         v0,v   = ones(typeD,nmp).*(2.0.*l0[:,1].*2.0.*l0[:,2].*2.0.*l0[:,3]),ones(typeD,nmp  ).*(2.0.*l[:,1].*2.0.*l[:,2].*2.0.*l[:,2])
     end
     m      = rho0.*v0
-    coh    = ones(typeD,nmp ).*coh0#clt
-    #coh  =  clt
+    if isGRF coh = clt else coh = ones(typeD,nmp).*coh0 end
     #coh,phi  = RFS(xp[:,1],xp[:,2],coh0,cohr,phi0,phir)
     cohr   = ones(typeD,nmp).*cohr
     phi    = ones(typeD,nmp).*phi0
