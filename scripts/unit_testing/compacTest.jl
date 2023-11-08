@@ -293,8 +293,6 @@ end
         next!(prog;showvalues = getVals(it,tw/t,"(✗)"))
     end
     ProgressMeter.finish!(prog, spinner = '✓',showvalues = getVals(it,1.0,"(✓)"))
-    ctr     = plotStuff(mpD,tw,varPlot,ctr,L"$g = $"*string(round(g[end],digits=2))*L" [m.s$^{-2}$]")
-    savefig(path_test*"$(length(L))D_$(varPlot)_compaction_self_weight_test_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     # analytics
     if meD.nD==2
         xN,yN = abs.(mpD.σ[2,:]),z0
@@ -313,6 +311,7 @@ end
         @testset "convergence using $(ϕ∂ϕType), $(fwrkDeform) deformation, $(trsfrAp) mapping" begin
             # geometry
             n         = [0,1,2,3,4,5,6]
+            n         = [0,1,2]
             nel       = 2.0.^n
             # initial parameters 
             l0,ν,E,ρ0 = 50.0,0.0,1.0e4,80.0
@@ -329,28 +328,36 @@ end
                 ϵ = err
             end 
         end
-        gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
-        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
-        display(plot(p1; layout=(1,1), size=(450,250)))
-        savefig(path_test*"$(dim)D_convergence_pass_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     catch
-        gr(size=(2.0*250,2*125),legend=false,markersize=2.25,markerstrokecolor=:auto)
-        p1 = plot(1.0./H,error,seriestype=:scatter, label="convergence",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
-        display(plot(p1; layout=(1,1), size=(450,250)))
-        savefig(path_test*"$(dim)D_convergence_fail_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
+
     end
     xN,yN,xA,yA = store[end]
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-    p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="numerical approximation")
-    p1 = plot!(xA.*1e-3,yA,label="analytical solution",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
+    p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="$(ϕ∂ϕType), $(trsfrAp) mapping")
+    p1 = plot!(xA.*1e-3,yA,label=L"\sum_{p}\dfrac{||\sigma_{yy}^p-\sigma_{yy}^a(x_p)||V_0^p}{(g\rho_0l_0)V_0}",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
     display(plot(p1; layout=(1,1), size=(450,250)))
     savefig(path_test*"$(dim)D_numericVsAnalytic_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
-    return nothing
+    return H,error
 end
-compacTest(2,:mUSL)
-compacTest(3,:mUSL)
-compacTest(2,:tpicUSL)
-compacTest(3,:tpicUSL)
+
+DIM = [2,3,2,3]
+TSF = [:mUSL,:mUSL,:tpicUSL,:tpicUSL]
+
+H_a,error_a = compacTest(DIM[1],TSF[1])
+H_b,error_b = compacTest(DIM[2],TSF[2])
+H_c,error_c = compacTest(DIM[3],TSF[3])
+H_d,error_d = compacTest(DIM[4],TSF[4])
+
+gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+p1 = plot(1.0./H_a,error_a,seriestype=:line ,markerize=5.0, markershape=:circle, label="$(DIM[1])D, $(TSF[1]) map") 
+p1 = plot!(1.0./H_b,error_b,seriestype=:line,markerize=5.0, markershape=:circle, label="$(DIM[2])D, $(TSF[2]) map") 
+p1 = plot!(1.0./H_c,error_c,seriestype=:line,markerize=5.0, markershape=:star  , label="$(DIM[3])D, $(TSF[3]) map") 
+p1 = plot!(1.0./H_d,error_d,seriestype=:line,markerize=5.0, markershape=:star  , label="$(DIM[4])D, $(TSF[4]) map",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
+display(plot(p1; layout=(1,1), size=(450,250)))
+savefig(path_test*"$(dim)D_convergence_pass_compacTest.png")
+
+#compacTest(3,:mUSL)
+#compacTest(3,:tpicUSL)
 
 
 
