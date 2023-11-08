@@ -69,7 +69,7 @@ The ```./src``` folder contains all functions needed, which are called by the di
   ```
 </details>
 
-### How to ```ϵp2De()``` ?  
+### How to ```plasmazing``` ?  
 
 0. (opt.) Get Julia [here](https://julialang.org/downloads/) and follow instructions for installation
 1. ``cd`` to the local repo ```./ep2DeJu ``` 
