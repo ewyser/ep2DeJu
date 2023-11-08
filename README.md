@@ -2,7 +2,7 @@
 
 # ***ϵlastoPlasm*** #
 ## **Description** 
-This project is an implementation of [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) in the Julia language. It solves explicit elasto-plastic problems within a finite deformation framework (*i.e.,* adopting logarithmic strains and Kirchoff stresses which allows the use of conventional small-strain stress integration algorithms within a finite deformation framework), using the **material point method** with **cubic b-spline shape functions** alongside with a **mUSL approach**.
+This project originates from [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) and is fully witten in Julia (*i.e.,* the two-languages problem). It solves explicit elasto-plastic problems within a finite deformation framework (*i.e.,* adopting logarithmic strains and Kirchoff stresses which allows the use of conventional small-strain stress integration algorithms within a finite deformation framework), using the **material point method** with **cubic b-spline shape functions** alongside with a **mUSL approach**.
 
 <p align="center">
   <img src="docs/img/epII.png" width="400"/>
