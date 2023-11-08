@@ -101,6 +101,8 @@ function plast!(mpD,cmParam,cmType,fwrkDeform)
         ηmax = MCRetMap!(mpD,cmParam,fwrkDeform)
     elseif cmType == "DP"        
         ηmax = DPRetMap!(mpD,cmParam,fwrkDeform)
+    elseif cmType == "J2"
+        ηmax = J2RetMap!(mpD,cmParam,fwrkDeform)
     else
         err_msg = "$(cmType): invalid return mapping for plastic correction"
         throw(error(err_msg))

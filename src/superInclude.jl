@@ -48,6 +48,7 @@ else
     include("./fun_fs/mapsto.jl")
     include("./fun_fs/solve.jl")
     include("./fun_fs/elastoplast.jl")
+        include("./fun_fs/RetMap/J2RetMap.jl")
         include("./fun_fs/RetMap/MCRetMap.jl")
         include("./fun_fs/RetMap/DPRetMap.jl")
 end
