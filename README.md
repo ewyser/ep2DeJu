@@ -2,7 +2,7 @@
 
 # ***ϵlastoPlasm*** #
 ## **Description** 
-This project originates from [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) and is fully witten in Julia (*i.e.,* the two-languages problem). It solves explicit elasto-plastic problems within a finite deformation framework (*i.e.,* adopting logarithmic strains and Kirchoff stresses which allows the use of conventional small-strain stress integration algorithms within a finite deformation framework), using the **material point method** with **cubic b-spline shape functions** alongside with a **mUSL approach**.
+This project originates from [``ep2-3De v1.0``](https://github.com/ewyser/ep2-3De) and is fully witten in Julia (*i.e.,* the two-languages problem solution). It solves explicit elasto-plastic problems within a finite deformation framework (*i.e.,* adopting logarithmic strains and Kirchoff stresses which allows the use of conventional small-strain stress integration algorithms within a finite deformation framework), using the **material point method** with **cubic b-spline shape functions** alongside with a **mUSL approach**.
 
 <p align="center">
   <img src="docs/img/epII.png" width="400"/>
@@ -123,9 +123,9 @@ julia> ϵp2De(40,"P","MC")
 └ (✓) Done! exiting...
 julia>
 ```
-5. Input parameters: ``nel`` is the number of elements along the $x$ dim., ``varPlot`` is an option for selecting field for plot (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain), and ``cmType`` defines the constitutive model being used. 
+5. Input parameters: ``L`` is a vector of the eulerian mesh dimensions $\ell_{x,z|x,y,z}$ (two- and three-dimensional geometries are now supported since ``v0.3.0``), the argument ``nel`` is a scalar of elements along the $x$ dim., ``varPlot`` is a string option for displaying state variable in plotting (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain), and ``cmType`` is a string which defines the constitutive model being used. 
 
-6. Optional ``kwargs`` are: ``shpfun=:bsmpm`` defining shape functions (currently ``:bsmpm`` or ``:gimpm``), ``fwrk=:finite`` defining the deformation framework, ``trsf=:mUSL`` defining the mapping scheme and ``vollock=true`` is a boolean (*e.g.,* ``true``/``false``) controlling volumetric locking corrections using the $\Delta\bar{F}$ method (see [1,2]). An example with ``kwargs`` is given below
+6. Optional ``kwargs`` are: ``shpfun={:smpm,:gimpm,:bsmpm}`` defining shape functions, ``fwrk={:infinitesimal,:finite}`` defining the deformation framework, ``trsf={:picflipUSL,:mUSL,:tpicUSL}`` defining the mapping scheme and ``vollock={true|false}`` is a boolean controlling volumetric locking corrections using the $\Delta\bar{F}$ method (see [1,2]). An illustrative example with ``kwargs`` is given below
 ```julia
 ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
 ```
@@ -135,11 +135,14 @@ julia>
 ## **References**
 For useful references, the reader can have a look in the folder ```./docs/refs```, where some of the following references can be found
 
-1. Xie M, Navas P, López-Querol S. An implicit locking-free B-spline Material Point
+1. Xie M., Navas P., López-Querol S. An implicit locking-free B-spline Material Point
 Method for large strain geotechnical modelling. Int J Numer Anal Methods Geomech. 2023;1-21.
 https://doi.org/10.1002/nag.3599
 
-2. Zhao Y, Jiang C, Choo J. Circumventing volumetric locking in explicit material point
+2. Zhao Y., Jiang C., Choo J. Circumventing volumetric locking in explicit material point
 methods: A simple, efficient, and general approach. Int J Numer Methods Eng. 2023;1-22. https://doi.org/10.1002/nme.7347
 
+3. Räss, L., Kolyukhin D., and Minakov, A. Efficient parallel random field generator for large 3-D geophysical problems. Computers & Geosciences. 2019;158-169. https://doi.org/10.1016/j.cageo.2019.06.007
+
+4. Ma, G., Rezania, M., Mousavi Nezhad, M. et al. Uncertainty quantification of landslide runout motion considering soil interdependent anisotropy and fabric orientation. Landslides 12022:1231–1247. https://doi.org/10.1007/s10346-021-01795-2
 </div>
