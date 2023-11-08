@@ -332,7 +332,7 @@ end
     end
     xN,yN,xA,yA = store[end]
     gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-    p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="$(ϕ∂ϕType), $(trsfrAp) mapping")
+    p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="$(dim)D $(ϕ∂ϕType), $(trsfrAp) mapping")
     p1 = plot!(xA.*1e-3,yA,label=L"\sum_{p}\dfrac{||\sigma_{yy}^p-\sigma_{yy}^a(x_p)||V_0^p}{(g\rho_0l_0)V_0}",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
     display(plot(p1; layout=(1,1), size=(450,250)))
     savefig(path_test*"$(dim)D_numericVsAnalytic_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
