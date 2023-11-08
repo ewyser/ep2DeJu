@@ -266,10 +266,10 @@ end
     # constitutive model param.
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
     if meD.nD == 2
-        @info "** ϵp$(length(L))D_De v$(getVersion()): compaction of a two-dimensional column under self weight **"
+        @info "** ϵp$(length(L))De v$(getVersion()): compaction of a two-dimensional column under self weight **"
         @info "mesh & mp feature(s):" nel=Int64(meD.nel[2]-4)
     elseif meD.nD == 3
-        @info "** ϵp$(length(L))D_De v$(getVersion()): compaction of a three-dimensional column under self weight **"
+        @info "** ϵp$(length(L))De v$(getVersion()): compaction of a three-dimensional column under self weight **"
         @info "mesh & mp feature(s):" nel=Int64(meD.nel[3]-4)
     end
     # plot & time stepping parameters
@@ -331,33 +331,27 @@ end
 
     end
     xN,yN,xA,yA = store[end]
-    gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-    p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="$(dim)D $(ϕ∂ϕType), $(trsfrAp) mapping")
-    p1 = plot!(xA.*1e-3,yA,label=L"\sum_{p}\dfrac{||\sigma_{yy}^p-\sigma_{yy}^a(x_p)||V_0^p}{(g\rho_0l_0)V_0}",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
-    display(plot(p1; layout=(1,1), size=(450,250)))
-    savefig(path_test*"$(dim)D_numericVsAnalytic_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
     return H,error
 end
-
-DIM = [2,3,2,3]
-TSF = [:mUSL,:mUSL,:tpicUSL,:tpicUSL]
-
-H_a,error_a = compacTest(DIM[1],TSF[1])
-H_b,error_b = compacTest(DIM[2],TSF[2])
-H_c,error_c = compacTest(DIM[3],TSF[3])
-H_d,error_d = compacTest(DIM[4],TSF[4])
-
-gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-p1 = plot(1.0./H_a,error_a,seriestype=:line ,markerize=5.0, markershape=:circle, label="$(DIM[1])D, $(TSF[1]) map") 
-p1 = plot!(1.0./H_b,error_b,seriestype=:line,markerize=5.0, markershape=:circle, label="$(DIM[2])D, $(TSF[2]) map") 
-p1 = plot!(1.0./H_c,error_c,seriestype=:line,markerize=5.0, markershape=:star  , label="$(DIM[3])D, $(TSF[3]) map") 
-p1 = plot!(1.0./H_d,error_d,seriestype=:line,markerize=5.0, markershape=:star  , label="$(DIM[4])D, $(TSF[4]) map",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
-display(plot(p1; layout=(1,1), size=(450,250)))
-savefig(path_test*"$(dim)D_convergence_pass_compacTest.png")
-
-#compacTest(3,:mUSL)
-#compacTest(3,:tpicUSL)
-
+@views function runCompacTest(DIM,TSF)
+    for k ∈ 1:length(DIM)
+        H,error = compacTest(DIM[k],TSF[k])
+        p2 = gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+        if DIM[k] == 2 shape = :circle elseif DIM[k] == 3 shape = :star end
+        if k == 1
+            p2 = plot( 1.0./H,error,seriestype=:line,markerize=5.0,markershape=shape,label="$(DIM[1])D, $(TSF[1]) map") 
+        elseif k<length(DIM)
+            p2 = plot!(1.0./H,error,seriestype=:line,markerize=5.0,markershape=shape,label="$(DIM[k])D, $(TSF[k]) map") 
+        elseif k == length(DIM)
+            p2 = plot!(1.0./H,error,seriestype=:line,markerize=5.0,markershape=shape,label="$(DIM[k])D, $(TSF[k]) map",xlabel=L"$1/h$ [m$^{-1}$]",ylabel="error",xaxis=:log10,yaxis=:log10) 
+            display(plot(p2; layout=(1,1), size=(450,250)))
+            savefig(path_test*"23D_convergence_pass_compacTest.png")
+        end
+    end
+    return "all tests passed...exit"
+end
+runCompacTest([2,3,2,3,2,3],[:mUSL,:mUSL,:picflipUSL,:picflipUSL,:tpicUSL,:tpicUSL])
+#runCompacTest([2,2,2],[:picflipUSL,:mUSL,:tpicUSL])
 
 
 
@@ -398,11 +392,9 @@ savefig(path_test*"$(dim)D_convergence_pass_compacTest.png")
 
 
 #=
-xN,yN,xA,yA,err,h = store[k]
-nely = nel[k]
-gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
-p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="numerical approximation")
-p1 = plot!(xA.*1e-3,yA,label="analytical solution",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
-display(plot(p1; layout=(1,1), size=(450,250)))
-savefig(path_plot*"numericVsAnalytic_compaction_self_weight_test_nel_$(nely)_$(ϕ∂ϕType)_$(fwrkDeform).png")
+    gr(size=(2.0*250,2*125),legend=true,markersize=2.25,markerstrokecolor=:auto)
+    p1 = plot(xN.*1e-3,yN,seriestype=:scatter, label="$(dim)D $(ϕ∂ϕType), $(trsfrAp) mapping")
+    p1 = plot!(xA.*1e-3,yA,label=L"\sum_{p}\dfrac{||\sigma_{yy}^p-\sigma_{yy}^a(x_p)||V_0^p}{(g\rho_0l_0)V_0}",xlabel=L"$\sigma_{yy}$ [kPa]",ylabel=L"$y-$position [m]") 
+    display(plot(p1; layout=(1,1), size=(450,250)))
+    savefig(path_test*"$(dim)D_numericVsAnalytic_compacTest_$(ϕ∂ϕType)_$(fwrkDeform)_$(trsfrAp).png")
 =#
