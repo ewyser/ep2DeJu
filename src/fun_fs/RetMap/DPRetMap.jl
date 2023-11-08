@@ -1,15 +1,14 @@
-@views function σTr(σ,nstr)
-    σ0 = copy(σ)
+@views function σTr(σ0,nstr)
     if nstr == 3
         P   = (σ0[1]+σ0[2])/2.0
         τ0  = σ0.-[P,P,0.0]
         τII = sqrt(0.5*(τ0[1]^2+τ0[2]^2)+τ0[4]^2)
     elseif nstr == 6
-        P  = (σ0[1]+σ0[2]+σ0[3])/3.0
-        τ0     = σ0.-[P,P,P,0.0,0.0,0.0]
-        τII    = sqrt(0.5*(τ0[1]^2+τ0[2]^2+τ0[3]^2)+τ0[4]^2+τ0[5]^2+τ0[6]^2)
+        P   = (σ0[1]+σ0[2]+σ0[3])/3.0
+        τ0  = σ0.-[P,P,P,0.0,0.0,0.0]
+        τII = sqrt(0.5*(τ0[1]^2+τ0[2]^2+τ0[3]^2)+τ0[4]^2+τ0[5]^2+τ0[6]^2)
     end
-    return P,σ0,τ0,τII
+    return P,τ0,τII
 end
 @views function materialParam(ϕ,ψ,c,nstr)
     if nstr == 3
@@ -25,11 +24,11 @@ end
 end
 @views function σn(Pn,τ0,τn,τII,nstr)
     if nstr == 3
-        σ = τ0.*(τn/τII).+[Pn,Pn,0.0]
+        σn = τ0.*(τn/τII).+[Pn,Pn,0.0]
     elseif nstr == 6
-        σ = τ0.*(τn/τII).+[Pn,Pn,Pn,0.0,0.0,0.0]
+        σn = τ0.*(τn/τII).+[Pn,Pn,Pn,0.0,0.0,0.0]
     end
-    return σ 
+    return σn 
 end
 @views function DPRetMap!(mpD,cmParam,fwrkDeform)
     ψ,nstr   = 0.0*π/180.0,size(mpD.σ,1)
@@ -43,11 +42,11 @@ end
     for p ∈ 1:mpD.nmp
         c   = mpD.c0[p]+cmParam.Hp*mpD.ϵpII[p]
         if c<mpD.cr[p] c = mpD.cr[p] end
-        P,σ0,τ0,τII = σTr(σ[:,p],nstr)
-        η,ηB,ξ      = materialParam(mpD.ϕ[p],ψ,c,nstr)
-        σm,τP       = ξ/η,ξ-η*(ξ/η)
-        fs,ft       = τII+η*P-ξ,P-σm         
-        αP,h        = sqrt(1.0+η^2)-η,τII-τP-(sqrt(1.0+η^2))*(P-σm)  
+        P,τ0,τII = σTr(σ[:,p],nstr)
+        η,ηB,ξ   = materialParam(mpD.ϕ[p],ψ,c,nstr)
+        σm,τP    = ξ/η,ξ-η*(ξ/η)
+        fs,ft    = τII+η*P-ξ,P-σm         
+        αP,h     = sqrt(1.0+η^2)-η,τII-τP-(sqrt(1.0+η^2))*(P-σm)  
         if fs>0.0 && P<σm || h>0.0 && P>=σm
             Δλ          = fs/(cmParam.Gc+cmParam.Kc*η*ηB)
             Pn,τn       = P-cmParam.Kc*ηB*Δλ,ξ-η*(P-cmParam.Kc*ηB*Δλ)

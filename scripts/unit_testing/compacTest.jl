@@ -311,7 +311,6 @@ end
         @testset "convergence using $(ϕ∂ϕType), $(fwrkDeform) deformation, $(trsfrAp) mapping" begin
             # geometry
             n         = [0,1,2,3,4,5,6]
-            n         = [0,1,2]
             nel       = 2.0.^n
             # initial parameters 
             l0,ν,E,ρ0 = 50.0,0.0,1.0e4,80.0
