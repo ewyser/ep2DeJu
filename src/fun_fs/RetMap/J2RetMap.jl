@@ -30,7 +30,7 @@ end
     end
     @threads for p in 1:mpD.nmp
         P,q,n,ξn = J2Param(σ[:,p],χ,nstr)
-        κ = 2.5*mpD.c0[p]+cmParam.Hp*mpD.ϵpII[p]
+        κ        = 2.5*mpD.c0[p]+cmParam.Hp*mpD.ϵpII[p]
         if κ <= mpD.cr[p] κ = mpD.cr[p] end
         f        = J2Yield(ξn,κ)
         if f>0.0 
@@ -47,7 +47,7 @@ end
                 f        = J2Yield(ξn,κ)
                 ηit +=1
             end
-            mpD.ϵpII[p] = ϵpII
+            mpD.ϵpII[p] = γ0
             σ[:,p]     .= σ0
             if fwrkDeform == :finite
                 # update strain tensor
