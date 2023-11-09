@@ -75,6 +75,10 @@ end
         d = mpD.ϵpII
         lab = L"$\epsilon_{\mathrm{II}}^{\mathrm{acc}}$"
         tit = "plastic strain, "*temp
+    elseif type == "epV"
+        d = mpD.ϵpV
+        lab = L"$\epsilon_{\mathrm{II}}^{\mathrm{acc}}$"
+        tit = "volumetric plastic strain, "*temp
     elseif type == "du"
         d = sqrt.(mpD.u[:,1].^2+mpD.u[:,2].^2)
         lab = L"$\Delta u$"
