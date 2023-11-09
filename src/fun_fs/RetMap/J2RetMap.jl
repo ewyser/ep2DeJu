@@ -47,7 +47,7 @@ end
                 f        = J2Yield(ξn,κ)
                 ηit +=1
             end
-            mpD.ϵpII[p] = γ0
+            mpD.ϵpII[p] = ϵpII
             σ[:,p]     .= σ0
             if fwrkDeform == :finite
                 # update strain tensor
