@@ -184,3 +184,154 @@ function bEplast!(τ,ϵ,epII,coh,phi,np,Del,Hp,cr)
         end
     end
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@views function MCC3plast!(σ,ϵ,epII,epV,coh,phi,nmp,Del,Kc,Hp,cr) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
+    ηmax = 20
+    ftol = 1.0e-12 
+    χ   = 3.0/2.0
+    pc0 = -Kc/6.0
+    pt  = -0.1*pc0
+    pc  = pc0
+    ϕcs = 20.0*pi/180.0
+    M   = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
+    ζ   = 1.0
+    γ   = -0.0
+    α   =  0.0
+    β   = 0.0
+
+    P  = zeros(Float64,nmp,1)
+    Q  = zeros(Float64,nmp,1)
+    Pit= zeros(Float64,nmp,ηmax)
+    Qit= zeros(Float64,nmp,ηmax)
+    F  = zeros(Float64,nmp,ηmax)
+    ηmp= zeros(Float64,nmp,1)
+
+
+
+    for mp in 1:nmp
+        pc   = pc0*(exp(-ζ*epV[mp]))
+        p    = (σ[1,mp]+σ[2,mp]+σ[3,mp])/3.0
+        ξ    = σ[:,mp].-[p;p;p;0.0]
+        J2   = 0.5*(ξ[1]^2+ξ[2]^2+ξ[3]^2+2.0*ξ[4]^2) # Borja (2013), p.33
+        ξn   = sqrt(2.0*J2) 
+        n    = ξ./ξn
+        q    = sqrt(χ)*ξn
+
+        A = ((pc-pt)/(2.0*pi))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+pi)
+        C = ((pc-pt)/(    pi))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
+        B = M*C*exp((α*(p-C))/(pc-pt))
+        f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1    
+
+        P[mp] = p
+        Q[mp] = q
+        Pit[mp,:].= p/pc
+        Qit[mp,:].= q/abs(pc)
+
+        if f>0.0 
+            ϵV = epV[mp]
+            ϵII= epII[mp]
+            Δλ = 0.0
+            η  = 1
+            σ0 = σ[:,mp] 
+            while abs(f)>ftol && η < ηmax
+                ∂A∂p = -γ/pi*(1.0+γ^2*(0.5-p/pc)^2)^(-1)
+                ∂B∂p = α*(β/pc)
+                As   = A*(p-C)-∂A∂p*(p-C)^2  
+                Bs   = β*B*(q-β*p)+∂B∂p*(q-β*p)^2
+                ∂f∂p = 2.0*((As/A^3)-(Bs/B^3))
+                ∂f∂q = (2.0*(q-β*p))/B^2
+                ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
+                        ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[2];
+                        ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[3];
+                        ∂f∂p*0.0/3.0+sqrt(χ)*∂f∂q*n[4]]    
+                Δλ   = f/(∂f∂σ'*Del*∂f∂σ)        
+                σ0 .-= (Δλ*Del*∂f∂σ)  
+                ϵV  += Δλ*∂f∂p
+                ϵII += Δλ*∂f∂q
+                pc   = pc0*(exp(-ζ*ϵV))
+
+                p    = (σ0[1]+σ0[2]+σ0[3])/3.0
+                ξ    = σ0[:].-[p;p;p;0.0]
+                J2   = 0.5*(ξ[1]^2+ξ[2]^2+ξ[3]^2+2.0*ξ[4]^2)
+                ξn   = sqrt(2.0*J2)
+                n    = ξ./ξn
+                q    = sqrt(χ)*ξn
+
+        A = ((pc-pt)/(2.0*pi))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+pi)
+        C = ((pc-pt)/(    pi))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
+        B = M*C*exp((α*(p-C))/(pc-pt))
+        f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1
+                
+                η   +=1
+                P[mp] = p
+                Q[mp] = q
+                Pit[mp,η:end].= p/pc
+                Qit[mp,η:end].= q/abs(pc)
+                
+            end
+            σ[:,mp]  = σ0
+            epV[mp]  = ϵV
+            epII[mp] = ϵII
+            ηmp[mp]  = η
+        end
+
+    end
+        
+        p = LinRange(-0.5*pc,1.5*pc,200)
+        qq= LinRange(-0.5*pc,1.5*pc,200)
+        q = LinRange(-0.5*pc,1.5*pc,200)'
+
+        A = ((pc.-pt)./(2.0.*pi)).*(2.0.*atan.((γ.*(pc.+pt.-2.0*p))./(2.0.*pc)).+pi)
+        C = ((pc.-pt)./(     pi)).*      atan.((γ                 )./(2.0    )).+0.5*(pc.+pt)
+        B = M.*C.*exp.((α.*(p.-C))./(pc.-pt))
+        f = (((p.-C).^2)./(A.^2)).+(((q.-β.*p).^2)./(B.^2)).-1
+#=
+        A = ((pc-pt)/(2.0*pi))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+pi)
+        C = ((pc-pt)/(    pi))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
+        B = M*C*exp((α*(p-C))/(pc-pt))
+        f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1
+=#
+#=
+        pc=pc0
+        p = LinRange(-0.5*pc,1.5*pc,200)
+        qq= LinRange(-0.5*pc,1.5*pc,200)
+        q = LinRange(-0.5*pc,1.5*pc,200)'
+        A = pc/(2*pi).*(2.0.*atan.((γ.*(pc.-2.0.*p))./(2.0.*pc)).+pi)
+        C = pc/(2*pi).*(2.0.*atan(γ/2.0)+pi)
+        B = M.*C*exp.((α.*(p.-C))./pc)
+        f = (((p.-C).^2)./(A.^2)).+(((q.-β.*p).^2)./(B.^2)).-1
+=#
+
+        elast = findall(x->x==0,ηmp)
+#=
+        gr() # We will continue onward using the GR backend
+        tit = "Golchin etal (2021)"
+        heatmap(p./pc,qq./pc, f',c=cgrad(:hot, rev=true),aspect_ratio=1,clims=(-1.0e-6,8.0),xlim=(-0.5,1.5),ylim=(0.0,1.5),colorbar_title=L"f(p,q) \geq 0",dpi=300)
+        contour!(p./pc,qq./pc, f', show = false, c=:black,levels=[0,0.1,0.2,0.4,0.8,1.6,3.2,6.4],xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)
+        plot!(P./pc, Q./abs(pc), show=false, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,labels=L"\theta(p,q)",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)       
+        plot!(p./pc, (M.*p)./pc, label="", show = true, title = tit,aspect_ratio=1,linestyle = :dot, color = :red,linewidth=1.5,labels=L"q=Mp",dpi=300)
+=#        
+#=
+        gr() # We will continue onward using the GR backend
+        tit = "Golchin etal (2021)"
+        heatmap(p./pc,qq./pc, f',c=cgrad(:hot, rev=true),aspect_ratio=1,clims=(-1.0e-6,2.0),xlim=(-0.5,1.5),ylim=(0.0,1.5),colorbar_title=L"f(p,q) \geq 0",dpi=300)
+        contour!(p./pc,qq./pc, f', show = false, c=:black,levels=[0,0.1,0.2,0.4,0.8,1.6,3.2,6.4],xlim=(-0.5,1.5),ylim=(0.0,1.5),dpi=300)
+        plot!(P[elast]./pc, Q[elast]./abs(pc), show=false, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,labels="",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,dpi=300)       
+        plot!(Pit', Qit', show=false, color = :black,linewidth=0.5, title = tit,labels="",xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,xlim=(-0.25,1.25),ylim=(0.0,0.5),dpi=300)       
+        plot!(p./pc, (M.*p)./pc, label="", show = true, title = tit,aspect_ratio=1,linestyle = :dot, color = :red,linewidth=1.5,labels="",dpi=300)
+=#
+
+end
