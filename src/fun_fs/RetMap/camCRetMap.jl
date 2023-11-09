@@ -49,7 +49,7 @@ end
         if P<(Pt-a) b = β else b = 1.0 end
         f         = (1.0/b^2)*(P-Pt+a)^2+(q/M)^2-a^2 # De Souza Neto (2008)
         if f>0.0 
-            σ0    = σ[:,p]
+            σ0    = copy(σ[:,p])
             ϵpV,γ = mpD.ϵpV[p],mpD.ϵpII[p]
             Δλ,η  = 0.0,1
             while abs(f)>1e-6 && η < ηmax
@@ -67,6 +67,16 @@ end
                 f         = (1.0/b^2)*(P-Pt+a)^2+(q/M)^2-a^2 # De Souza Neto (2008)
                 η   +=1
             end
+            mpD.ϵpV[p] = ϵpV
+            mpD.ϵpII[p]= γ
+            σ[:,p]    .= σ0
+            if fwrkDeform == :finite
+                # update strain tensor
+                mpD.ϵ[:,:,p].= mutate(cmParam.Del\σ[:,p],0.5,:tensor)
+                # update left cauchy green tensor
+                λ,n          = eigen(mpD.ϵ[:,:,p],sortby=nothing)
+                mpD.b[:,:,p].= n*diagm(exp.(2.0.*λ))*n'
+            end
         end
         Ps[p]=P
         Qs[p]=q
@@ -74,7 +84,7 @@ end
     println(size(Ps),size(Qs))
     gr() # We will continue onward using the GR backend
     tit = ""
-    plot(Ps./(Pc), Qs./abs(Pc), show=true, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=1,xlim=(-1.5,0.5),ylim=(0.0,1.1),)
+    plot(Ps./(Pc), Qs./abs(Pc), show=true, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-1.0,Pt/Pc),ylim=(0.0,1.0),)
 
     return ηmax::Int64
 end
