@@ -60,6 +60,7 @@ end
 
     Ps = zeros(mpD.nmp)
     Qs = zeros(mpD.nmp)
+    F  = zeros(mpD.nmp)
     @threads for p in 1:mpD.nmp
         ϕcs,a  = mpD.ϕ[p],a0*(exp(-ζ*mpD.ϵpV[p]))
         P,q,n  = camCParam(σ[:,p],χ,nstr)
@@ -92,11 +93,36 @@ end
                 mpD.b[:,:,p].= n*diagm(exp.(2.0.*λ))*n'
             end
         end
-        Ps[p]=P
-        Qs[p]=q
+        Ps[p]= P
+        Qs[p]= q
+        F[p] = f
     end
-    gr() # We will continue onward using the GR backend
-    tit = ""
-    plot(Ps./(Pc), Qs./abs(Pc), show=true, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-1.0,Pt/Pc),ylim=(0.0,1.0),)
+    camCYieldEnv(Ps,Qs,F,Pc,Pt,a0,β,M)
     return ηmax::Int64
+end
+
+@views function camCYieldEnv(Ps,Qs,F,Pc,Pt,a0,β,M)
+    a  = a0
+    Pc = (1.0+β)*a-Pt
+    P  = collect(-Pc:1000:Pt)
+    q  = zeros(size(P))
+    for k in eachindex(q)
+        if P[k]<(Pt-a) 
+            b = β 
+        else 
+            b = 1.0 
+        end
+        arg  = (1.0./b.^2).*(P[k].-Pt.+a).^2 .-a.^2
+        q[k] = abs(-M.*imag(sqrt.(complex(arg))))
+    end
+    gr()
+    tit = "camC, CPA return-mapping"
+    p1=plot(P./Pc,q./Pc,color=:black,aspect_ratio=:equal,label="camC enveloppe")
+    P,Q = Ps[F.>=-1],Qs[F.>=-1]
+    p1=plot!(P./(Pc),Q./abs(Pc),markershape=:square,markersize=2.0,color=:red,seriestype=:scatter,label="yielding")
+    P,Q = Ps[F.<-1],Qs[F.<-1]
+    p1=plot!(P./(Pc),Q./abs(Pc),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,title=tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-1.0,Pt/Pc),ylim=(0.0,1.0),)
+     
+    display(plot(p1;layout=(1,1),size=(500,250)))
+    return nothing
 end
