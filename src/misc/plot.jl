@@ -1,6 +1,6 @@
 # plot parameters
 default(
-    fontfamily  = "Computer Modern",
+    fontfamily  = "Computer Modern", #Courier
     titlefont   = 12, 
     guidefont   = 12,  
     tickfont    = 10, 
@@ -18,8 +18,8 @@ default(
         scatter(xp[:,1],xp[:,2],zcolor=coh./1e3,
         markershape=:circle,
         label="",
-        xlabel = L"$x-$direction",
-        ylabel = L"$z-$direction",
+        xlabel = L"$x-$direction [m]",
+        ylabel = L"$z-$direction [m]",
         title  = L"c_0(x_p)",
         aspect_ratio=1,
         c=:vik,
@@ -90,8 +90,8 @@ end
     # plot
     gr(legend=true,markersize=2.5,markershape=:circle,markerstrokewidth=0.75,)#markerstrokecolor=:match,)
     p1 = scatter(mpD.x[:,1],mpD.x[:,end],zcolor=d,
-    xlabel = L"$x-$direction",
-    ylabel = L"$z-$direction",
+    xlabel = L"$x-$direction [m]",
+    ylabel = L"$z-$direction [m]",
     label  = lab,
     aspect_ratio=1,
     c=:viridis,
