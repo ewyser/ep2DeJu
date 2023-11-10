@@ -29,9 +29,14 @@ end
     if nstr == 3
         ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
                 ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[2];
-                ∂f∂p*0.0/3.0+sqrt(χ)*∂f∂q*n[3]]
+                             sqrt(χ)*∂f∂q*n[3]]
     elseif nstr == 6
-
+        ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
+                ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[2];
+                ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[3];
+                             sqrt(χ)*∂f∂q*n[4];
+                             sqrt(χ)*∂f∂q*n[5];
+                             sqrt(χ)*∂f∂q*n[6]]
     end
     return ∂f∂σ
 end
@@ -90,10 +95,8 @@ end
         Ps[p]=P
         Qs[p]=q
     end
-    println(size(Ps),size(Qs))
     gr() # We will continue onward using the GR backend
     tit = ""
     plot(Ps./(Pc), Qs./abs(Pc), show=true, markershape=:circle,markersize=1.0, color = :blue, seriestype = :scatter, title = tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-1.0,Pt/Pc),ylim=(0.0,1.0),)
-
     return ηmax::Int64
 end
