@@ -106,6 +106,7 @@ end
     Pc = (1.0+β)*a-Pt
     P  = collect(-Pc:1000:Pt)
     q  = zeros(size(P))
+    f  = zeros(length(P),length(q))
     for k in eachindex(q)
         if P[k]<(Pt-a) 
             b = β 
@@ -115,14 +116,29 @@ end
         arg  = (1.0./b.^2).*(P[k].-Pt.+a).^2 .-a.^2
         q[k] = abs(-M.*imag(sqrt.(complex(arg))))
     end
+    Q = P
+    f = zeros(length(P),length(Q))
+    for i in eachindex(P)
+        for j in eachindex(q)
+            if P[i]<(Pt-a) 
+                b = β 
+            else 
+                b = 1.0 
+            end
+            f[i,j] = (1.0/b^2)*(P[i]-Pt+a)^2+(Q[j]/M)^2-a^2
+        end
+    end
     gr()
-    tit = "camC, CPA return-mapping"
-    p1=plot(P./Pc,q./Pc,color=:black,aspect_ratio=:equal,label="camC enveloppe")
+    tit = "camC enveloppe, CPA return-mapping"
+    p1  = heatmap(P./Pc,Q./Pc,f',yflip=true,c=cgrad(:vik, rev=false),clims=(-0.1*maximum(abs.(f)),0.1*maximum(abs.(f))),)
+    #p1  = contour!(P./Pc,Q./Pc,f',c=:white,levels=[-1000,0.0,1000],)
+    #p1  = contour(P./Pc,Q./Pc,f', levels=10, color=:vik, clabels=true, cbar=false, lw=1)
+    #p1  = plot!(P./Pc,-q./Pc,color=:white,aspect_ratio=:equal,label="camC enveloppe")
     P,Q = Ps[F.>=-1],Qs[F.>=-1]
-    p1=plot!(P./(Pc),Q./abs(Pc),markershape=:square,markersize=2.0,color=:red,seriestype=:scatter,label="yielding")
+    p1  = plot!(P./(Pc),-Q./abs(Pc),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
     P,Q = Ps[F.<-1],Qs[F.<-1]
-    p1=plot!(P./(Pc),Q./abs(Pc),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,title=tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-1.0,Pt/Pc),ylim=(0.0,1.0),)
-     
+    p1  = plot!(P./(Pc),-Q./abs(Pc),markershape=:circle,markersize=1.0,color=:green,seriestype=:scatter,label="elastic",title=tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-1.0,Pt/Pc),ylim=(-1.0,0.0))
+    #==#
     display(plot(p1;layout=(1,1),size=(500,250)))
     return nothing
 end
