@@ -17,11 +17,11 @@
     return P,q,n
 end
 @views function camCAsBs(P,q,γ,pc,α,β,A,B,C)
-        ∂A∂P = -γ/π*(1.0+γ^2*(0.5-P/pc)^2)^(-1)
-        ∂B∂P = α*(β/pc)
-        As   = A*(P-C)-∂A∂P*(P-C)^2  
-        Bs   = β*B*(q-β*P)+∂B∂P*(q-β*P)^2
-    return As,Bs
+        ∂A∂P  = -γ/π*(1.0+γ^2*(0.5-P/pc)^2)^(-1)
+        ∂B∂P  = α*(β/pc)
+        Astar = A*(P-C)-∂A∂P*(P-C)^2  
+        Bstar = β*B*(q-β*P)+∂B∂P*(q-β*P)^2
+    return Astar,Bstar
 end
 @views function camCYield(p,q,pc,pt,γ,M,α,β)
     A = ((pc-pt)/(2.0*π))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+π)
