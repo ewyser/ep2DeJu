@@ -354,6 +354,13 @@ end
     end
     return P,q,n
 end
+@views function camCAsBs(P,q,γ,pc,α,β,C)
+        ∂A∂P = -γ/π*(1.0+γ^2*(0.5-P/pc)^2)^(-1)
+        ∂B∂P = α*(β/pc)
+        As   = A*(P-C)-∂A∂P*(P-C)^2  
+        Bs   = β*B*(q-β*P)+∂B∂P*(q-β*P)^2
+    return As,Bs
+end
 @views function camCYield(p,q,pc,γ,M,α,β)
     A = ((pc-pt)/(2.0*π))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+π)
     C = ((pc-pt)/(    π))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
@@ -378,19 +385,16 @@ end
     return ∂f∂σ
 end
 
-@views function MCC3plast!(σ,ϵ,epII,epV,coh,phi,nmp,Del,Kc,Hp,cr) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
-    ηmax = 20
-    ftol = 1.0e-12 
-    χ   = 3.0/2.0
-    pc0 = -Kc/6.0
-    pt  = -0.1*pc0
-    pc  = pc0
-    ϕcs = 20.0*pi/180.0
-    M   = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
-    ζ   = 1.0
-    γ   = -0.0
-    α   =  0.0
-    β   = 0.0
+@views function camCRetMap!(mpD,cmParam,fwrkDeform) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
+    ηmax  = 20
+    ftol  = 1.0e-12 
+    χ     = 3.0/2.0
+    pc0   = cmParam.Kc/10.0
+    pc,pt = pc0,cmParam.Kc/10.0
+    ϕcs   = 20.0*π/180.0
+    M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
+    ζ,γ   = 0.0,-0.0
+    α,β   = 0.0,0.0
 
     # create an alias
     if fwrkDeform == :finite
@@ -398,40 +402,32 @@ end
     elseif fwrkDeform == :infinitesimal
         σ,nstr = mpD.σ,size(mpD.σ,1)
     end
-    for mp in 1:nmp
-        pc      = pc0*(exp(-ζ*epV[mp]))
+    for p in 1:nmp
+        pc      = pc0*(exp(-ζ*ϵpV[p]))
         P,q,n   = camCParam(σ[:,p],χ,nstr)
         f,A,C,B = camCYield(P,q,pc,γ,M,α,β)   
-
         if f>0.0 
-            σ0    = copy(σ[:,p])
-            ϵpV,γ = mpD.ϵpV[p],mpD.ϵpII[p]
-            Δλ,η  = 0.0,1
-
+            σ0       = copy(σ[:,p])
+            ϵpV,ϵpII = mpD.ϵpV[p],mpD.ϵpII[p]
+            Δλ,η     = 0.0,1
             while abs(f)>ftol && η < ηmax
-                ∂A∂p = -γ/pi*(1.0+γ^2*(0.5-p/pc)^2)^(-1)
-                ∂B∂p = α*(β/pc)
-                As   = A*(p-C)-∂A∂p*(p-C)^2  
-                Bs   = β*B*(q-β*p)+∂B∂p*(q-β*p)^2
+                As,Bs = camCAsBs(P,q,γ,pc,α,β,C)
+                ∂f∂P  = 2.0*((As/A^3)-(Bs/B^3))
+                ∂f∂q  = (2.0*(q-β*P))/B^2
+                ∂f∂σ  = ∂f(∂f∂P,∂f∂q,n,χ,nstr)      
+                Δλ    = f/(∂f∂σ'*cmParam.Del*∂f∂σ)        
+                σ0  .-= (Δλ*cmParam.Del*∂f∂σ)  
+                ϵpV  += Δλ*∂f∂P
+                ϵpII += Δλ*∂f∂q
+                pc    = pc0*(exp(-ζ*ϵV))
 
-                ∂f∂p = 2.0*((As/A^3)-(Bs/B^3))
-                ∂f∂q = w(2.0*(q-β*p))/B^2
-                ∂f∂σ = ∂f(∂f∂p,∂f∂q,n,χ,nstr)      
-                Δλ   = f/(∂f∂σ'*Del*∂f∂σ)        
-                σ0 .-= (Δλ*Del*∂f∂σ)  
-                ϵpV += Δλ*∂f∂p
-                γ   += Δλ*∂f∂q
-                pc   = pc0*(exp(-ζ*ϵV))
-
-                P,q,n   = camCParam(σ[:,p],χ,nstr)
-                f,A,C,B = camCYield(P,q,pc,γ,M,α,β)   
-                
+                P,q,n   = camCParam(σ0[:,p],χ,nstr)
+                f,A,C,B = camCYield(P,q,pc,γ,M,α,β)       
                 η   +=1
             end
             σ[:,mp]  = σ0
             epV[mp]  = ϵpV
             epII[mp] = γ
         end
-
     end
 end
