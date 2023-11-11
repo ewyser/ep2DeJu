@@ -30,7 +30,6 @@ end
     f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1    
     return f,A,C,B
 end 
-# f,A,C,B = camCYield(p,q,γ,M,α,β)
 @views function ∂f(∂f∂p,∂f∂q,n,χ,nstr)
     if nstr == 3
         ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
@@ -46,7 +45,44 @@ end
     end
     return ∂f∂σ
 end
-
+@views function camCplotYieldFun(pc0,pt,γ,M,α,β)
+    ΔP= 1000
+    P = collect(1.1*pc0:ΔP:abs(2*pt))
+    Q = P
+    f = zeros(length(P),length(Q))
+    for i in eachindex(P)
+        for j in eachindex(Q)
+            ft,A,C,B = camCYield(P[i],Q[j],pc0,pt,γ,M,α,β)
+            f[i,j] = ft
+        end
+    end
+    # plot yield function
+    xlab  = L"$p/p_{c}$" 
+    ylab  = L"$q/p_{c}$" 
+    lab   = L"$f(p,q)$" 
+    tit   = "camC yield function"
+    gam   = L"\gamma ="*string(round(γ,digits=1))
+    alp   = L"\alpha ="*string(round(α,digits=1))
+    bet   = L"\beta =" *string(round(β,digits=1))
+    tit   = tit*" , "*gam*" , "*alp*" , "*bet
+    cblim = (-0.25*maximum(abs.(f)),0.25*maximum(abs.(f))) 
+    p1 = heatmap( P/abs(pc0),Q/abs(pc0),f',
+        yflip=true,
+        c=cgrad(:vik,rev=false),
+        clims=cblim,
+        colorbar_title = lab,
+        )
+    p1 = contour!(P/abs(pc0),Q/abs(pc0),f',
+        c=:white,
+        clabels=true,
+        levels=[0.0,1,2.0,3.0,4.0,5.0],
+        aspect_ratio=:equal,
+        xlabel = xlab,
+        ylabel = ylab,
+        title  = tit,
+        )
+    return p1
+end
 @views function camCRetMap!(mpD,cmParam,fwrkDeform) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
     ηmax  = 20
     ftol  = 1.0e-12 
@@ -105,30 +141,16 @@ end
         Qs[p]= q
         F[p] = f
     end
-
-    P = collect(pc0:1000:abs(2*pt))
-    Q = P
-    f = zeros(length(P),length(Q))
-    for i in eachindex(P)
-        for j in eachindex(Q)
-            ft,A,C,B = camCYield(P[i],Q[j],pc,pt,γ,M,α,β)
-            f[i,j] = ft
-        end
-    end
-
-    
-
     gr()
     tit = "camC enveloppe, CPA return-mapping"
-    p1  = heatmap(f',yflip=true,c=cgrad(:vik, rev=false),clims=(-0.25*maximum(abs.(f)),0.25*maximum(abs.(f))),aspect_ratio=:equal)
-    p1  = contour!(f',c=:white,clabels=true,levels=[0.0,1,1.5],)
+    p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
     #=
     bool = F.>=-1e-6
     P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./(pc0)),abs.(Q./(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic",xlim=(-abs(pt/pc0),1.0),ylim=(0.0,1.0),aspect_ratio=:equal,framestyle=:origin,)
+    p1  = plot!((P./(pc0)),(Q./(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic",xlim=(-abs(pt/pc0),1.0),ylim=(0.0,1.0),aspect_ratio=:equal,framestyle=:origin,)
     bool = F.<=-1e-6
     P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./(pc0)),abs.(Q./(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic",title=tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-abs(pt/pc0),1.0),ylim=(0.0,abs(pc0/pc0)),framestyle=:origin,)
+    p1  = plot!((P./(pc0)),(Q./(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic",title=tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-abs(pt/pc0),1.0),ylim=(0.0,abs(pc0/pc0)),framestyle=:origin,)
     =#
     display(plot(p1;layout=(1,1),size=(500,250)))
     return ηmax
