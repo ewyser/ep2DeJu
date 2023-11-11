@@ -12,7 +12,7 @@ cmParam = (E = E, ν = ν, Kc = K, Gc = G, Del = Del,)
 # camC param
 χ     = 3.0/2.0
 pc0   = -cmParam.Kc/3.0
-pc,pt = pc0,-0.0*pc0
+pc,pt = pc0,-0.25*pc0
 ϕcs   = 20.0*π/180.0
 M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
 ζ,γ   = 1.0,1.0

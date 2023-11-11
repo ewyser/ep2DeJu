@@ -47,7 +47,7 @@ end
 end
 @views function camCplotYieldFun(pc0,pt,γ,M,α,β)
     ΔP= 1000
-    P = collect(1.1*pc0:ΔP:abs(2*pt))
+    P = collect(1.1*pc0:ΔP:abs(1.1*pc0))
     Q = P
     f = zeros(length(P),length(Q))
     for i in eachindex(P)
@@ -64,13 +64,15 @@ end
     gam   = L"\gamma ="*string(round(γ,digits=1))
     alp   = L"\alpha ="*string(round(α,digits=1))
     bet   = L"\beta =" *string(round(β,digits=1))
-    tit   = tit*" , "*gam*" , "*alp*" , "*bet
+    tit   = gam*" "*alp
+    #tit   = tit*" , "*gam*" , "*alp*" , "*bet
     cblim = (-0.25*maximum(abs.(f)),0.25*maximum(abs.(f))) 
     p1 = heatmap( P/abs(pc0),Q/abs(pc0),f',
         yflip=true,
         c=cgrad(:vik,rev=false),
         clims=cblim,
         colorbar_title = lab,
+        legend = :none,
         )
     p1 = contour!(P/abs(pc0),Q/abs(pc0),f',
         c=:white,
@@ -80,6 +82,7 @@ end
         xlabel = xlab,
         ylabel = ylab,
         title  = tit,
+        ylim   = (-1.0,0.0)
         )
     return p1
 end
