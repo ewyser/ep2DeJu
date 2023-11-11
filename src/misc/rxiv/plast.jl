@@ -335,3 +335,103 @@ end
 =#
 
 end
+
+@views function camCParam(σ0,χ,nstr)
+    if nstr == 3
+        P  = (σ0[1]+σ0[2])/2.0
+        ξ  = σ0.-[P,P,0.0]
+        J2 = 0.5*(ξ[1]^2+ξ[2]^2+2.0*ξ[3]^2) # Borja (2013), p.33
+        ξn = sqrt(2.0*J2) 
+        n  = ξ./ξn
+        q  = sqrt(χ)*ξn
+    elseif nstr == 6
+        P  = (σ0[1]+σ0[2]+σ0[3])/3.0
+        ξ  = σ0.-[P,P,P,0.0,0.0,0.0]
+        J2 = 0.5*(ξ[1]^2+ξ[2]^2+ξ[3]^2+2.0*ξ[4]^2+2.0*ξ[5]^2+2.0*ξ[6]^2) # Borja (2013), p.33
+        ξn = sqrt(2.0*J2) 
+        n  = ξ./ξn
+        q  = sqrt(χ)*ξn
+    end
+    return P,q,n
+end
+@views function camCYield(p,q,pc,γ,M,α,β)
+    A = ((pc-pt)/(2.0*π))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+π)
+    C = ((pc-pt)/(    π))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
+    B = M*C*exp((α*(p-C))/(pc-pt))
+    f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1    
+    return f,A,C,B
+end 
+# f,A,C,B = camCYield(p,q,γ,M,α,β)
+@views function ∂f(∂f∂p,∂f∂q,n,χ,nstr)
+    if nstr == 3
+        ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
+                ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[2];
+                             sqrt(χ)*∂f∂q*n[3]]
+    elseif nstr == 6
+        ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
+                ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[2];
+                ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[3];
+                             sqrt(χ)*∂f∂q*n[4];
+                             sqrt(χ)*∂f∂q*n[5];
+                             sqrt(χ)*∂f∂q*n[6]]
+    end
+    return ∂f∂σ
+end
+
+@views function MCC3plast!(σ,ϵ,epII,epV,coh,phi,nmp,Del,Kc,Hp,cr) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
+    ηmax = 20
+    ftol = 1.0e-12 
+    χ   = 3.0/2.0
+    pc0 = -Kc/6.0
+    pt  = -0.1*pc0
+    pc  = pc0
+    ϕcs = 20.0*pi/180.0
+    M   = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
+    ζ   = 1.0
+    γ   = -0.0
+    α   =  0.0
+    β   = 0.0
+
+    # create an alias
+    if fwrkDeform == :finite
+        σ,nstr = mpD.τ,size(mpD.τ,1)
+    elseif fwrkDeform == :infinitesimal
+        σ,nstr = mpD.σ,size(mpD.σ,1)
+    end
+    for mp in 1:nmp
+        pc      = pc0*(exp(-ζ*epV[mp]))
+        P,q,n   = camCParam(σ[:,p],χ,nstr)
+        f,A,C,B = camCYield(P,q,pc,γ,M,α,β)   
+
+        if f>0.0 
+            σ0    = copy(σ[:,p])
+            ϵpV,γ = mpD.ϵpV[p],mpD.ϵpII[p]
+            Δλ,η  = 0.0,1
+
+            while abs(f)>ftol && η < ηmax
+                ∂A∂p = -γ/pi*(1.0+γ^2*(0.5-p/pc)^2)^(-1)
+                ∂B∂p = α*(β/pc)
+                As   = A*(p-C)-∂A∂p*(p-C)^2  
+                Bs   = β*B*(q-β*p)+∂B∂p*(q-β*p)^2
+
+                ∂f∂p = 2.0*((As/A^3)-(Bs/B^3))
+                ∂f∂q = (2.0*(q-β*p))/B^2
+                ∂f∂σ = ∂f(∂f∂p,∂f∂q,n,χ,nstr)      
+                Δλ   = f/(∂f∂σ'*Del*∂f∂σ)        
+                σ0 .-= (Δλ*Del*∂f∂σ)  
+                ϵpV += Δλ*∂f∂p
+                γ   += Δλ*∂f∂q
+                pc   = pc0*(exp(-ζ*ϵV))
+
+                P,q,n   = camCParam(σ[:,p],χ,nstr)
+                f,A,C,B = camCYield(P,q,pc,γ,M,α,β)   
+                
+                η   +=1
+            end
+            σ[:,mp]  = σ0
+            epV[mp]  = ϵpV
+            epII[mp] = γ
+        end
+
+    end
+end
