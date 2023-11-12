@@ -20,8 +20,7 @@ pc,pt = pc0,-0.25*pc0
 M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
 ζ,γ   = 1.0,0.0
 α,β   = 0.0,0.0
-
-p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
+p1    = camCplotYieldFun(pc0,pt,γ,M,α,β)
 display(plot(p1;layout=(1,1),size=(500,250)))
 sleep(2.5)
 savefig(path_plot*"pqSpace_camCYieldFunGen.png")
