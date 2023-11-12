@@ -72,7 +72,7 @@ end
     p1 = contour!(P/abs(pc0),Q/abs(pc0),f',
         c=:white,
         clabels=true,
-        levels=[0.0,1,2.0,3.0,4.0,5.0],
+        levels=[0.0,1e10,2e10,4e10,8e10],
         aspect_ratio=:equal,
         xlabel = xlab,
         ylabel = ylab,

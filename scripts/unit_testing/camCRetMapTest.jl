@@ -15,7 +15,7 @@ include("../../src/fun_fs/RetMap/camC/camCgenRetMap.jl")
 # camC param
 χ     = 3.0/2.0
 pc0   = -cmParam.Kc/3.0
-pc,pt = pc0,-0.25*pc0
+pc,pt = pc0,-0.0*pc0
 ϕcs   = 20.0*π/180.0
 M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
 ζ,γ   = 1.0,0.0
@@ -29,7 +29,7 @@ include("../../src/fun_fs/RetMap/camC/camCRetMap.jl")
 # camC param
 χ   = 3.0/2.0
 Pc  = cmParam.Kc/3.0
-Pt  = -0.25*pc0
+Pt  = -0.0*pc0
 a0  = Pt+cmParam.Kc/10.0
 β   = 1.0/1.0
 a0  = (Pt+Pc)/(β+1)
