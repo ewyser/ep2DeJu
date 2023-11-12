@@ -41,7 +41,9 @@ end
         mpD.J[p]      = det(mpD.F[:,:,p])
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
     end
+    # update material point's domain
     if ϕ∂ϕType == :gimpm domainUpd!(mpD) end
+    # volumetric locking correction
     if isΔFbar ΔFbar!(mpD,meD) end
     return nothing
 end
@@ -78,7 +80,7 @@ end
 end
 @views function inifinitesimal!(mpD,Del)
     @threads for p ∈ 1:mpD.nmp
-        # calculate elastic strains
+        # calculate elastic strains & spin(s)
         mpD.ϵ[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-mpD.I
         mpD.ω[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]-mpD.ΔF[:,:,p]')
         # update cauchy stress tensor
@@ -89,6 +91,7 @@ end
     return nothing
 end
 @views function elast!(mpD,Del,fwrkDeform)
+    # deformation framework dispatcher
     if fwrkDeform == :finite
         finite!(mpD,Del) 
     elseif fwrkDeform == :infinitesimal
@@ -97,6 +100,7 @@ end
     return nothing
 end
 function plast!(mpD,cmParam,cmType,fwrkDeform)
+    # plastic return-mapping dispatcher
     if cmType == "MC"
         ηmax = MCRetMap!(mpD,cmParam,fwrkDeform)
     elseif cmType == "DP"        
@@ -112,7 +116,7 @@ function plast!(mpD,cmParam,cmType,fwrkDeform)
     return ηmax::Int64
 end
 @views function elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,plastOn)
-    # get incremental deformation tensor & logarithmic strains
+    # get incremental deformation tensor & strains
     deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
     # update kirchoff/cauchy stresses
     elast!(mpD,cmParam.Del,fwrkDeform)

@@ -94,10 +94,10 @@ end
             cblim = (-maximum(abs.(d)),maximum(abs.(d)))
         end
     elseif type == "du"
-        d = sqrt.(mpD.u[:,1].^2+mpD.u[:,2].^2)
-        lab = L"$\Delta u$"
-        tit = "displacement, "*temp
-        cb  = :viridis
+        d     = sqrt.(mpD.u[:,1].^2+mpD.u[:,2].^2)
+        lab   = L"$\Delta u$"
+        tit   = "displacement, "*temp
+        cb    = :viridis
         cblim = (0.0,maximum((d)))
     else
         err_msg = "$(type): plot option undefined"
