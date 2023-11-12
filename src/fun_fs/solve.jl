@@ -7,7 +7,7 @@
     meD.vn.= 0.0
     # solve momentum equation on the mesh
     @simd for dim ∈ 1:meD.nD
-        @threads for n ∈ 1:meD.nno[meD.nD+1]
+        @threads for n ∈ 1:meD.nno[end]
             if meD.mn[n]>0.0 
                 m             = (1.0/meD.mn[n])*meD.bc[n,dim]                   #(2,)
                 meD.Dn[n,dim] = η*norm(meD.oobf[n,:])*sign(meD.pn[n,dim]*m)     #(2,)

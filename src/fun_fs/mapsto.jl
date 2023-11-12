@@ -125,7 +125,7 @@ end
     end    
     # solve for nodal incremental displacement
     @simd for dim ∈ 1:meD.nD
-        @threads for n ∈ 1:meD.nno[meD.nD+1]
+        @threads for n ∈ 1:meD.nno[end]
             if meD.mn[n]>0.0
                 meD.vn[n,dim] = (meD.pn[n,dim]*(1.0/meD.mn[n])*meD.bc[n,dim])
             end    

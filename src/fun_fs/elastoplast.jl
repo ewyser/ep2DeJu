@@ -9,7 +9,7 @@
         meD.ΔJn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p].*mpD.ΔJ[p])  
     end 
     # compute nodal determinant of incremental deformation 
-    @threads for n ∈ 1:meD.nno[meD.nD+1]
+    @threads for n ∈ 1:meD.nno[end]
         if meD.mn[n]>0.0 meD.ΔJn[n]/= meD.mn[n] end
     end
     # compute determinant Jbar 
@@ -79,8 +79,8 @@ end
 @views function inifinitesimal!(mpD,Del)
     @threads for p ∈ 1:mpD.nmp
         # calculate elastic strains
-        mpD.ϵ[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-mpD.I
-        mpD.ω[:,:,p].= 0.5.*(mpD.ΔF[:,:,p]-mpD.ΔF[:,:,p]')
+        mpD.ϵ[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-mpD.I
+        mpD.ω[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]-mpD.ΔF[:,:,p]')
         # update cauchy stress tensor
         mpD.σJ[:,:,p] = mutate(mpD.σ[:,p],1.0,:tensor)
         mpD.σJ[:,:,p].= mpD.σJ[:,:,p]*mpD.ω[:,:,p]'+mpD.σJ[:,:,p]'*mpD.ω[:,:,p]

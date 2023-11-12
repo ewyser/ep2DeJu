@@ -72,7 +72,11 @@ end
         end            
         tit   = "pressure, "*temp
         cb    = :viridis
-        cblim = (minimum(d),maximum(d))
+        if minimum(d) == maximum(d)
+            cblim = (-1.0,1.0)
+        else
+            cblim = (minimum(d),maximum(d))
+        end
     elseif type == "epII"
         d     = mpD.ϵpII
         lab   = L"$\epsilon_{\mathrm{II}}^{\mathrm{acc}}$"
