@@ -1,5 +1,5 @@
 # include dependencies
-include("../../src/fun_fs/RetMap/camC/camCgenRetMap.jl")
+
 #include("../../src/fun_fs/RetMap/camC/2camCRetMap.jl")
 # independant physical constant
 g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
@@ -10,18 +10,37 @@ yd      = sqrt((K+4.0/3.0*G)/ρ0)                                            # e
 c0,cr   = 20.0e3,4.0e3                                                      # cohesion [Pa]
 ϕ0,ϕr,ψ0= 20.0*π/180,7.5*π/180,0.0                                          # friction angle [Rad], dilation angle [Rad]                                                              
 cmParam = (E = E, ν = ν, Kc = K, Gc = G, Del = Del,)
+
+include("../../src/fun_fs/RetMap/camC/camCgenRetMap.jl")
 # camC param
 χ     = 3.0/2.0
 pc0   = -cmParam.Kc/3.0
 pc,pt = pc0,-0.25*pc0
 ϕcs   = 20.0*π/180.0
 M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
-ζ,γ   = 1.0,1.0
+ζ,γ   = 1.0,0.0
 α,β   = 0.0,0.0
 
 p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
 display(plot(p1;layout=(1,1),size=(500,250)))
 sleep(2.5)
-savefig(path_plot*"pqSpace_camCYieldFun.png")
+savefig(path_plot*"pqSpace_camCYieldFunGen.png")
+
+include("../../src/fun_fs/RetMap/camC/camCRetMap.jl")
+# camC param
+χ   = 3.0/2.0
+Pc  = cmParam.Kc/3.0
+Pt  = -0.25*pc0
+a0  = Pt+cmParam.Kc/10.0
+β   = 1.0/1.0
+a0  = (Pt+Pc)/(β+1)
+ϕcs = 20.0*pi/180.0
+M   = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
+ζ   = 0.0
+p1  = camCplotYieldFun(Pc,Pt,a0,β)
+display(plot(p1;layout=(1,1),size=(500,250)))
+sleep(2.5)
+savefig(path_plot*"pqSpace_camCYieldFunMod.png")
+
 
 # include("./scripts/unit_testing/camCRetMapTest.jl")

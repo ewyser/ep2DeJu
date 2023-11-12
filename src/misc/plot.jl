@@ -82,7 +82,11 @@ end
         lab   = L"$\epsilon_{\mathrm{II}}^{\mathrm{acc}}$"
         tit   = "plastic strain, "*temp
         cb    = :viridis
-        cblim = (0.0,maximum(d))
+        if minimum(d) == maximum(d)
+            cblim = (-1.0,1.0)
+        else
+            cblim = (0.0,maximum(d))
+        end
     elseif type == "epV"
         d     = mpD.ϵpV
         lab   = L"$\epsilon_{p}^{\mathrm{vol}}$"
@@ -98,7 +102,11 @@ end
         lab   = L"$\Delta u$"
         tit   = "displacement, "*temp
         cb    = :viridis
-        cblim = (0.0,maximum((d)))
+        if minimum(d) == maximum(d)
+            cblim = (-1.0,1.0)
+        else
+            cblim = (0.0,maximum(d))
+        end
     else
         err_msg = "$(type): plot option undefined"
         throw(error(err_msg))

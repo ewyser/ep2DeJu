@@ -40,13 +40,55 @@ end
     end
     return ∂f∂σ
 end
+@views function camCplotYieldFun(pc0,pt,a,β)
+    ΔP= 1000
+    P = collect(-1.1*pc0:ΔP:abs(1.1*pc0))
+    Q = P
+    f = zeros(length(P),length(Q))
+    for i in eachindex(P)
+        for j in eachindex(Q)
+            ft,b = camCYield(P[i],Q[j],pt,a,β,M)
+            f[i,j] = ft
+        end
+    end
+    # plot yield function
+    xlab  = L"$p/p_{c}$" 
+    ylab  = L"$q/p_{c}$" 
+    lab   = L"$f(p,q)$" 
+    tit   = "camC yield function"
+    gam   = L"\gamma ="*string(round(γ,digits=1))
+    alp   = L"\alpha ="*string(round(α,digits=1))
+    bet   = L"\beta =" *string(round(β,digits=1))
+    tit   = gam*" "*alp
+    #tit   = tit*" , "*gam*" , "*alp*" , "*bet
+    cblim = (-0.25*maximum(abs.(f)),0.25*maximum(abs.(f))) 
+    p1 = heatmap( P/abs(pc0),Q/abs(pc0),f',
+        yflip=true,
+        c=cgrad(:vik,rev=false),
+        clims=cblim,
+        colorbar_title = lab,
+        legend = :none,
+        )
+    p1 = contour!(P/abs(pc0),Q/abs(pc0),f',
+        c=:white,
+        clabels=true,
+        levels=[0.0,1,2.0,3.0,4.0,5.0],
+        aspect_ratio=:equal,
+        xlabel = xlab,
+        ylabel = ylab,
+        title  = tit,
+        ylim   = (-1.0,0.0)
+        )
+    return p1
+end
 @views function camCRetMap!(mpD,cmParam,fwrkDeform) # Borja (1990); De Souza Neto (2008)
     ηmax = 20
     χ   = 3.0/2.0
     Pt  = cmParam.Kc/10.0
     a0  = Pt+cmParam.Kc/10.0
     β   = 1.0/1.0
-    Pc  = β*a0+(a0-Pt)     
+    Pc  = β*a0+(a0-Pt)   
+    println(Pc) 
     ϕcs = 20.0*pi/180.0
     M   = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
     ζ   = 0.0
