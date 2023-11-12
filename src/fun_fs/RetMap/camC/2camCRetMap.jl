@@ -16,9 +16,9 @@
     end
     return P,q,n
 end
-@views function camCYield(p,q,pc,M,β)
-    β = 0.25
-    f = q^2*(1.0+2.0*β)+M^2*(p+β*pc)*(p-pc)
+@views function camCYield(p,q,p0,M,β)
+    β = 0.0
+    f = q^2*(1.0+2.0*β)+M^2*(p+β*p0)*(p-p0)
     return f
 end 
 @views function ∂f(∂f∂p,∂f∂q,n,χ,nstr)
@@ -80,12 +80,11 @@ end
     ηmax  = 20
     ftol  = 1.0e-12 
     χ     = 3.0/2.0
-    pc0   = -cmParam.Kc/3.0
-    pc,pt = pc0,-0.0*pc0
+    pc0   = -cmParam.Kc
     ϕcs   = 20.0*π/180.0
     M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
-    ζ,γ   = 0.0,-0.0
-    α,β   = 0.0,0.0
+    ζ     = 1.0
+    β     = 0.25
 
     # create an alias
     if fwrkDeform == :finite
@@ -93,29 +92,25 @@ end
     elseif fwrkDeform == :infinitesimal
         σ,nstr = mpD.σ,size(mpD.σ,1)
     end
-    Ps = zeros(mpD.nmp)
-    Qs = zeros(mpD.nmp)
-    F  = zeros(mpD.nmp)
     for p in 1:mpD.nmp
-        pc      = pc0*(exp(-ζ*mpD.ϵpV[p]))
-        P,q,n   = camCParam(σ[:,p],χ,nstr)
-        f,A,C,B = camCYield(P,q,pc0,M,β)
+        pc0    = -cmParam.Kc*sinh(ζ*max(0.0,-mpD.ϵpV[p]))
+        P,q,n = camCParam(σ[:,p],χ,nstr)
+        f     = camCYield(P,q,pc0,M,β)
         if f>0.0 
             σ0       = copy(σ[:,p])
             ϵpV,ϵpII = mpD.ϵpV[p],mpD.ϵpII[p]
             Δλ,η     = 0.0,1
             while abs(f)>ftol && η < ηmax
-                ∂f∂P  = M^2*((β-1)*pc0+2.0*p)
+                ∂f∂P  = M^2*((β-1.0)*pc0+2.0*P)
                 ∂f∂q  = 2.0*q*(1.0+2.0*β)
                 ∂f∂σ  = ∂f(∂f∂P,∂f∂q,n,χ,nstr)      
                 Δλ    = f/(∂f∂σ'*cmParam.Del*∂f∂σ)        
                 σ0  .-= (Δλ*cmParam.Del*∂f∂σ)  
                 ϵpV  += Δλ*∂f∂P
                 ϵpII += Δλ*∂f∂q
-                pc    = pc0*(exp(-ζ*ϵpV))
 
-                P,q,n   = camCParam(σ0[:,p],χ,nstr)
-                f,A,C,B = camCYield(P,q,pc0,M,β)
+                P,q,n = camCParam(σ0[:,p],χ,nstr)
+                f     = camCYield(P,q,pc0,M,β)
                 η   +=1
             end
             mpD.ϵpV[p]  = ϵpV
@@ -129,21 +124,6 @@ end
                 mpD.b[:,:,p].= n*diagm(exp.(2.0.*λ))*n'
             end
         end
-        Ps[p]= P
-        Qs[p]= q
-        F[p] = f
     end
-    gr()
-    tit = "camC enveloppe, CPA return-mapping"
-    p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
-    #=
-    bool = F.>=-1e-6
-    P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./(pc0)),(Q./(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic",xlim=(-abs(pt/pc0),1.0),ylim=(0.0,1.0),aspect_ratio=:equal,framestyle=:origin,)
-    bool = F.<=-1e-6
-    P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./(pc0)),(Q./(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic",title=tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-abs(pt/pc0),1.0),ylim=(0.0,abs(pc0/pc0)),framestyle=:origin,)
-    =#
-    display(plot(p1;layout=(1,1),size=(500,250)))
     return ηmax
 end

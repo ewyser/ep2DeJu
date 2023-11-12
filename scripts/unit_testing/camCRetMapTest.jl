@@ -1,6 +1,6 @@
 # include dependencies
-#include("../../src/misc/rxiv/camCRetMap.jl")
-include("../../src/fun_fs/RetMap/camC/2camCRetMap.jl")
+include("../../src/fun_fs/RetMap/camC/camCgenRetMap.jl")
+#include("../../src/fun_fs/RetMap/camC/2camCRetMap.jl")
 # independant physical constant
 g       = 9.81                                                              # gravitationnal acceleration [m/s^2]            
 E,ν     = 1.0e6,0.3                                                         # Young's mod. [Pa], Poisson's ratio [-]
