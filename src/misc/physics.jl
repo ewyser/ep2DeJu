@@ -17,12 +17,6 @@
     end
     return Kc,Gc,D
 end
-@views function D3D(E,ν)
-    Gc = E/(2.0*(1.0+ν))                                                   # shear modulus               [Pa]
-    Kc = E/(3.0*(1.0-2.0*ν))                                               # bulk modulus                [Pa]
-
-    return Kc,Gc,D
-end
 @views function get_Δt(vp,h,yd)
     if length(h)==2
         Δx   = h[1]

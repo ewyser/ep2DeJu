@@ -47,7 +47,7 @@ end
 end
 @views function camCplotYieldFun(pc0,pt,γ,M,α,β)
     ΔP= 1000
-    P = collect(1.1*pc0:ΔP:abs(1.1*pc0))
+    P = LinRange(1.1*pc0,abs(1.1*pc0),ΔP)
     Q = P
     f = zeros(length(P),length(Q))
     for i in eachindex(P)

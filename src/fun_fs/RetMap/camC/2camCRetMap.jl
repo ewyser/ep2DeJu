@@ -17,7 +17,6 @@
     return P,q,n
 end
 @views function camCYield(p,q,p0,M,β)
-    β = 0.0
     f = q^2*(1.0+2.0*β)+M^2*(p+β*p0)*(p-p0)
     return f
 end 
@@ -36,9 +35,9 @@ end
     end
     return ∂f∂σ
 end
-@views function camCplotYieldFun(pc0,pt,γ,M,α,β)
+@views function camCplotYieldFun(pc0,M,β)
     ΔP= 1000
-    P = collect(1.1*pc0:ΔP:abs(1.1*pc0))
+    P = LinRange(1.1*pc0,abs(1.1*pc0),ΔP)
     Q = P
     f = zeros(length(P),length(Q))
     for i in eachindex(P)
@@ -51,11 +50,6 @@ end
     ylab  = L"$q/p_{c}$" 
     lab   = L"$f(p,q)$" 
     tit   = "camC yield function"
-    gam   = L"\gamma ="*string(round(γ,digits=1))
-    alp   = L"\alpha ="*string(round(α,digits=1))
-    bet   = L"\beta =" *string(round(β,digits=1))
-    tit   = gam*" "*alp
-    #tit   = tit*" , "*gam*" , "*alp*" , "*bet
     cblim = (-0.1*maximum(abs.(f)),0.1*maximum(abs.(f))) 
     p1 = heatmap( P/abs(pc0),Q/abs(pc0),f',
         yflip=true,
