@@ -24,9 +24,9 @@ end
     return Astar,Bstar
 end
 @views function camCYield(p,q,pc,pt,γ,M,α,β)
-    A = ((pc-pt)/(2.0*π))*(2.0*atan((γ*(pc+pt-2.0*p))/(2.0*pc))+π)
-    C = ((pc-pt)/(    π))*     atan((γ              )/(2.0   ))+0.5*(pc+pt)
-    B = M*C*exp((α*(p-C))/(pc-pt))
+    A = ((pc+pt)/(2.0*π))*(2.0*atan((γ*(pc-pt-2.0*p))/(2.0*pc))+π)
+    C = ((pc+pt)/(    π))*     atan((γ              )/(2.0   ))+0.5*(pc-pt)
+    B = M*C*exp((α*(p-C))/(pc+pt))
     f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1    
     return f,A,C,B
 end 
@@ -47,7 +47,7 @@ end
 end
 @views function camCplotYieldFun(pc0,pt,γ,M,α,β)
     ΔP= 1000
-    P = LinRange(1.1*pc0,abs(1.1*pc0),ΔP)
+    P = LinRange(1.1*pc0,-(1.1*pc0),ΔP)
     Q = P
     f = zeros(length(P),length(Q))
     for i in eachindex(P)
@@ -94,7 +94,7 @@ end
     pc,pt = pc0,-0.0*pc0
     ϕcs   = 20.0*π/180.0
     M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
-    ζ,γ   = 0.0,-0.0
+    ζ,γ   = 0.0,0.0
     α,β   = 0.0,0.0
 
     # create an alias
@@ -144,17 +144,19 @@ end
         Qs[p]= q
         F[p] = f
     end
+    #=
     gr()
     tit = "camC enveloppe, CPA return-mapping"
     p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
     
     bool = F.>=-1e-6
     P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((-P./(pc0)),(Q./(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
+    p1  = plot!((P./(pc0)),abs.(Q./(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
     bool = F.<=-1e-6
     P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((-P./(pc0)),(Q./(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
-    #==#
+    p1  = plot!((P./(pc0)),abs.(Q./(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
+    
     display(plot(p1;layout=(1,1),size=(500,250)))
+    =#
     return ηmax
 end

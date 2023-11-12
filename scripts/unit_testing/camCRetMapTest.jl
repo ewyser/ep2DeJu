@@ -12,7 +12,7 @@ c0,cr   = 20.0e3,4.0e3                                                      # co
 cmParam = (E = E, ν = ν, Kc = K, Gc = G, Del = Del,)
 
 pc0   = -cmParam.Kc/3.0
-pt    = -0.25*pc0
+pt    = 0.0*pc0
 
 include("../../src/fun_fs/RetMap/camC/camCRetMap.jl")
 # camC param
@@ -27,7 +27,7 @@ savefig(path_plot*"pqSpace_camCYieldFunMod.png")
 
 include("../../src/fun_fs/RetMap/camC/2camCRetMap.jl")
 # camC param
-β   = 0.25
+β   = 0.0
 ϕcs = 20.0*pi/180.0
 M   = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
 p1  = camCplotYieldFun(pc0,M,β)
@@ -39,7 +39,7 @@ include("../../src/fun_fs/RetMap/camC/camCgenRetMap.jl")
 # camC param
 ϕcs   = 20.0*π/180.0
 M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
-ζ,γ   = 1.0,0.0
+ζ,γ   = 0.0,0.0
 α,β   = 0.0,0.0
 p1    = camCplotYieldFun(pc0,pt,γ,M,α,β)
 display(plot(p1;layout=(1,1),size=(500,250)))
