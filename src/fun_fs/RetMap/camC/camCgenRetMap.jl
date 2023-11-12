@@ -24,7 +24,7 @@ end
     return Astar,Bstar
 end
 @views function camCYield(p,q,pc,pt,γ,M,α,β)
-    A = ((pc+pt)/(2.0*π))*(2.0*atan((γ*(pc-pt-2.0*p))/(2.0*pc))+π)
+    A = ((pc+pt)/(2.0*π))*(2.0*atan((γ*(pc-pt-2.0*p))/(2.0*pc))+π         )
     C = ((pc+pt)/(    π))*     atan((γ              )/(2.0   ))+0.5*(pc-pt)
     B = M*C*exp((α*(p-C))/(pc+pt))
     f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1    
@@ -68,7 +68,7 @@ end
     #tit   = tit*" , "*gam*" , "*alp*" , "*bet
     cblim = (-0.25*maximum(abs.(f)),0.25*maximum(abs.(f))) 
     p1 = heatmap( P/abs(pc0),Q/abs(pc0),f',
-        yflip=true,
+        yflip=false,
         c=cgrad(:vik,rev=false),
         clims=cblim,
         colorbar_title = lab,
@@ -82,7 +82,7 @@ end
         xlabel = xlab,
         ylabel = ylab,
         title  = tit,
-        ylim   = (-1.0,0.0)
+        ylim   = (0.0,1.0)
         )
     return p1
 end
@@ -144,19 +144,19 @@ end
         Qs[p]= q
         F[p] = f
     end
-    #=
+    
     gr()
     tit = "camC enveloppe, CPA return-mapping"
     p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
     
     bool = F.>=-1e-6
     P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./(pc0)),abs.(Q./(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
+    p1  = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
     bool = F.<=-1e-6
     P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./(pc0)),abs.(Q./(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
+    p1  = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
     
     display(plot(p1;layout=(1,1),size=(500,250)))
-    =#
+    #==#
     return ηmax
 end

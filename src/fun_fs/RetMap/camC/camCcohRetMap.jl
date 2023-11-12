@@ -49,10 +49,10 @@ end
     xlab  = L"$p/p_{c}$" 
     ylab  = L"$q/p_{c}$" 
     lab   = L"$f(p,q)$" 
-    tit   = "camC yield function"
+    tit   = "cohesive camC yield function"
     cblim = (-0.1*maximum(abs.(f)),0.1*maximum(abs.(f))) 
     p1 = heatmap( P/abs(pc0),Q/abs(pc0),f',
-        yflip=true,
+        yflip=false,
         c=cgrad(:vik,rev=false),
         clims=cblim,
         colorbar_title = lab,
@@ -61,12 +61,12 @@ end
     p1 = contour!(P/abs(pc0),Q/abs(pc0),f',
         c=:white,
         clabels=true,
-        levels=[0.0],
+        levels=[0.0,1.5e10,3e10],
         aspect_ratio=:equal,
         xlabel = xlab,
         ylabel = ylab,
         title  = tit,
-        ylim   = (-1.0,0.0)
+        ylim   = (0.0,1.0)
         )
     return p1
 end

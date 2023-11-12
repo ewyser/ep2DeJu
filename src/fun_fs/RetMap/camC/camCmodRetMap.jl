@@ -22,7 +22,7 @@ end
     else 
         b = 1.0 
     end
-    f = (1.0/b^2)*(P-Pt+a)^2+(q/M)^2-a^2 # De Souza Neto (2008)
+    f = (1.0/b^2)*(P+Pt-a)^2+(q/M)^2-a^2 # De Souza Neto (2008)
     return f,b
 end 
 @views function ∂f(∂f∂p,∂f∂q,n,χ,nstr)
@@ -42,7 +42,7 @@ end
 end
 @views function camCplotYieldFun(pc0,pt,a,β)
     ΔP= 1000
-    P = LinRange(1.1*pc0,abs(1.1*pc0),ΔP)
+    P = LinRange(1.1*pc0,-(1.1*pc0),ΔP)
     Q = P
     f = zeros(length(P),length(Q))
     for i in eachindex(P)
@@ -58,7 +58,7 @@ end
     tit   = "modified camC enveloppe"
     cblim = (-0.25*maximum(abs.(f)),0.25*maximum(abs.(f))) 
     p1 = heatmap( P/abs(pc0),Q/abs(pc0),f',
-        yflip=true,
+        yflip=false,
         c=cgrad(:vik,rev=false),
         clims=cblim,
         colorbar_title = lab,
@@ -72,7 +72,7 @@ end
         xlabel = xlab,
         ylabel = ylab,
         title  = tit,
-        ylim   = (-1.0,0.0)
+        ylim   = (0.0,1.0)
         )
     return p1
 end
