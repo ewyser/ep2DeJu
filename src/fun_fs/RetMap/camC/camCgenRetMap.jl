@@ -147,14 +147,14 @@ end
     gr()
     tit = "camC enveloppe, CPA return-mapping"
     p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
-    #=
+    
     bool = F.>=-1e-6
     P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./(pc0)),(Q./(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic",xlim=(-abs(pt/pc0),1.0),ylim=(0.0,1.0),aspect_ratio=:equal,framestyle=:origin,)
+    p1  = plot!((-P./(pc0)),(Q./(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
     bool = F.<=-1e-6
     P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./(pc0)),(Q./(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic",title=tit,xlabel=L"p/p_c",ylabel=L"q/p_c",aspect_ratio=:equal,xlim=(-abs(pt/pc0),1.0),ylim=(0.0,abs(pc0/pc0)),framestyle=:origin,)
-    =#
+    p1  = plot!((-P./(pc0)),(Q./(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
+    #==#
     display(plot(p1;layout=(1,1),size=(500,250)))
     return ηmax
 end
