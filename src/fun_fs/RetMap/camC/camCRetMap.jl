@@ -59,8 +59,7 @@ end
     gam   = L"\gamma ="*string(round(γ,digits=1))
     alp   = L"\alpha ="*string(round(α,digits=1))
     bet   = L"\beta =" *string(round(β,digits=1))
-    tit   = gam*" "*alp
-    #tit   = tit*" , "*gam*" , "*alp*" , "*bet
+    tit   = "modified camC enveloppe"
     cblim = (-0.25*maximum(abs.(f)),0.25*maximum(abs.(f))) 
     p1 = heatmap( P/abs(pc0),Q/abs(pc0),f',
         yflip=true,
