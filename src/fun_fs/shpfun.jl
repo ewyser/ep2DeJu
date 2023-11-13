@@ -4,7 +4,9 @@
     nez       = meD.nel[2]
     @threads for p ∈ 1:mpD.nmp
         mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
-        mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
+        for nn ∈ meD.nn
+            mpD.p2n[nn,p] = meD.e2n[nn,mpD.p2e[p]]
+        end
     end
     return nothing
 end
@@ -14,7 +16,9 @@ end
     nex,ney,nez    = meD.nel[1],meD.nel[2],meD.nel[3]
     @threads for p ∈ 1:mpD.nmp
         mpD.p2e[p  ] = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
-        mpD.p2n[:,p].= meD.e2n[:,mpD.p2e[p]]
+        for nn ∈ meD.nn
+            mpD.p2n[nn,p].= meD.e2n[nn,mpD.p2e[p]]
+        end
     end
     return nothing
 end
