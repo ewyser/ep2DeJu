@@ -6,7 +6,10 @@
     # action
     @simd for p ∈ 1:mpD.nmp
         # accumulation
-        meD.ΔJn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p].*mpD.ΔJ[p])  
+        for nn ∈ 1:meD.nn
+            meD.ΔJn[mpD.p2n[nn,p]]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.ΔJ[p])  
+        end
+        #meD.ΔJn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p].*mpD.ΔJ[p])  
     end 
     # compute nodal determinant of incremental deformation 
     @threads for n ∈ 1:meD.nno[end]
