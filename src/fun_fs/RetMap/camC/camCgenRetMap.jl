@@ -94,12 +94,11 @@ end
     ftol  = 1.0e-12 
     
     pc0   = -cmParam.Kc/3.0
-    pc,pt = pc0,-0.0*pc0
+    pt    = 0.0*abs(pc0)
     ϕcs   = 20.0*π/180.0
     M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
     ζ,γ   = 0.0,0.0
     α,β   = 0.0,0.0
-
     # create an alias
     if fwrkDeform == :finite
         σ,nstr = mpD.τ,size(mpD.τ,1)
@@ -118,20 +117,23 @@ end
             ϵpV,ϵpII = mpD.ϵpV[p],mpD.ϵpII[p]
             Δλ,ηit   = 0.0,1
             while abs(f)>ftol && ηit < ηmax
-                As,Bs = camCAsBs(P,q,γ,pc,α,β,A,B,C)
-                ∂f∂P  = 2.0*((As/A^3)-(Bs/B^3))
-                ∂f∂q  = (2.0*(q-β*P))/B^2
-                ∂f∂σ  = ∂f(∂f∂P,∂f∂q,n,nstr)      
-                Δλ    = f/(∂f∂σ'*cmParam.Del*∂f∂σ)        
-                σ0  .-= (Δλ*cmParam.Del*∂f∂σ)  
-                ϵpV  += Δλ*∂f∂P
-                ϵpII += Δλ*∂f∂q
-                pc    = pc0*(exp(-ζ*ϵpV))
-
+                # CPA 
+                As,Bs   = camCAsBs(P,q,γ,pc,α,β,A,B,C)
+                ∂f∂P    = 2.0*((As/A^3)-(Bs/B^3))
+                ∂f∂q    = (2.0*(q-β*P))/B^2
+                ∂f∂σ    = ∂f(∂f∂P,∂f∂q,n,nstr)      
+                Δλ      = f/(∂f∂σ'*cmParam.Del*∂f∂σ)    
+                # update    
+                σ0    .-= (Δλ*cmParam.Del*∂f∂σ)  
+                ϵpV    += Δλ*∂f∂P
+                ϵpII   += Δλ*∂f∂q
+                # calculate new yield 
+                pc      = pc0*(exp(-ζ*ϵpV))
                 P,q,n   = camCParam(σ0[:,p],nstr)
                 f,A,C,B = camCYield(P,q,pc,pt,γ,M,α,β)       
-                ηit  +=1
-                ηtot  = max(ηit,ηtot)
+                # return-mapping counter increment
+                ηit    +=1
+                ηtot    = max(ηit,ηtot)
             end
             mpD.ϵpV[p]  = ϵpV
             mpD.ϵpII[p] = ϵpII
@@ -148,19 +150,17 @@ end
         Qs[p]= q
         F[p] = f
     end
-    #=
+    
     gr()
-    tit = "camC enveloppe, CPA return-mapping"
-    p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
-    
+    tit  = "camC enveloppe, CPA return-mapping"
+    p1   = camCplotYieldFun(pc0,pt,γ,M,α,β)
     bool = F.>=-1e-6
-    P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
+    P,Q  = Ps[bool],Qs[bool]
+    p1   = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
     bool = F.<=-1e-6
-    P,Q = Ps[bool],Qs[bool]
-    p1  = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
-    
+    P,Q  = Ps[bool],Qs[bool]
+    p1   = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
     display(plot(p1;layout=(1,1),size=(500,250)))
-    =#
+    #==#
     return ηtot
 end
