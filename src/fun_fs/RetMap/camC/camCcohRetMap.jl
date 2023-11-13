@@ -86,6 +86,9 @@ end
     elseif fwrkDeform == :infinitesimal
         σ,nstr = mpD.σ,size(mpD.σ,1)
     end
+    Ps = zeros(mpD.nmp)
+    Qs = zeros(mpD.nmp)
+    F  = zeros(mpD.nmp)
     for p in 1:mpD.nmp
         pc0    = -cmParam.Kc*sinh(ζ*max(0.0,-mpD.ϵpV[p]))
         P,q,n = camCParam(σ[:,p],χ,nstr)
@@ -118,6 +121,22 @@ end
                 mpD.b[:,:,p].= n*diagm(exp.(2.0.*λ))*n'
             end
         end
+        Ps[p]= P
+        Qs[p]= q
+        F[p] = f
     end
+    gr()
+    tit = "camC enveloppe, CPA return-mapping"
+    p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
+    
+    bool = F.>=-1e-6
+    P,Q = Ps[bool],Qs[bool]
+    p1  = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:square,markersize=2.0,color=:red  ,seriestype=:scatter,label="plastic")
+    bool = F.<=-1e-6
+    P,Q = Ps[bool],Qs[bool]
+    p1  = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
+    
+    display(plot(p1;layout=(1,1),size=(500,250)))
+    #==#
     return ηmax
 end

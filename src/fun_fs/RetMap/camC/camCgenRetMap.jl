@@ -1,4 +1,5 @@
-@views function camCParam(σ0,χ,nstr)
+@views function camCParam(σ0,nstr)
+    χ = 3.0/2.0
     if nstr == 3
         P  = (σ0[1]+σ0[2])/2.0
         ξ  = σ0.-[P,P,0.0]
@@ -30,7 +31,8 @@ end
     f = (((p-C)^2)/(A^2))+(((q-β*p)^2)/(B^2))-1    
     return f,A,C,B
 end 
-@views function ∂f(∂f∂p,∂f∂q,n,χ,nstr)
+@views function ∂f(∂f∂p,∂f∂q,n,nstr)
+    χ = 3.0/2.0
     if nstr == 3
         ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
                 ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[2];
@@ -87,9 +89,10 @@ end
     return p1
 end
 @views function camCRetMap!(mpD,cmParam,fwrkDeform) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
-    ηmax  = 20
+    ηmax  = 200
+    ηtot  = 0
     ftol  = 1.0e-12 
-    χ     = 3.0/2.0
+    
     pc0   = -cmParam.Kc/3.0
     pc,pt = pc0,-0.0*pc0
     ϕcs   = 20.0*π/180.0
@@ -108,26 +111,27 @@ end
     F  = zeros(mpD.nmp)
     for p in 1:mpD.nmp
         pc      = pc0*(exp(-ζ*mpD.ϵpV[p]))
-        P,q,n   = camCParam(σ[:,p],χ,nstr)
+        P,q,n   = camCParam(σ[:,p],nstr)
         f,A,C,B = camCYield(P,q,pc,pt,γ,M,α,β)   
         if f>0.0 
             σ0       = copy(σ[:,p])
             ϵpV,ϵpII = mpD.ϵpV[p],mpD.ϵpII[p]
-            Δλ,η     = 0.0,1
-            while abs(f)>ftol && η < ηmax
+            Δλ,ηit   = 0.0,1
+            while abs(f)>ftol && ηit < ηmax
                 As,Bs = camCAsBs(P,q,γ,pc,α,β,A,B,C)
                 ∂f∂P  = 2.0*((As/A^3)-(Bs/B^3))
                 ∂f∂q  = (2.0*(q-β*P))/B^2
-                ∂f∂σ  = ∂f(∂f∂P,∂f∂q,n,χ,nstr)      
+                ∂f∂σ  = ∂f(∂f∂P,∂f∂q,n,nstr)      
                 Δλ    = f/(∂f∂σ'*cmParam.Del*∂f∂σ)        
                 σ0  .-= (Δλ*cmParam.Del*∂f∂σ)  
                 ϵpV  += Δλ*∂f∂P
                 ϵpII += Δλ*∂f∂q
                 pc    = pc0*(exp(-ζ*ϵpV))
 
-                P,q,n   = camCParam(σ0[:,p],χ,nstr)
+                P,q,n   = camCParam(σ0[:,p],nstr)
                 f,A,C,B = camCYield(P,q,pc,pt,γ,M,α,β)       
-                η   +=1
+                ηit  +=1
+                ηtot  = max(ηit,ηtot)
             end
             mpD.ϵpV[p]  = ϵpV
             mpD.ϵpII[p] = ϵpII
@@ -144,7 +148,7 @@ end
         Qs[p]= q
         F[p] = f
     end
-    
+    #=
     gr()
     tit = "camC enveloppe, CPA return-mapping"
     p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
@@ -157,6 +161,6 @@ end
     p1  = plot!((P./abs(pc0)),(Q./abs(pc0)),markershape=:circle,markersize=1.0,color=:blue,seriestype=:scatter,label="elastic")
     
     display(plot(p1;layout=(1,1),size=(500,250)))
-    #==#
-    return ηmax
+    =#
+    return ηtot
 end

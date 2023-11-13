@@ -54,7 +54,7 @@ else
         include("./fun_fs/RetMap/J2RetMap.jl")
         include("./fun_fs/RetMap/MCRetMap.jl")
         include("./fun_fs/RetMap/DPRetMap.jl")
-        #include("./fun_fs/RetMap/camC/camCRetMap.jl")
-        #include("./fun_fs/RetMap/camC/2camCRetMap.jl")
+        #include("./fun_fs/RetMap/camC/camCmodRetMap.jl")
+        #include("./fun_fs/RetMap/camC/camCcohRetMap.jl")
         include("./fun_fs/RetMap/camC/camCgenRetMap.jl")
 end
