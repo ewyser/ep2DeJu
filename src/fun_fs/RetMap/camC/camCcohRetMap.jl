@@ -1,4 +1,5 @@
-@views function camCParam(σ0,χ,nstr)
+const χ = 3.0/2.0 
+@views function camCParam(σ0,nstr)
     if nstr == 3
         P  = (σ0[1]+σ0[2])/2.0
         ξ  = σ0.-[P,P,0.0]
@@ -17,8 +18,7 @@
     return P,q,n
 end
 @views function camCYield(p,q,p0,M,β)
-    f = q^2*(1.0+2.0*β)+M^2*(p+β*p0)*(p-p0)
-    return f
+    return q^2*(1.0+2.0*β)+M^2*(p+β*p0)*(p-p0)
 end 
 @views function ∂f(∂f∂p,∂f∂q,n,χ,nstr)
     if nstr == 3
@@ -72,14 +72,13 @@ end
 end
 @views function camCRetMap!(mpD,cmParam,fwrkDeform) # Borja (1990); De Souza Neto (2008); Golchin etal (2021)
     ηmax  = 20
+    ηtot  = 0
     ftol  = 1.0e-12 
-    χ     = 3.0/2.0
-    pc0   = -cmParam.Kc
+    pc0   = -cmParam.Kc/5.0
     ϕcs   = 20.0*π/180.0
     M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
-    ζ     = 1.0
+    ζ     = 0.0
     β     = 0.25
-
     # create an alias
     if fwrkDeform == :finite
         σ,nstr = mpD.τ,size(mpD.τ,1)
@@ -90,14 +89,14 @@ end
     Qs = zeros(mpD.nmp)
     F  = zeros(mpD.nmp)
     for p in 1:mpD.nmp
-        pc0    = -cmParam.Kc*sinh(ζ*max(0.0,-mpD.ϵpV[p]))
-        P,q,n = camCParam(σ[:,p],χ,nstr)
+        β     = (mpD.c0[p]/tan(ϕcs))/abs(pc0)
+        P,q,n = camCParam(σ[:,p],nstr)
         f     = camCYield(P,q,pc0,M,β)
         if f>0.0 
             σ0       = copy(σ[:,p])
             ϵpV,ϵpII = mpD.ϵpV[p],mpD.ϵpII[p]
-            Δλ,η     = 0.0,1
-            while abs(f)>ftol && η < ηmax
+            Δλ,ηit   = 0.0,1
+            while abs(f)>ftol && ηit < ηmax
                 ∂f∂P  = M^2*((β-1.0)*pc0+2.0*P)
                 ∂f∂q  = 2.0*q*(1.0+2.0*β)
                 ∂f∂σ  = ∂f(∂f∂P,∂f∂q,n,χ,nstr)      
@@ -105,14 +104,14 @@ end
                 σ0  .-= (Δλ*cmParam.Del*∂f∂σ)  
                 ϵpV  += Δλ*∂f∂P
                 ϵpII += Δλ*∂f∂q
-
-                P,q,n = camCParam(σ0[:,p],χ,nstr)
+                P,q,n = camCParam(σ0[:,p],nstr)
                 f     = camCYield(P,q,pc0,M,β)
-                η   +=1
+                ηit  +=1
+                ηtot  = max(ηit,ηtot)
             end
             mpD.ϵpV[p]  = ϵpV
             mpD.ϵpII[p] = ϵpII
-            σ[:,p]  = σ0
+            σ[:,p]      = σ0
             if fwrkDeform == :finite
                 # update strain tensor
                 mpD.ϵ[:,:,p].= mutate(cmParam.Del\σ[:,p],0.5,:tensor)
@@ -127,7 +126,7 @@ end
     end
     gr()
     tit = "camC enveloppe, CPA return-mapping"
-    p1 = camCplotYieldFun(pc0,pt,γ,M,α,β)
+    p1 = camCplotYieldFun(pc0,M,β)
     
     bool = F.>=-1e-6
     P,Q = Ps[bool],Qs[bool]
@@ -138,5 +137,5 @@ end
     
     display(plot(p1;layout=(1,1),size=(500,250)))
     #==#
-    return ηmax
+    return ηtot
 end
