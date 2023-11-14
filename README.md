@@ -101,7 +101,7 @@ Status `./ep2DeJu/Project.toml`
 
 (ep2DeJu) pkg>
 ```
-4. Pre-compile using ``include()`` and run method ``ϵp2De(nel,varPlot,cmType; kwargs...)``. It should result in the following:
+4. Code ``include()`` and execute method ``ϵp2De(nel,varPlot,cmType; kwargs...)``. It should result in the following:
 ```julia
 julia> include("./scripts/program/ep2De.jl")
 ϵp2De (generic function with 1 method)
