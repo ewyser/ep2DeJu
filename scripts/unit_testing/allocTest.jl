@@ -25,22 +25,22 @@ using BenchmarkTools
     cmParam = (Kc = K, Gc = G, Del = Del, Hp = Hp,)
     @info "mesh & mp feature(s):" ϕ∂ϕType fwrkDeform trsfrAp isΔFbar nel nthreads()
     # plot & time stepping parameters
-    tw,tC,it,ctr,toc,flag,ηmax,ηtot = 0.0,1.0/1.0,0,0,0.0,0,0,0    
+    tw,tC,it,ctr,toc,flag,ηmax,ηtot,Δt = 0.0,1.0/1.0,0,0,0.0,0,0,0,1.0e-4    
     # action
     @info "Evaluate core functions:"
     println("launch ϕ∂ϕ!()")
     @btime shpfun!($mpD,$meD,$ϕ∂ϕType)
     println("launch mapsto!(p->n)")
-    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,$trsfrAp,"p->n")   
+    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),$Δt,$trsfrAp,"p->n")   
     println("launch solve!()")
     @btime solve!($meD,0.1)
     println("launch mapsto!(p<-n)")
-    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),0.1,$trsfrAp,"p<-n")
+    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),$Δt,$trsfrAp,"p<-n")
     println("launch elastoplast!()")
-    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,0.1,$ϕ∂ϕType,$isΔFbar,$fwrkDeform,true)
+    @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$Δt,$ϕ∂ϕType,$isΔFbar,$fwrkDeform,true)
     @warn "Digging deeper in elastoplast!(), "
     println("-> launch deform!()")
-    @btime deform!($mpD,$meD,0.1,$ϕ∂ϕType,$isΔFbar)
+    @btime deform!($mpD,$meD,$Δt,$ϕ∂ϕType,$isΔFbar)
     println("-> launch ΔFbar!()")
     @btime ΔFbar!($mpD,$meD)
     println("-> launch elast!()")

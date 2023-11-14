@@ -14,15 +14,12 @@
                 @simd for p ∈ 1:mpD.nmp
                     # accumulation
                     for nn ∈ 1:meD.nn
-                        if dim == 1 
-                            # lumped mass matrix
-                            meD.mn[mpD.p2n[nn,p]]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
-                        end
                         meD.pn[  mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,dim])
-                        meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
                         if dim == 1
+                            meD.mn[  mpD.p2n[nn,p]    ]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
                             meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[3,p])
                         elseif dim == 2
+                            meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
                             meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[3,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p])
                         end
                     end
@@ -33,24 +30,20 @@
                 @simd for p ∈ 1:mpD.nmp
                     # accumulation
                     for nn ∈ 1:meD.nn
-                        if dim == 1 
-                            # lumped mass matrix
-                            meD.mn[mpD.p2n[nn,p]]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
-                        end
                         meD.pn[  mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,dim])
-                        meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
                         if dim == 1
+                            meD.mn[  mpD.p2n[nn,p]    ]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
                             meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[6,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[5,p])
                         elseif dim == 2
                             meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[6,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[4,p])
                         elseif dim == 3
+                            meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
                             meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[5,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[4,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[3,p])
                         end
                     end
                 end
             end
         end
-
     elseif mapsto == "p<-n"
         # mapping back to mp's
         @simd for dim ∈ 1:meD.nD
