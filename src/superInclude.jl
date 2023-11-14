@@ -30,20 +30,33 @@ include("./misc/utilities.jl")
 include("./misc/setup.jl")
 include("./misc/physics.jl")
 include("./misc/plot.jl")
-# include core functions
+
+# include functions
 if @isdefined perf 
     if perf
-        @info "performance mode on: perf = $(perf)"
-        include("./fun_fs/shpfun.jl")
-        include("./fun_fs/mapsto.jl")
+        @info "ϵp23De() init performance mode on"
+        include("./misc/perf/shpfun.jl")
+        include("./misc/perf/mapsto.jl")
         include("./fun_fs/solve.jl")
-        include("./misc/rxiv/elastoplast.jl")
+        include("./misc/perf/elastoplast.jl")
+            include("./fun_fs/RetMap/J2RetMap.jl")
+            include("./fun_fs/RetMap/MCRetMap.jl")
+            include("./fun_fs/RetMap/DPRetMap.jl")
+            #include("./fun_fs/RetMap/camC/camCmodRetMap.jl")
+            #include("./fun_fs/RetMap/camC/camCcohRetMap.jl")
+            include("./fun_fs/RetMap/camC/camCgenRetMap.jl")
     else
-        @info "performance mode off: perf = $(perf)"
+        @info "ϵp23De() init performance mode off"
         include("./fun_fs/shpfun.jl")
         include("./fun_fs/mapsto.jl")
         include("./fun_fs/solve.jl")
         include("./fun_fs/elastoplast.jl")
+            include("./fun_fs/RetMap/J2RetMap.jl")
+            include("./fun_fs/RetMap/MCRetMap.jl")
+            include("./fun_fs/RetMap/DPRetMap.jl")
+            #include("./fun_fs/RetMap/camC/camCmodRetMap.jl")
+            #include("./fun_fs/RetMap/camC/camCcohRetMap.jl")
+            include("./fun_fs/RetMap/camC/camCgenRetMap.jl")
     end
 else
     @info "ϵp23De() init by-default mode"

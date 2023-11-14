@@ -4,7 +4,7 @@
 @views function flipMapping!(mpD,meD,g,Δt,mapsto)
     if mapsto == "p->n"
         # initialize nodal quantities
-        meD.Mn  .= 0.0
+        #meD.Mn  .= 0.0
         meD.mn  .= 0.0
         meD.pn  .= 0.0
         meD.oobf.= 0.0
