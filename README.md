@@ -43,7 +43,7 @@ The ```./src``` folder contains all functions needed, which are called by the di
 ├── license
 ├── scripts
 │   ├── program
-│   │   └── ep2De.jl
+│   │   └── ep23De.jl
 │   └── unit_testing
 │       ├── allocTest.jl
 │       ├── kwargsTest.jl
@@ -101,12 +101,13 @@ Status `./ep2DeJu/Project.toml`
 
 (ep2DeJu) pkg>
 ```
-4. Code ``include()`` and execute method ``ϵp2De(nel,varPlot,cmType; kwargs...)``. It should result in the following:
+4. Code ``include()`` and execute method ``ϵp23De(nel,varPlot,cmType; kwargs...)``. It should result in the following:
 ```julia
-julia> include("./scripts/program/ep2De.jl")
-ϵp2De (generic function with 1 method)
-julia> ϵp2De(40,"P","MC")
-[ Info: ** ϵp2-3De v0.1.0: finite strain formulation **
+julia> include("./scripts/program/ep23De.jl")
+ϵp23De (generic function with 1 method)
+julia> L = [64.1584,12.80]
+julia> ϵp23De(L,40,"P","MC")
+[ Info: ** ϵp2De v0.3.0: finite strain formulation **
 ┌ Info: mesh & mp feature(s):
 │   nel = 528
 │   nno = 585
@@ -123,14 +124,17 @@ julia> ϵp2De(40,"P","MC")
 └ (✓) Done! exiting...
 julia>
 ```
-5. Input parameters: ``L`` is a vector of the eulerian mesh dimensions $\ell_{x,z|x,y,z}$ (two- and three-dimensional geometries are now supported since ``v0.3.0``), the argument ``nel`` is a scalar of elements along the $x$ dim., ``varPlot`` is a string option for displaying state variable in plotting (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain), and ``cmType`` is a string which defines the constitutive model being used. 
+
+5. Input parameters: ``L`` is a vector of the Eulerian mesh dimensions $\ell_{x,z|x,y,z}$ (two- and three-dimensional geometries are now supported since ``v0.3.0``), the argument ``nel`` defines the elements along the $x$ dim., ``varPlot`` defines state variable to be displayed in plot (``"P"`` for pressure, ``"du"`` for displacement or ``"epII"`` for plastic strain), and ``cmType`` defines the constitutive model being used. 
 
 6. Optional ``kwargs`` are: ``shpfun={:smpm,:gimpm,:bsmpm}`` defining shape functions, ``fwrk={:infinitesimal,:finite}`` defining the deformation framework, ``trsf={:picflipUSL,:mUSL,:tpicUSL}`` defining the mapping scheme, ``vollock={true|false}`` is a boolean controlling volumetric locking corrections using the $\Delta\bar{F}$ method (see [1,2]), and ``GRF={true|false}`` is a boolean switching on/off gaussian random cohesion fields (see [3,4]). An illustrative example with ``kwargs`` is given below
 ```julia
-ϵp2De(40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
+ϵp23De([64.1584,12.80],40,"P","MC";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
 ```
 
-5. Outputs (figs, gif, etc.) are saved in the folder ```./docs/out/ ```
+7. Outputs (figs, gif, etc.) are saved in the folder ```./docs/out/ ```
+
+8. (**final note**): ``ϵp23De`` automatically infers whether the two- or three-dimensional solver should be compiled, solely based on the dimension of ``L``, *i.e.,* ``length(L)={2|3}``.
 
 ## **References**
 For useful references, the reader can have a look in the folder ```./docs/refs```, where some of the following references can be found
