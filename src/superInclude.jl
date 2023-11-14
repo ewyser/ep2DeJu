@@ -38,7 +38,7 @@ if @isdefined perf
         include("./misc/perf/shpfun.jl")
         include("./misc/perf/mapsto.jl")
         include("./fun_fs/solve.jl")
-        include("./misc/perf/elastoplast.jl")
+        include("./fun_fs/elastoplast.jl")
             include("./fun_fs/RetMap/J2RetMap.jl")
             include("./fun_fs/RetMap/MCRetMap.jl")
             include("./fun_fs/RetMap/DPRetMap.jl")

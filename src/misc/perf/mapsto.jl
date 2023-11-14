@@ -97,10 +97,10 @@ end
     if trsfrAp == :mUSL
         flipMapping!(mpD,meD,g,Δt,whereto)
     elseif trsfrAp == :picflipUSL
-        err_msg = "$(trsfrAp): mapping scheme undefined in performance modee"
+        err_msg = "$(trsfrAp): mapping scheme undefined in performance mode"
         throw(error(err_msg))
     elseif trsfrAp == :tpicUSL
-        err_msg = "$(trsfrAp): mapping scheme undefined in performance modee"
+        err_msg = "$(trsfrAp): mapping scheme undefined in performance mode"
         throw(error(err_msg))
     end
     return nothing
@@ -110,10 +110,10 @@ end
         flipMapping!(mpD,meD,g,Δt,whereto)
         DM!(       mpD,meD,Δt)
     elseif trsfrAp == :picflipUSL
-        err_msg = "$(trsfrAp): mapping scheme undefined in performance modee"
+        err_msg = "$(trsfrAp): mapping scheme undefined in performance mode"
         throw(error(err_msg))
     elseif trsfrAp == :tpicUSL
-        err_msg = "$(trsfrAp): mapping scheme undefined in performance modee"
+        err_msg = "$(trsfrAp): mapping scheme undefined in performance mode"
         throw(error(err_msg))
     end
     return nothing
