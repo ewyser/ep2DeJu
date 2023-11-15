@@ -51,15 +51,15 @@ end
         elseif meD.nD == 3
             ∂xvx = ∂yvx = ∂zvx = ∂xvy = ∂yvy = ∂zvy = ∂xvz = ∂yvz = ∂zvz =0.0
             for nn ∈ 1:meD.nn
-                mpD.∇v[1,1,p]+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],1]
-                mpD.∇v[1,2,p]+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],1]
-                mpD.∇v[1,3,p]+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],1]
-                mpD.∇v[1,1,p]+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],2]
-                mpD.∇v[2,2,p]+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],2]
-                mpD.∇v[2,3,p]+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],2]
-                mpD.∇v[3,1,p]+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],3]
-                mpD.∇v[3,2,p]+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],3]
-                mpD.∇v[3,3,p]+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],3]
+                ∂xvx+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],1]
+                ∂yvx+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],1]
+                ∂zvx+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],1]
+                ∂xvy+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],2]
+                ∂yvy+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],2]
+                ∂zvy+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],2]
+                ∂xvz+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],3]
+                ∂yvz+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],3]
+                ∂zvz+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],3]
             end
             mpD.∇v[1,1,p] = ∂xvx
             mpD.∇v[1,2,p] = ∂yvx
