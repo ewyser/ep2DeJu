@@ -36,35 +36,47 @@ end
 @views function deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
     @threads for p ∈ 1:mpD.nmp
         # compute velocity & displacement gradients
-        mpD.∇v[:,:,p].= 0.0
         if meD.nD == 2
+            ∂xvx = ∂yvx = ∂xvy = ∂yvy = 0.0
             for nn ∈ 1:meD.nn
-                mpD.∇v[1,1,p]+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],1]
-                mpD.∇v[1,2,p]+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],1]
-                mpD.∇v[2,1,p]+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],2]
-                mpD.∇v[2,2,p]+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],2]
+                ∂xvx+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],1]
+                ∂yvx+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],1]
+                ∂xvy+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],2]
+                ∂yvy+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],2]
             end
+            mpD.∇v[1,1,p] = ∂xvx
+            mpD.∇v[1,2,p] = ∂yvx
+            mpD.∇v[2,1,p] = ∂xvy
+            mpD.∇v[2,2,p] = ∂yvy
         elseif meD.nD == 3
+            ∂xvx = ∂yvx = ∂zvx = ∂xvy = ∂yvy = ∂zvy = ∂xvz = ∂yvz = ∂zvz =0.0
             for nn ∈ 1:meD.nn
                 mpD.∇v[1,1,p]+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],1]
                 mpD.∇v[1,2,p]+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],1]
                 mpD.∇v[1,3,p]+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],1]
-
                 mpD.∇v[1,1,p]+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],2]
                 mpD.∇v[2,2,p]+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],2]
                 mpD.∇v[2,3,p]+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],2]
-
                 mpD.∇v[3,1,p]+= mpD.ϕ∂ϕ[nn,p,2]*meD.vn[mpD.p2n[nn,p],3]
                 mpD.∇v[3,2,p]+= mpD.ϕ∂ϕ[nn,p,3]*meD.vn[mpD.p2n[nn,p],3]
                 mpD.∇v[3,3,p]+= mpD.ϕ∂ϕ[nn,p,4]*meD.vn[mpD.p2n[nn,p],3]
             end
+            mpD.∇v[1,1,p] = ∂xvx
+            mpD.∇v[1,2,p] = ∂yvx
+            mpD.∇v[1,3,p] = ∂zvx
+            mpD.∇v[2,1,p] = ∂xvy
+            mpD.∇v[2,2,p] = ∂yvy
+            mpD.∇v[3,3,p] = ∂zvy
+            mpD.∇v[3,1,p] = ∂xvz
+            mpD.∇v[3,2,p] = ∂yvz
+            mpD.∇v[3,3,p] = ∂zvz
         end
         mpD.∇u[:,:,p].= Δt.*mpD.∇v[:,:,p]
         # compute incremental deformation gradient
         mpD.ΔF[:,:,p].= mpD.I.+mpD.∇u[:,:,p]
         mpD.ΔJ[p]     = det(mpD.ΔF[:,:,p])
         # update deformation gradient
-        mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
+        #mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
         # update material point's volume
         mpD.J[p]      = det(mpD.F[:,:,p])
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
@@ -162,15 +174,3 @@ end
     end
     return ηmax::Int64
 end
-
-#=
-if length(ϵ) == 3
-    for nstr ∈ 1:3
-        mpD.τ[nstr,p] = Del[nstr,1]*ϵ[1]+Del[nstr,2]*ϵ[2]+Del[nstr,3]*ϵ[3]
-    end
-elseif length(ϵ) == 6
-    for nstr ∈ 1:3
-        mpD.τ[nstr,p] = Del[nstr,1]*ϵ[1]+Del[nstr,2]*ϵ[2]+Del[nstr,3]*ϵ[3]+Del[nstr,4]*ϵ[4]+Del[nstr,5]*ϵ[5]+Del[nstr,6]*ϵ[6]
-    end
-end
-=#
