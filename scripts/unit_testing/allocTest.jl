@@ -34,7 +34,7 @@ using BenchmarkTools
     println("launch mapsto!(p->n)")
     @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),$Δt,$trsfrAp,"p->n")   
     println("launch solve!()")
-    @btime solve!($meD,0.1)
+    @btime solve!($meD,$Δt)
     println("launch mapsto!(p<-n)")
     @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),$Δt,$trsfrAp,"p<-n")
     println("launch elastoplast!()")
