@@ -78,7 +78,8 @@ end
         # update deformation gradient
         mpD.F[:,:,p] .= mpD.ΔF[:,:,p]*mpD.F[:,:,p]
         # update material point's volume
-        mpD.V[p]      = det(mpD.F[:,:,p])*mpD.V0[p]
+        mpD.J[p]      = det(mpD.F[:,:,p])
+        mpD.V[p]      = mpD.J[p]*mpD.V0[p]
     end
     # update material point's domain
     if ϕ∂ϕType == :gimpm domainUpd!(mpD) end

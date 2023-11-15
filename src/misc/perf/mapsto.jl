@@ -4,7 +4,6 @@
 @views function flipMapping!(mpD,meD,g,Δt,mapsto)
     if mapsto == "p->n"
         # initialize nodal quantities
-        #meD.Mn  .= 0.0
         meD.mn  .= 0.0
         meD.pn  .= 0.0
         meD.oobf.= 0.0
@@ -17,10 +16,10 @@
                         meD.pn[  mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,dim])
                         if dim == 1
                             meD.mn[  mpD.p2n[nn,p]    ]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
-                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[3,p])
+                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[3,p])
                         elseif dim == 2
                             meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
-                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[3,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p])
+                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[3,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p])
                         end
                     end
                 end
@@ -33,12 +32,12 @@
                         meD.pn[  mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,dim])
                         if dim == 1
                             meD.mn[  mpD.p2n[nn,p]    ]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
-                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[6,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[5,p])
+                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[6,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[5,p])
                         elseif dim == 2
-                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[6,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[4,p])
+                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[6,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[4,p])
                         elseif dim == 3
                             meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
-                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[5,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[4,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[3,p])
+                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[5,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[4,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[3,p])
                         end
                     end
                 end
