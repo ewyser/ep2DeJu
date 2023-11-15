@@ -1,5 +1,6 @@
 # include("./scripts/unit_testing/allocTest.jl")
 @warn "unit testing"
+perf = true
 # include dependencies
 include("../../src/superInclude.jl")
 using BenchmarkTools
