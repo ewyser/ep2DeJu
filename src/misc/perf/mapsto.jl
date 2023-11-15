@@ -10,19 +10,19 @@
         # mapping back to mesh
         if meD.nD == 2
             @threads for dim ∈ 1:meD.nD
-                @simd for p ∈ 1:mpD.nmp
-                    # accumulation
-                    for nn ∈ 1:meD.nn
-                        meD.pn[  mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,dim])
-                        if dim == 1
-                            meD.mn[  mpD.p2n[nn,p]    ]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
-                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[3,p])
-                        elseif dim == 2
-                            meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
-                            meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[3,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p])
-                        end
+            @simd for p ∈ 1:mpD.nmp
+                # accumulation
+                for nn ∈ 1:meD.nn
+                    meD.pn[  mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,dim])
+                    if dim == 1
+                        meD.mn[  mpD.p2n[nn,p]    ]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
+                        meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[3,p])
+                    elseif dim == 2
+                        meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
+                        meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[3,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p])
                     end
                 end
+            end
             end
         elseif meD.nD == 3
             @threads for dim ∈ 1:meD.nD
@@ -45,13 +45,41 @@
         end
     elseif mapsto == "p<-n"
         # mapping back to mp's
-        @simd for dim ∈ 1:meD.nD
-            @threads for p ∈ 1:mpD.nmp        
+        if meD.nD == 2
+            @threads for p ∈ 1:mpD.nmp     
+                δvx = δvz = δx = δz = 0.0
+                for nn ∈ 1:meD.nn
+                    δvx+= Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.an[mpD.p2n[nn,p],1])
+                    δvz+= Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.an[mpD.p2n[nn,p],2])
+                    δx += Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.vn[mpD.p2n[nn,p],1])
+                    δz += Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.vn[mpD.p2n[nn,p],2])
+                end
                 # flip update
-                mpD.v[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
-                mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+                mpD.v[p,1]+= δvx
+                mpD.v[p,2]+= δvz
+                mpD.x[p,1]+= δx
+                mpD.x[p,2]+= δz
             end          
-        end        
+        elseif meD.nD == 3
+            @threads for p ∈ 1:mpD.nmp     
+                δvx = δvy = δvz = δx = δy = δz = 0.0
+                for nn ∈ 1:meD.nn
+                    δvx+= Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.an[mpD.p2n[nn,p],1])
+                    δvy+= Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.an[mpD.p2n[nn,p],2])
+                    δvz+= Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.an[mpD.p2n[nn,p],3])
+                    δx += Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.vn[mpD.p2n[nn,p],1])
+                    δy += Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.vn[mpD.p2n[nn,p],2])
+                    δz += Δt*(mpD.ϕ∂ϕ[nn,p,1]*meD.vn[mpD.p2n[nn,p],3])
+                end
+                # flip update
+                mpD.v[p,1]+= δvx
+                mpD.v[p,2]+= δvy
+                mpD.v[p,3]+= δvz
+                mpD.x[p,1]+= δx
+                mpD.x[p,2]+= δy
+                mpD.x[p,3]+= δz
+            end           
+        end
     end
     return nothing
 end
@@ -60,25 +88,53 @@ end
     meD.pn.= 0.0
     meD.vn.= 0.0
     # accumulate material point contributions
-    @threads for dim ∈ 1:meD.nD
-        # accumulation
+    if meD.nD == 2
         @simd for p ∈ 1:mpD.nmp
-            meD.pn[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p].*mpD.v[p,dim])
+            # accumulation
+            for nn ∈ 1:meD.nn
+                meD.pn[  mpD.p2n[nn,p],1]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,1])
+                meD.pn[  mpD.p2n[nn,p],2]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,2])
+            end
+        end
+    elseif meD.nD == 3
+        @simd for p ∈ 1:mpD.nmp
+            # accumulation
+            for nn ∈ 1:meD.nn
+                meD.pn[  mpD.p2n[nn,p],1]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,1])
+                meD.pn[  mpD.p2n[nn,p],2]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,2])
+                meD.pn[  mpD.p2n[nn,p],3]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,3])
+            end
         end
     end    
     # solve for nodal incremental displacement
-    @simd for dim ∈ 1:meD.nD
+    if meD.nD == 2
         @threads for n ∈ 1:meD.nno[end]
             if meD.mn[n]>0.0
-                meD.vn[n,dim] = (meD.pn[n,dim]*(1.0/meD.mn[n])*meD.bc[n,dim])
+                meD.vn[n,1] = (meD.pn[n,1]*(1.0/meD.mn[n])*meD.bc[n,1])
+                meD.vn[n,2] = (meD.pn[n,2]*(1.0/meD.mn[n])*meD.bc[n,2])
+            end    
+        end
+    elseif meD.nD == 3
+        @threads for n ∈ 1:meD.nno[end]
+            if meD.mn[n]>0.0
+                meD.vn[n,1] = (meD.pn[n,1]*(1.0/meD.mn[n])*meD.bc[n,1])
+                meD.vn[n,2] = (meD.pn[n,2]*(1.0/meD.mn[n])*meD.bc[n,2])
+                meD.vn[n,3] = (meD.pn[n,3]*(1.0/meD.mn[n])*meD.bc[n,3])
             end    
         end
     end
     # update material point's displacement
-    @simd for dim ∈ 1:meD.nD
+    if meD.nD == 2
         @threads for p ∈ 1:mpD.nmp
-            mpD.u[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
+            mpD.u[p,1]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],1])
+            mpD.u[p,2]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],2])
         end        
+    elseif meD.nD == 3
+        @threads for p ∈ 1:mpD.nmp
+            mpD.u[p,1]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],1])
+            mpD.u[p,2]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],2])
+            mpD.u[p,3]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],3])
+        end       
     end
     return nothing
 end

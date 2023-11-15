@@ -28,6 +28,7 @@ using BenchmarkTools
     # plot & time stepping parameters
     tw,tC,it,ctr,toc,flag,ηmax,ηtot,Δt = 0.0,1.0/1.0,0,0,0.0,0,0,0,1.0e-4    
     # action
+    #=
     @info "Evaluate core functions:"
     println("launch ϕ∂ϕ!()")
     @btime shpfun!($mpD,$meD,$ϕ∂ϕType)
@@ -35,8 +36,12 @@ using BenchmarkTools
     @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),$Δt,$trsfrAp,"p->n")   
     println("launch solve!()")
     @btime solve!($meD,$Δt)
+    =#
+    println("launch mapsto!(p->n)")
+    @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),$Δt,$trsfrAp,"p->n")  
     println("launch mapsto!(p<-n)")
     @btime mapsto!($mpD,$meD,vec([0.0,0.0,9.81]),$Δt,$trsfrAp,"p<-n")
+    #=
     println("launch elastoplast!()")
     @btime ηmax = elastoplast!($mpD,$meD,$cmParam,$cmType,$Δt,$ϕ∂ϕType,$isΔFbar,$fwrkDeform,true)
     @warn "Digging deeper in elastoplast!(), "
@@ -46,6 +51,7 @@ using BenchmarkTools
     @btime ΔFbar!($mpD,$meD)
     println("-> launch elast!()")
     @btime elast!($mpD,$cmParam.Del,$fwrkDeform)
+    =#
     return msg("(✓) Done! exiting...")
 end
 allocCheck([64.1584,64.1584/4,12.80],80,"P","DP";shpfun=:bsmpm,fwrk=:finite,trsf=:mUSL,vollock=true)
