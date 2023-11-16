@@ -11,7 +11,7 @@ catch
     @error "$(Base.active_project()) needs instantiation"
     @warn "By-default instantiation launched...may take a while"
     Pkg.instantiate()
-    using LinearAlgebra, Plots, LaTeXStrings, Base.Threads,ProgressMeter
+    using LinearAlgebra, Plots, LaTeXStrings, Random, Base.Threads,ProgressMeter
 end
 
 # arithmetic precision & relative path for figs & data
@@ -32,7 +32,7 @@ include("./misc/physics.jl")
 include("./misc/plot.jl")
 
 # include functions
-if @isdefined perf 
+if @isdefined(perf) 
     if perf
         @warn "ϵp23De() init performance mode on"
         include("./misc/perf/setup.jl")
