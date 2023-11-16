@@ -351,7 +351,15 @@ end
     return "all tests passed...exit"
 end
 
-runCompacTest([2,3,2,3],[:mUSL,:mUSL,:tpicUSL,:tpicUSL])
+if @isdefined(perf)
+    if perf
+        runCompacTest([2,3],[:mUSL,:mUSL])
+    else
+        runCompacTest([2,3],[:mUSL,:mUSL])
+    end
+else
+    runCompacTest([2,3,2,3],[:mUSL,:mUSL,:tpicUSL,:tpicUSL])
+end
 #runCompacTest([2,3,2,3,2,3],[:mUSL,:mUSL,:picflipUSL,:picflipUSL,:tpicUSL,:tpicUSL])
 #runCompacTest([2,2,2],[:picflipUSL,:mUSL,:tpicUSL])
 
