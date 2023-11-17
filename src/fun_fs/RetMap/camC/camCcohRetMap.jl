@@ -20,7 +20,7 @@ end
 @views function camCYield(p,q,p0,M,β)
     return q^2*(1.0+2.0*β)+M^2*(p+β*p0)*(p-p0)
 end 
-@views function ∂f(∂f∂p,∂f∂q,n,χ,nstr)
+@views function ∂f(∂f∂p,∂f∂q,n,nstr)
     if nstr == 3
         ∂f∂σ = [∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[1];
                 ∂f∂p*1.0/3.0+sqrt(χ)*∂f∂q*n[2];
@@ -77,7 +77,7 @@ end
     pc0   = -cmParam.Kc/5.0
     ϕcs   = 20.0*π/180.0
     M     = 6.0*sin(ϕcs)/(3.0-sin(ϕcs))
-    ζ     = 0.0
+    ζ     = 1.0
     β     = 0.25
     # create an alias
     if fwrkDeform == :finite
@@ -89,23 +89,24 @@ end
     Qs = zeros(mpD.nmp)
     F  = zeros(mpD.nmp)
     for p in 1:mpD.nmp
-        β     = (mpD.c0[p]/tan(ϕcs))/abs(pc0)
+        pc    = pc0*(exp(-ζ*mpD.ϵpV[p]))
+        β     = (mpD.c0[p]/tan(ϕcs))/abs(pc)
         P,q,n = camCParam(σ[:,p],nstr)
-        f     = camCYield(P,q,pc0,M,β)
+        f     = camCYield(P,q,pc,M,β)
         if f>0.0 
             σ0       = copy(σ[:,p])
             ϵpV,ϵpII = mpD.ϵpV[p],mpD.ϵpII[p]
             Δλ,ηit   = 0.0,1
             while abs(f)>ftol && ηit < ηmax
-                ∂f∂P  = M^2*((β-1.0)*pc0+2.0*P)
+                ∂f∂P  = M^2*((β-1.0)*pc+2.0*P)
                 ∂f∂q  = 2.0*q*(1.0+2.0*β)
-                ∂f∂σ  = ∂f(∂f∂P,∂f∂q,n,χ,nstr)      
+                ∂f∂σ  = ∂f(∂f∂P,∂f∂q,n,nstr)      
                 Δλ    = f/(∂f∂σ'*cmParam.Del*∂f∂σ)        
                 σ0  .-= (Δλ*cmParam.Del*∂f∂σ)  
                 ϵpV  += Δλ*∂f∂P
                 ϵpII += Δλ*∂f∂q
                 P,q,n = camCParam(σ0[:,p],nstr)
-                f     = camCYield(P,q,pc0,M,β)
+                f     = camCYield(P,q,pc,M,β)
                 ηit  +=1
                 ηtot  = max(ηit,ηtot)
             end
