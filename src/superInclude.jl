@@ -6,16 +6,16 @@ end
 
 # include dependencies & function call(s)
 try 
-    using LinearAlgebra, Plots, LaTeXStrings, Random, Base.Threads,ProgressMeter
+    using LinearAlgebra, KernelAbstractions, Plots, LaTeXStrings, Random, Base.Threads,ProgressMeter
 catch
     @error "$(Base.active_project()) needs instantiation"
     @warn "By-default instantiation launched...may take a while"
     Pkg.instantiate()
-    using LinearAlgebra, Plots, LaTeXStrings, Random, Base.Threads,ProgressMeter
+    using LinearAlgebra, KernelAbstractions, Plots, LaTeXStrings, Random, Base.Threads,ProgressMeter
 end
 
 # arithmetic precision & relative path for figs & data
-const typeD     = Float64  
+const typeD     = Float32  
 const path_plot = "./docs/out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 const path_test = "./docs/test/"
@@ -71,6 +71,6 @@ else
         include("./fun_fs/RetMap/MCRetMap.jl")
         include("./fun_fs/RetMap/DPRetMap.jl")
         #include("./fun_fs/RetMap/camC/camCmodRetMap.jl")
-        include("./fun_fs/RetMap/camC/camCcohRetMap.jl")
-        #include("./fun_fs/RetMap/camC/camCgenRetMap.jl")
+        #include("./fun_fs/RetMap/camC/camCcohRetMap.jl")
+        include("./fun_fs/RetMap/camC/camCgenRetMap.jl")
 end
