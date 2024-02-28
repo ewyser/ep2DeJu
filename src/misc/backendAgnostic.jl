@@ -1,26 +1,38 @@
 # https://juliagpu.github.io/KernelAbstractions.jl/stable/
-#include("./src/misc/backendAgnostic.jl")
-using KernelAbstractions
+# include("./src/misc/backendAgnostic.jl")
+using KernelAbstractions, CUDA
 
 
-@kernel function mul2_kernel!(A,nx,ny)
+@kernel inbounds=true function kernel!(A,nx,ny)
     i,j = @index(Global, NTuple)
     if 1<i<size(A,1) && 1<j<size(A,2)
-        A[i,j] = 2 * A[i,j]
+        A[i,j] = 2.0 * A[i,j]
     end
 end
 
-# allocate array on device memory 
-A     = ones(5, 5)#A     = CuArray(A)
+function configDevice(dev)
+    blockSize     = KernelAbstractions.isgpu(dev) ? 256 : 1024
+    global mul_k! = kernel!(dev, blockSize)
+    return @info "kernel launch parameters & alias(es) done"
+end
+
+# initialize
+A     = ones(5*1024,5*1024)#A     = CuArray(A)
 nx,ny = size(A)
 
-# get backend where memory is allocated
-dev       = get_backend(A)
-blockSize = KernelAbstractions.isgpu(get_backend(a)) ? 256 : 1024
+# allocate memory, get backend & kernel launch parameter
+if CUDA.functional()
+    A_D = CuArray(A)
+end
+dev = get_backend(A_D)
+configDevice(dev)
+
 
 # agnostic backend kernel call
-mul2_kernel!(dev, blockSize)(A,nx,ny, ndrange=size(A))
-synchronize(dev)
+for k in 1:10000
+    mul_k!(A_D,nx,ny, ndrange=size(A_D))
+    KernelAbstractions.synchronize(dev)
+end
 
 # print result
-println(A)
+#println(A)
