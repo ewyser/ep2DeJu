@@ -15,7 +15,7 @@ catch
 end
 
 # arithmetic precision & relative path for figs & data
-const typeD     = Float32  
+const typeD     = Float64  
 const path_plot = "./docs/out/"
 if isdir(path_plot)==false mkdir(path_plot) end
 const path_test = "./docs/test/"
