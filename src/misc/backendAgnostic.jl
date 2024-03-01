@@ -3,12 +3,19 @@
 using KernelAbstractions, CUDA, LinearAlgebra
 
 
-@kernel inbounds=true function kernel!(A,nx,ny)
+@kernel inbounds=true function mat_kernel!(D)
     i,j = @index(Global, NTuple)
-    if 1<i<size(A,1) && 1<j<size(A,2)
-        A[i,j] = 2.0 * A[i,j]
+    if 1<i<size(D.A,1) && 1<j<size(D.A,2)
+        D.A[i,j] = D.b + D.A[i,j]
     end
 end
+@kernel inbounds=true function vec_kernel!(D)
+    i = @index(Global)
+    if 1<i<length(D.a)
+        D.a[i] = 2*D.b + D.a[i]
+    end
+end
+
 @kernel inbounds=true function test!(sig,np)
     k = @index(Global)
     if k<=np
@@ -18,12 +25,13 @@ end
 
 function configDevice(dev)
     blockSize     = KernelAbstractions.isgpu(dev) ? 256 : 1024
-    global mul_k! = kernel!(dev, blockSize)
+    global mat_k! = mat_kernel!(dev, 1)
+    global vec_k! = vec_kernel!(dev, 1)
     return @info "kernel launch parameters & alias(es) done"
 end
 
 # initialize
-A     = ones(1024,1024)#A     = CuArray(A)
+A     = ones(5,5)#A     = CuArray(A)
 nx,ny = size(A)
 
 # allocate memory, get backend & kernel launch parameter
@@ -33,16 +41,24 @@ A_D= AT(A)
 dev = get_backend(A_D)
 configDevice(dev)
 
+D = (A = A_D,a = Array(ones(100,)), b = 10.0,)
 
 # agnostic backend kernel call
-for k in 1:10000
-    mul_k!(A_D,nx,ny;ndrange=size(A_D))
+for k in 1:1
+    mat_k!(D;ndrange=size(D.A))
     KernelAbstractions.synchronize(dev)
 end
-
 # print result
-#println(A)
+println(size(D.A))
+println(D.A)
 
+for k in 1:1
+    vec_k!(D;ndrange=length(D.a))
+    KernelAbstractions.synchronize(dev)
+end
+# print result
+println(size(D.a))
+println(D.a)
 
 
 sig = ones(3,3,10)
