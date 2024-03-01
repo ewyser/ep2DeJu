@@ -23,20 +23,20 @@ function configDevice(dev)
 end
 
 # initialize
-A     = ones(5*1024,5*1024)#A     = CuArray(A)
+A     = ones(1024,1024)#A     = CuArray(A)
 nx,ny = size(A)
 
 # allocate memory, get backend & kernel launch parameter
-if CUDA.functional()
-    A_D = CuArray(A)
-end
+AT = CUDA.functional() ? CUDA.CuArray : Array
+A_D= AT(A)
+
 dev = get_backend(A_D)
 configDevice(dev)
 
 
 # agnostic backend kernel call
 for k in 1:10000
-    mul_k!(A_D,nx,ny, ndrange=size(A_D))
+    mul_k!(A_D,nx,ny;ndrange=size(A_D))
     KernelAbstractions.synchronize(dev)
 end
 
