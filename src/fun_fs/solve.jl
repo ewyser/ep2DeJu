@@ -1,3 +1,17 @@
+@kernel function kernel_solve(meD,Δt,η)
+    ix = @index(Global)
+    for dim ∈ 1:meD.nD
+        if ix≤meD.nno[end] 
+            iszero(meD.mn[ix]) ? m = 0.0 : m = (1.0/meD.mn[ix])*meD.bc[ix,dim] #(1,)
+            meD.Dn[ix,dim] = η*norm(meD.oobf[ix,:])*sign(meD.pn[ix,dim]*m)     #(2,)
+            meD.fn[ix,dim] = meD.oobf[ix,dim]-meD.Dn[ix,dim]                   #(2,)
+            meD.an[ix,dim] = meD.fn[ix,dim]*m                                  #(2,)
+            meD.vn[ix,dim] = (meD.pn[ix,dim]+Δt*meD.fn[ix,dim])*m              #(2,)   
+        end
+    end
+end
+solveK! = kernel_solve(CPU(),1)
+
 @views function solve!(meD,Δt)
     # viscous damping
     η      = 0.1
@@ -5,17 +19,7 @@
     meD.fn.= 0.0
     meD.an.= 0.0
     meD.vn.= 0.0
-    # solve momentum equation on the mesh
-    @simd for dim ∈ 1:meD.nD
-        @threads for n ∈ 1:meD.nno[end]
-            if meD.mn[n]>0.0 
-                m             = (1.0/meD.mn[n])*meD.bc[n,dim]                   #(2,)
-                meD.Dn[n,dim] = η*norm(meD.oobf[n,:])*sign(meD.pn[n,dim]*m)     #(2,)
-                meD.fn[n,dim] = meD.oobf[n,dim]-meD.Dn[n,dim]                   #(2,)
-                meD.an[n,dim] = meD.fn[n,dim]*m                                 #(2,)
-                meD.vn[n,dim] = (meD.pn[n,dim]+Δt*meD.fn[n,dim])*m              #(2,)
-            end
-        end
-    end
+    # solve momentum equation on the mesh using backend-agnostic kernel
+    solveK!(meD,Δt,η; ndrange=meD.nno[end]);KernelAbstractions.synchronize(CPU())
     return nothing
 end
