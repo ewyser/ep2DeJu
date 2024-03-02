@@ -10,8 +10,6 @@
         end
     end
 end
-solveK! = kernel_solve(CPU(),1)
-
 @views function solve!(meD,Δt)
     # viscous damping
     η      = 0.1
@@ -20,6 +18,7 @@ solveK! = kernel_solve(CPU(),1)
     meD.an.= 0.0
     meD.vn.= 0.0
     # solve momentum equation on the mesh using backend-agnostic kernel
+    @isdefined(solveK!) ? nothing : solveK! = kernel_solve(CPU(),1)
     solveK!(meD,Δt,η; ndrange=meD.nno[end]);KernelAbstractions.synchronize(CPU())
     return nothing
 end
