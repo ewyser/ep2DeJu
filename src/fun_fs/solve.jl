@@ -1,4 +1,4 @@
-@kernel function kernel_solve(meD,Δt,η)
+@kernel inbounds = true function kernel_solve(meD,Δt,η)
     ix = @index(Global)
     for dim ∈ 1:meD.nD
         if ix≤meD.nno[end] 
@@ -18,7 +18,7 @@ end
     meD.an.= 0.0
     meD.vn.= 0.0
     # solve momentum equation on the mesh using backend-agnostic kernel
-    @isdefined(solveK!) ? nothing : solveK! = kernel_solve(CPU(),1)
+    @isdefined(solveK!) ? nothing : solveK! = kernel_solve(CPU())
     solveK!(meD,Δt,η; ndrange=meD.nno[end]);KernelAbstractions.synchronize(CPU())
     return nothing
 end

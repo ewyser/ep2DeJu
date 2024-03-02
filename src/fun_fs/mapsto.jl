@@ -9,8 +9,8 @@
         meD.pn  .= 0.0
         meD.oobf.= 0.0
         # mapping back to mesh
-        @threads for dim ∈ 1:meD.nD
-            @simd for p ∈ 1:mpD.nmp
+        for dim ∈ 1:meD.nD
+            for p ∈ 1:mpD.nmp
                 # accumulation
                 for nn ∈ 1:meD.nn
                     if dim == 1 
@@ -29,8 +29,8 @@
         #meD.mn .= sum(meD.Mn,dims=2)
     elseif mapsto == "p<-n"
         # mapping back to mp's
-        @simd for dim ∈ 1:meD.nD
-            @threads for p ∈ 1:mpD.nmp        
+        for dim ∈ 1:meD.nD
+            for p ∈ 1:mpD.nmp        
                 # flip update
                 mpD.v[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
                 mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
@@ -46,8 +46,8 @@ end
         meD.pn  .= 0.0
         meD.oobf.= 0.0
         # mapping back to mesh
-        @threads for dim ∈ 1:meD.nD
-            @simd for p ∈ 1:mpD.nmp
+        for dim ∈ 1:meD.nD
+            for p ∈ 1:mpD.nmp
                 # accumulation
                 if dim == 1 
                     # lumped mass matrix
@@ -61,8 +61,8 @@ end
     elseif mapsto == "p<-n"
         ξ = 0.95
         # mapping back to mp's
-        @simd for dim ∈ 1:meD.nD
-            @threads for p ∈ 1:mpD.nmp        
+        for dim ∈ 1:meD.nD
+            for p ∈ 1:mpD.nmp        
                 # flip update
                 vFlip = mpD.v[p,dim]+Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
                 # pic update
@@ -84,8 +84,8 @@ end
         meD.pn  .= 0.0
         meD.oobf.= 0.0
         # mapping back to mesh
-        @threads for dim ∈ 1:meD.nD
-            @simd for p ∈ 1:mpD.nmp
+        for dim ∈ 1:meD.nD
+            for p ∈ 1:mpD.nmp
                 # accumulation
                 if dim == 1 
                     # lumped mass matrix
@@ -103,8 +103,8 @@ end
         #meD.mn .= sum(meD.Mn,dims=2)
     elseif mapsto == "p<-n"
         # mapping back to mp's
-        @simd for dim ∈ 1:meD.nD
-            @threads for p ∈ 1:mpD.nmp        
+        for dim ∈ 1:meD.nD
+            for p ∈ 1:mpD.nmp        
                 # pic update
                 mpD.v[p,dim] = mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim]
                 mpD.x[p,dim]+= Δt*mpD.v[p,dim]
@@ -119,23 +119,23 @@ end
     meD.pn.= 0.0
     meD.vn.= 0.0
     # accumulate material point contributions
-    @threads for dim ∈ 1:meD.nD
+    for dim ∈ 1:meD.nD
         # accumulation
-        @simd for p ∈ 1:mpD.nmp
+        for p ∈ 1:mpD.nmp
             meD.pn[mpD.p2n[:,p],dim].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p].*mpD.v[p,dim])
         end
     end    
     # solve for nodal incremental displacement
-    @simd for dim ∈ 1:meD.nD
-        @threads for n ∈ 1:meD.nno[end]
+    for dim ∈ 1:meD.nD
+        for n ∈ 1:meD.nno[end]
             if meD.mn[n]>0.0
                 meD.vn[n,dim] = (meD.pn[n,dim]*(1.0/meD.mn[n])*meD.bc[n,dim])
             end    
         end
     end
     # update material point's displacement
-    @simd for dim ∈ 1:meD.nD
-        @threads for p ∈ 1:mpD.nmp
+    for dim ∈ 1:meD.nD
+        for p ∈ 1:mpD.nmp
             mpD.u[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
         end        
     end

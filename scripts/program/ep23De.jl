@@ -37,9 +37,7 @@ include("../../src/superInclude.jl")
         # bsmpm cycle
         shpfun!(mpD,meD,ϕ∂ϕType)
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p->n")    
-        
         solve!(meD,Δt)
-        
         mapsto!(mpD,meD,g,Δt,trsfrAp,"p<-n")
         ηmax = elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,tw>te)
         # update sim time

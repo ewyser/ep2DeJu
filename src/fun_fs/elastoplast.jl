@@ -4,25 +4,24 @@
     # calculate dimensional cst.
     dim     = 1.0/meD.nD
     # action
-    @simd for p ∈ 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         # accumulation
         for nn ∈ 1:meD.nn
             meD.ΔJn[mpD.p2n[nn,p]]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.ΔJ[p])  
         end
-        #meD.ΔJn[mpD.p2n[:,p]].+= mpD.ϕ∂ϕ[:,p,1].*(mpD.m[p].*mpD.ΔJ[p])  
     end 
     # compute nodal determinant of incremental deformation 
-    @threads for n ∈ 1:meD.nno[end]
-        if meD.mn[n]>0.0 meD.ΔJn[n]/= meD.mn[n] end
+    for n ∈ 1:meD.nno[end]
+        meD.mn[n]>0.0 ? meD.ΔJn[n]/= meD.mn[n] : nothing
     end
     # compute determinant Jbar 
-    @threads for p ∈ 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         mpD.ΔF[:,:,p].*= (dot(mpD.ϕ∂ϕ[:,p,1],meD.ΔJn[mpD.p2n[:,p]])/mpD.ΔJ[p]).^dim
     end
     return nothing
 end
 @views function domainUpd!(mpD)
-    @threads for p ∈ 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         # update material point's domain length using symmetric material stretch tensor U
         λ,n        = eigen(mpD.F[:,:,p]'*mpD.F[:,:,p],sortby=nothing)
         U          = (n*diagm(sqrt.(λ))*n')
@@ -31,7 +30,7 @@ end
     return nothing
 end
 @views function deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
-    @threads for p ∈ 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         # compute velocity & displacement gradients
         mpD.∇v[:,:,p].= (permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.vn[mpD.p2n[:,p],:])'
         mpD.∇u[:,:,p].= Δt.*mpD.∇v[:,:,p]
@@ -45,9 +44,9 @@ end
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
     end
     # update material point's domain
-    if ϕ∂ϕType == :gimpm domainUpd!(mpD) end
+    ϕ∂ϕType == :gimpm ? domainUpd!(mpD) : nothing
     # volumetric locking correction
-    if isΔFbar ΔFbar!(mpD,meD) end
+    isΔFbar ? ΔFbar!(mpD,meD) : nothing
     return nothing
 end
 @views function mutate(ϵ,Χ,type)
@@ -70,7 +69,7 @@ end
     return ϵmut
 end
 @views function finite!(mpD,Del)
-    @threads for p ∈ 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         # update left cauchy-green tensor
         mpD.b[:,:,p].= mpD.ΔF[:,:,p]*mpD.b[:,:,p]*mpD.ΔF[:,:,p]'
         # compute logarithmic strain tensor
@@ -82,7 +81,7 @@ end
     return nothing
 end
 @views function inifinitesimal!(mpD,Del)
-    @threads for p ∈ 1:mpD.nmp
+    for p ∈ 1:mpD.nmp
         # calculate elastic strains & spin(s)
         mpD.ϵ[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-mpD.I
         mpD.ω[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]-mpD.ΔF[:,:,p]')
@@ -131,7 +130,7 @@ end
     end
     # get cauchy stresses
     if fwrkDeform == :finite
-        @threads for p ∈ 1:mpD.nmp
+        for p ∈ 1:mpD.nmp
             mpD.σ[:,p] .= mpD.τ[:,p]./mpD.J[p]
         end
     end
