@@ -19,6 +19,6 @@ end
     meD.vn.= 0.0
     # solve momentum equation on the mesh using backend-agnostic kernel
     @isdefined(solveK!) ? nothing : solveK! = kernel_solve(CPU())
-    solveK!(meD,Δt,η; ndrange=meD.nno[end]);KernelAbstractions.synchronize(CPU())
+    solveK!(meD,Δt,η; ndrange=meD.nno[end]);sync(CPU())
     return nothing
 end

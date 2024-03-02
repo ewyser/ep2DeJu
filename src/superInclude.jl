@@ -7,11 +7,14 @@ end
 # include dependencies & function call(s)
 try 
     using LinearAlgebra, KernelAbstractions, Plots, LaTeXStrings, Random, Base.Threads,ProgressMeter
+    import KernelAbstractions.@atomic as @atom
+    import KernelAbstractions.synchronize as sync
 catch
     @error "$(Base.active_project()) needs instantiation"
     @warn "By-default instantiation launched...may take a while"
     Pkg.instantiate()
     using LinearAlgebra, KernelAbstractions, Plots, LaTeXStrings, Random, Base.Threads,ProgressMeter
+    import KernelAbstractions.@atomic as @atom
 end
 
 # arithmetic precision & relative path for figs & data

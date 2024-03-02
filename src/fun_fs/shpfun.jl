@@ -137,63 +137,59 @@ end
     return nothing
 end
 @kernel inbounds = true function kernel_shpfun(mpD,meD)
-    mp = @index(Global)
+    nn,mp = @index(Global,NTuple)
     # calculate shape functions
-    if meD.nD == 2 && mp ≤ mpD.nmp
-        for nn ∈ 1:meD.nn
-            # compute basis functions
-            id     = mpD.p2n[nn,mp]
-            ξ      = (mpD.x[mp,1]-meD.xn[id,1]) 
-            η      = (mpD.x[mp,2]-meD.xn[id,2])
-            ϕx,dϕx = ϕ∂ϕ(ξ/meD.h[1],meD.xn[id,1],meD.xB[1:2],meD.h[1])
-            ϕz,dϕz = ϕ∂ϕ(η/meD.h[2],meD.xn[id,2],meD.xB[3:4],meD.h[2])
-            # convolution of basis function
-            mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
-            mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
-            mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz   
-            mpD.δnp[nn,1,mp] = -ξ
-            mpD.δnp[nn,2,mp] = -η
-        end
+    if meD.nD == 2 && nn ≤ meD.nn && mp ≤ mpD.nmp
+        # compute basis functions
+        id     = mpD.p2n[nn,mp]
+        ξ      = (mpD.x[mp,1]-meD.xn[id,1]) 
+        η      = (mpD.x[mp,2]-meD.xn[id,2])
+        ϕx,dϕx = ϕ∂ϕ(ξ/meD.h[1],meD.xn[id,1],meD.xB[1:2],meD.h[1])
+        ϕz,dϕz = ϕ∂ϕ(η/meD.h[2],meD.xn[id,2],meD.xB[3:4],meD.h[2])
+        # convolution of basis function
+        mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕz                                        
+        mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕz                                        
+        mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz   
+        mpD.δnp[nn,1,mp] = -ξ
+        mpD.δnp[nn,2,mp] = -η
         # B-matrix assembly
-        @views mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xx
-        @views mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yy
-        @views mpD.B[1:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,3] ## zz
-        @views mpD.B[2:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xy
-    elseif meD.nD == 3 && mp ≤ mpD.nmp
-        for nn ∈ 1:meD.nn
-            # compute basis functions
-            id     = mpD.p2n[nn,mp]
-            ξ      = (mpD.x[mp,1]-meD.xn[id,1])
-            η      = (mpD.x[mp,2]-meD.xn[id,2])
-            ζ      = (mpD.x[mp,3]-meD.xn[id,3])
-            ϕx,dϕx = ϕ∂ϕ(ξ/meD.h[1],meD.xn[id,1],meD.xB[1:2],meD.h[1])
-            ϕy,dϕy = ϕ∂ϕ(η/meD.h[2],meD.xn[id,2],meD.xB[3:4],meD.h[2])
-            ϕz,dϕz = ϕ∂ϕ(ζ/meD.h[3],meD.xn[id,3],meD.xB[5:6],meD.h[3])
-            # convolution of basis function
-            mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
-            mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
-            mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
-            mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz
-            mpD.δnp[nn,1,mp]  = -ξ
-            mpD.δnp[nn,2,mp]  = -η
-            mpD.δnp[nn,3,mp]  = -ζ
-        end
+        mpD.B[nn*meD.nD-1,1,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xx
+        mpD.B[nn*meD.nD-0,2,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## yy
+        mpD.B[nn*meD.nD-1,3,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## zz
+        mpD.B[nn*meD.nD-0,3,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xy
+    elseif meD.nD == 3 && nn ≤ meD.nn && mp ≤ mpD.nmp
+        # compute basis functions
+        id     = mpD.p2n[nn,mp]
+        ξ      = (mpD.x[mp,1]-meD.xn[id,1])
+        η      = (mpD.x[mp,2]-meD.xn[id,2])
+        ζ      = (mpD.x[mp,3]-meD.xn[id,3])
+        ϕx,dϕx = ϕ∂ϕ(ξ/meD.h[1],meD.xn[id,1],meD.xB[1:2],meD.h[1])
+        ϕy,dϕy = ϕ∂ϕ(η/meD.h[2],meD.xn[id,2],meD.xB[3:4],meD.h[2])
+        ϕz,dϕz = ϕ∂ϕ(ζ/meD.h[3],meD.xn[id,3],meD.xB[5:6],meD.h[3])
+        # convolution of basis function
+        mpD.ϕ∂ϕ[nn,mp,1] =  ϕx*  ϕy*  ϕz                                                                                
+        mpD.ϕ∂ϕ[nn,mp,2] = dϕx*  ϕy*  ϕz                                                                                
+        mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕy*  ϕz                                   
+        mpD.ϕ∂ϕ[nn,mp,4] =  ϕx*  ϕy* dϕz
+        mpD.δnp[nn,1,mp]  = -ξ
+        mpD.δnp[nn,2,mp]  = -η
+        mpD.δnp[nn,3,mp]  = -ζ
         # B-matrix assembly
-        @views mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xx
-        @views mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yy
-        @views mpD.B[3:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,4] ## zz 
-        @views mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,4] ## yz
-        @views mpD.B[3:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yz
-        @views mpD.B[1:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,4] ## xz
-        @views mpD.B[3:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xz
-        @views mpD.B[1:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,3] ## xy
-        @views mpD.B[2:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xy
+        mpD.B[nn*meD.nD-2,1,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xx
+        mpD.B[nn*meD.nD-1,2,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## yy
+        mpD.B[nn*meD.nD-0,3,mp] = mpD.ϕ∂ϕ[nn,mp,4] ## zz 
+        mpD.B[nn*meD.nD-1,4,mp] = mpD.ϕ∂ϕ[nn,mp,4] ## yz
+        mpD.B[nn*meD.nD-0,4,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## yz
+        mpD.B[nn*meD.nD-2,5,mp] = mpD.ϕ∂ϕ[nn,mp,4] ## xz
+        mpD.B[nn*meD.nD-0,5,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xz
+        mpD.B[nn*meD.nD-2,6,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## xy
+        mpD.B[nn*meD.nD-1,6,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xy
     end
 end
 function ϕ∂ϕbsmpm!(mpD,meD)
     # calculate shape functions
     @isdefined(shpfunK!) ? nothing : shpfunK! = kernel_shpfun(CPU())
-    shpfunK!(mpD,meD; ndrange=mpD.nmp);KernelAbstractions.synchronize(CPU())
+    shpfunK!(mpD,meD; ndrange=(meD.nn,mpD.nmp));sync(CPU())
     return nothing
 end
 @views function ϕ∂ϕgimpm!(mpD,meD)
