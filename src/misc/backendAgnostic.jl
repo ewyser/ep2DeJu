@@ -24,14 +24,14 @@ end
 end
 
 function configDevice(dev)
-    blockSize     = KernelAbstractions.isgpu(dev) ? 256 : 1024
-    global mat_k! = mat_kernel!(dev, 1)
-    global vec_k! = vec_kernel!(dev, 1)
+    blockSize     = KernelAbstractions.isgpu(dev) ? 256 : Threads.nthreads()
+    global mat_k! = mat_kernel!(dev, blockSize)
+    global vec_k! = vec_kernel!(dev, blockSize)
     return @info "kernel launch parameters & alias(es) done"
 end
 
 # initialize
-A     = ones(5,5)#A     = CuArray(A)
+A     = ones(2048,2048)#A     = CuArray(A)
 nx,ny = size(A)
 
 # allocate memory, get backend & kernel launch parameter
@@ -39,26 +39,23 @@ AT = CUDA.functional() ? CUDA.CuArray : Array
 A_D= AT(A)
 
 dev = get_backend(A_D)
-configDevice(dev)
+configDevice(CPU())
 
 D = (A = A_D,a = Array(ones(100,)), b = 10.0,)
 
 # agnostic backend kernel call
-for k in 1:1
-    mat_k!(D;ndrange=size(D.A))
+for k in 1:5
+    @time mat_k!(D;ndrange=size(D.A))
     KernelAbstractions.synchronize(dev)
 end
 # print result
-println(size(D.A))
-println(D.A)
 
 for k in 1:1
     vec_k!(D;ndrange=length(D.a))
     KernelAbstractions.synchronize(dev)
 end
 # print result
-println(size(D.a))
-println(D.a)
+
 
 
 sig = ones(3,3,10)
