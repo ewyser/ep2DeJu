@@ -1,31 +1,57 @@
 #--------------------------------------------------------------------------------------------
 ## doer functions
 #--------------------------------------------------------------------------------------------
-@kernel inbounds = true function kernel_p2n(mpD,meD,g)
+@kernel inbounds = true function kernel_p2n2D(mpD,meD,g)
     p = @index(Global)
     for dim ∈ 1:meD.nD
         if p≤mpD.nmp 
             # accumulation
             for nn ∈ 1:meD.nn
-                if dim == 1 
-                    # lumped mass matrix
-                    @atom meD.mn[mpD.p2n[nn,p]]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
-                end
                 @atom meD.pn[  mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,dim])
-                @atom meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
-                @atom meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p].*(mpD.B[nn*meD.nD+(dim-meD.nD),:,p]'*mpD.σ[:,p])
+                if dim == 1
+                    @atom meD.mn[  mpD.p2n[nn,p]    ]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
+                    @atom meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[3,p])
+                elseif dim == 2
+                    @atom meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
+                    @atom meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[3,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p])
+                end
+            end
+        end
+    end
+end
+@kernel inbounds = true function kernel_p2n3D(mpD,meD,g)
+    p = @index(Global)
+    for dim ∈ 1:meD.nD
+        if p≤mpD.nmp 
+            # accumulation
+            for nn ∈ 1:meD.nn
+                @atom meD.pn[  mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.v[p,dim])
+                if dim == 1
+                    @atom meD.mn[  mpD.p2n[nn,p]    ]+= mpD.ϕ∂ϕ[nn,p,1]*mpD.m[p]
+                    @atom meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[1,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[6,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[5,p])
+                elseif dim == 2
+                    @atom meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[6,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[2,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[4,p])
+                elseif dim == 3
+                    @atom meD.oobf[mpD.p2n[nn,p],dim]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*g[dim]      )
+                    @atom meD.oobf[mpD.p2n[nn,p],dim]-= mpD.V[p]*(mpD.ϕ∂ϕ[nn,p,2]*mpD.σ[5,p]+mpD.ϕ∂ϕ[nn,p,3]*mpD.σ[4,p]+mpD.ϕ∂ϕ[nn,p,4]*mpD.σ[3,p])
+                end
             end
         end
     end
 end
 @kernel inbounds = true function kernel_n2p(mpD,meD,Δt)
     p = @index(Global)
-    for dim ∈ 1:meD.nD   
-        if p≤mpD.nmp    
-            # flip update
-            mpD.v[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.an[mpD.p2n[:,p],dim])
-            mpD.x[p,dim]+= Δt*(mpD.ϕ∂ϕ[:,p,1]'*meD.vn[mpD.p2n[:,p],dim])
-        end          
+    if p≤mpD.nmp    
+        # flip update
+        for dim ∈ 1:meD.nD
+            δa = δv = 0.0
+            for nn ∈ 1:meD.nn
+                δa += (mpD.ϕ∂ϕ[nn,p,1]*meD.an[mpD.p2n[nn,p],dim])
+                δv += (mpD.ϕ∂ϕ[nn,p,1]*meD.vn[mpD.p2n[nn,p],dim])
+            end
+            mpD.v[p,dim]+= Δt*δa 
+            mpD.x[p,dim]+= Δt*δv
+        end
     end  
 end
 function flipMapping!(mpD,meD,g,Δt,mapsto)
@@ -35,7 +61,11 @@ function flipMapping!(mpD,meD,g,Δt,mapsto)
         meD.pn  .= 0.0
         meD.oobf.= 0.0
         # mapping to mesh
-        @isdefined(p2nK!) ? nothing : p2nK! = kernel_p2n(CPU())
+        if meD.nD == 2
+            @isdefined(p2nK!) ? nothing : p2nK! = kernel_p2n2D(CPU())
+        elseif meD.nD == 3
+            @isdefined(p2nK!) ? nothing : p2nK! = kernel_p2n3D(CPU())
+        end
         p2nK!(mpD,meD,g; ndrange=mpD.nmp);sync(CPU())
     elseif mapsto == "p<-n"
         # mapping back to mp's

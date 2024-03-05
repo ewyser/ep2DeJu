@@ -143,11 +143,6 @@ end
         mpD.ϕ∂ϕ[nn,mp,3] =  ϕx* dϕz   
         mpD.δnp[nn,1,mp] = -ξ
         mpD.δnp[nn,2,mp] = -η
-        # B-matrix assembly
-        mpD.B[nn*meD.nD-1,1,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xx
-        mpD.B[nn*meD.nD-0,2,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## yy
-        mpD.B[nn*meD.nD-1,3,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## zz
-        mpD.B[nn*meD.nD-0,3,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xy
     elseif meD.nD == 3 && nn ≤ meD.nn && mp ≤ mpD.nmp
         # compute basis functions
         id     = mpD.p2n[nn,mp]
@@ -165,16 +160,6 @@ end
         mpD.δnp[nn,1,mp]  = -ξ
         mpD.δnp[nn,2,mp]  = -η
         mpD.δnp[nn,3,mp]  = -ζ
-        # B-matrix assembly
-        mpD.B[nn*meD.nD-2,1,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xx
-        mpD.B[nn*meD.nD-1,2,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## yy
-        mpD.B[nn*meD.nD-0,3,mp] = mpD.ϕ∂ϕ[nn,mp,4] ## zz 
-        mpD.B[nn*meD.nD-1,4,mp] = mpD.ϕ∂ϕ[nn,mp,4] ## yz
-        mpD.B[nn*meD.nD-0,4,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## yz
-        mpD.B[nn*meD.nD-2,5,mp] = mpD.ϕ∂ϕ[nn,mp,4] ## xz
-        mpD.B[nn*meD.nD-0,5,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xz
-        mpD.B[nn*meD.nD-2,6,mp] = mpD.ϕ∂ϕ[nn,mp,3] ## xy
-        mpD.B[nn*meD.nD-1,6,mp] = mpD.ϕ∂ϕ[nn,mp,2] ## xy
     end
 end
 function ϕ∂ϕbsmpm!(mpD,meD)
