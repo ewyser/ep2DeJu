@@ -108,25 +108,6 @@ function ϕ∂ϕ(ξ,xn,xB,Δx)
     ∂ϕ/=Δx
     return ϕ,∂ϕ
 end
-@views function assemblyB!(mpD,meD,mp)
-    if meD.nD == 2
-        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xx
-        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yy
-        mpD.B[1:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,3] ## zz
-        mpD.B[2:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xy
-    elseif meD.nD == 3
-        mpD.B[1:meD.nD:end,1,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xx
-        mpD.B[2:meD.nD:end,2,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yy
-        mpD.B[3:meD.nD:end,3,mp].= mpD.ϕ∂ϕ[:,mp,4] ## zz 
-        mpD.B[2:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,4] ## yz
-        mpD.B[3:meD.nD:end,4,mp].= mpD.ϕ∂ϕ[:,mp,3] ## yz
-        mpD.B[1:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,4] ## xz
-        mpD.B[3:meD.nD:end,5,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xz
-        mpD.B[1:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,3] ## xy
-        mpD.B[2:meD.nD:end,6,mp].= mpD.ϕ∂ϕ[:,mp,2] ## xy
-    end
-    return nothing
-end
 @kernel inbounds = true function kernel_shpfun(mpD,meD)
     nn,mp = @index(Global,NTuple)
     # calculate shape functions
@@ -186,8 +167,6 @@ end
                 mpD.δnp[nn,1,mp] = -ξ
                 mpD.δnp[nn,2,mp] = -η
             end
-            # B-matrix assembly
-            assemblyB!(mpD,meD,mp)
         end
     elseif meD.nD == 3
         @threads for mp ∈ 1:mpD.nmp
@@ -209,8 +188,6 @@ end
                 mpD.δnp[nn,2,mp]  = -η
                 mpD.δnp[nn,3,mp]  = -ζ
             end
-            # B-matrix assembly
-            assemblyB!(mpD,meD,mp)
         end
     end
     return nothing
@@ -233,8 +210,6 @@ end
                 mpD.δnp[nn,1,mp] = -ξ
                 mpD.δnp[nn,2,mp] = -η
             end
-            # B-matrix assembly
-            assemblyB!(mpD,meD,mp)
         end
     elseif meD.nD == 3
         @threads for mp ∈ 1:mpD.nmp
@@ -256,13 +231,11 @@ end
                 mpD.δnp[nn,2,mp]  = -η
                 mpD.δnp[nn,3,mp]  = -ζ
             end
-            # B-matrix assembly
-            assemblyB!(mpD,meD,mp)
         end
     end
     return nothing
 end
-@views function shpfun!(mpD,meD,ϕ∂ϕType)
+function shpfun!(mpD,meD,ϕ∂ϕType)
     # get topological relations, i.e., mps-to-elements and elements-to-nodes
     meD.nD == 2 ? twoDtplgy!(mpD,meD) : meD.nD == 3 ? threeDtplgy!(mpD,meD) : nothing
     # calculate shape functions

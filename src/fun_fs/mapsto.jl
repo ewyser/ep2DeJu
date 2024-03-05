@@ -112,7 +112,6 @@ end
     end
     return nothing
 end
-
 @kernel inbounds = true function kernel_momentum(mpD,meD)
     p = @index(Global)
     for dim ∈ 1:meD.nD
