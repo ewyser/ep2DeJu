@@ -1,25 +1,29 @@
-@views function twoDtplgy!(mpD,meD)
-    xmin,zmin = meD.minC[1],meD.minC[2]
-    Δx,Δz     = 1.0/meD.h[1],1.0/meD.h[2]
-    nez       = meD.nel[2]
-    @threads for p ∈ 1:mpD.nmp
-        mpD.p2e[p]   = (floor(Int64,(mpD.x[p,2]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)
+@kernel inbounds = true function kernel_p2e2D(mpD,meD)
+    p = @index(Global)
+    if p≤mpD.nmp 
+        mpD.p2e[p] = (floor(Int64,(mpD.x[p,2]-meD.minC[2])*1.0/meD.h[2])+1)+(meD.nel[2])*floor(Int64,(mpD.x[p,1]-meD.minC[1])*1.0/meD.h[1])
         for nn ∈ 1:meD.nn
             mpD.p2n[nn,p] = meD.e2n[nn,mpD.p2e[p]]
         end
     end
+end
+function twoDtplgy!(mpD,meD)
+    @isdefined(p2eK!) ? nothing : p2eK! = kernel_p2e2D(CPU())
+    p2eK!(mpD,meD; ndrange=(mpD.nmp));sync(CPU())
     return nothing
 end
-@views function threeDtplgy!(mpD,meD)
-    xmin,ymin,zmin = meD.minC[1],meD.minC[2],meD.minC[3]
-    Δx,Δy,Δz       = 1.0/meD.h[1],1.0/meD.h[2],1.0/meD.h[3]
-    nex,ney,nez    = meD.nel[1],meD.nel[2],meD.nel[3]
-    @threads for p ∈ 1:mpD.nmp
-        mpD.p2e[p  ] = (floor(Int64,(mpD.x[p,3]-zmin)*Δz)+1)+(nez)*floor(Int64,(mpD.x[p,1]-xmin)*Δx)+(nez*nex)*floor(Int64,(mpD.x[p,2]-ymin)*Δy)
+@kernel inbounds = true function kernel_p2e3D(mpD,meD)
+    p = @index(Global)
+    if p≤mpD.nmp 
+        mpD.p2e[p  ] = (floor(Int64,(mpD.x[p,3]-meD.minC[3])*1.0/meD.h[3])+1)+(meD.nel[3])*floor(Int64,(mpD.x[p,1]-meD.minC[1])*1.0/meD.h[1])+(meD.nel[3]*meD.nel[1])*floor(Int64,(mpD.x[p,2]-meD.minC[2])*1.0/meD.h[2])
         for nn ∈ 1:meD.nn
             mpD.p2n[nn,p] = meD.e2n[nn,mpD.p2e[p]]
         end
     end
+end
+function threeDtplgy!(mpD,meD)
+    @isdefined(p2eK!) ? nothing : p2eK! = kernel_p2e3D(CPU())
+    p2eK!(mpD,meD; ndrange=(mpD.nmp));sync(CPU())
     return nothing
 end
 function N∂N(δx,h)                                                       
@@ -48,22 +52,9 @@ function S∂S(δx,h,lp)
     end
     return S,∂S    
 end
-@views function whichType(xn,xB,Δx)
-    type = -404
-    if xn==xB[1] || xn==xB[2] 
-        type = 1
-    elseif (xB[1]+0.9*Δx)<xn<(xB[1]+1.1*Δx)
-        type = 2
-    elseif (xB[1]+1.5*Δx)<xn<(xB[2]-1.5*Δx) 
-        type = 3
-    elseif (xB[2]-1.1*Δx)<xn<(xB[2]-0.9*Δx)
-        type = 4
-    end
-    return type
-end
 function ϕ∂ϕ(ξ,xn,xB,Δx)
-    ϕ,∂ϕ,type = 0.0,0.0,whichType(xn,xB,Δx)
-    if type == 1 
+    ϕ,∂ϕ = 0.0,0.0
+    if xn==xB[1] || xn==xB[2] 
         if -2.0<=ξ<=-1.0 
             ϕ = 1.0/6.0     *ξ^3+     ξ^2   +2.0*ξ    +4.0/3.0
             ∂ϕ= 3.0/6.0     *ξ^2+2.0 *ξ     +2.0
@@ -77,7 +68,7 @@ function ϕ∂ϕ(ξ,xn,xB,Δx)
             ϕ = -1.0/6.0     *ξ^3+     ξ^2  -2.0*ξ    +4.0/3.0
             ∂ϕ= -3.0/6.0     *ξ^2+2.0 *ξ    -2.0
         end    
-    elseif type == 2 
+    elseif (xB[1]+0.9*Δx)<xn<(xB[1]+1.1*Δx)
         if -1.0<=ξ<=0.0 
             ϕ = -1.0/3.0     *ξ^3-     ξ^2    +2.0/3.0
             ∂ϕ= -3.0/3.0     *ξ^2-2.0 *ξ
@@ -88,7 +79,7 @@ function ϕ∂ϕ(ξ,xn,xB,Δx)
             ϕ = -1.0/6.0     *ξ^3+     ξ^2-2.0*ξ+4.0/3.0
             ∂ϕ= -3.0/6.0     *ξ^2+2.0 *ξ  -2.0
         end
-    elseif type == 3 
+    elseif (xB[1]+1.5*Δx)<xn<(xB[2]-1.5*Δx)
         if -2.0<=ξ<=-1.0 
             ϕ =  1.0/6.0     *ξ^3+     ξ^2+2.0*ξ+4.0/3.0
             ∂ϕ=  3.0/6.0     *ξ^2+2.0 *ξ  +2.0
@@ -102,7 +93,7 @@ function ϕ∂ϕ(ξ,xn,xB,Δx)
             ϕ = -1.0/6.0     *ξ^3+     ξ^2-2.0*ξ+4.0/3.0
             ∂ϕ= -3.0/6.0     *ξ^2+2.0 *ξ  -2.0
         end
-    elseif type == 4
+    elseif (xB[2]-1.1*Δx)<xn<(xB[2]-0.9*Δx)
         if -2.0<=ξ<=-1.0
             ϕ =  1.0/6.0     *ξ^3+     ξ^2+2.0*ξ+4.0/3.0
             ∂ϕ=  3.0/6.0     *ξ^2+2.0 *ξ  +2.0 
