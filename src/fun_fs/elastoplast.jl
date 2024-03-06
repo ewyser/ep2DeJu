@@ -1,23 +1,31 @@
-@views function ΔFbar!(mpD,meD)
+@kernel inbounds = true function kernel_ΔJn(mpD,meD,arg)
+    k = @index(Global)
+    if arg == :p2n && k≤mpD.nmp 
+        # accumulation
+        for nn ∈ 1:meD.nn
+            @atom meD.ΔJn[mpD.p2n[nn,k]]+= mpD.ϕ∂ϕ[nn,k,1]*(mpD.m[k]*mpD.ΔJ[k])  
+        end
+    elseif arg == :solve && k≤meD.nno[end] 
+        # solve
+        meD.mn[k]>0.0 ? meD.ΔJn[k]/= meD.mn[k] : meD.ΔJn[k] = 0.0
+    elseif arg == :n2p && k≤mpD.nmp 
+        # mapping back to mp's
+        @views mpD.ΔF[:,:,k].*= (dot(mpD.ϕ∂ϕ[:,k,1],meD.ΔJn[mpD.p2n[:,k]])/mpD.ΔJ[k]).^(1.0/meD.nD)
+    end
+end
+function ΔFbar!(mpD,meD)
     # init mesh quantities to zero
     meD.ΔJn.= 0.0
     # calculate dimensional cst.
     dim     = 1.0/meD.nD
     # action
-    for p ∈ 1:mpD.nmp
-        # accumulation
-        for nn ∈ 1:meD.nn
-            meD.ΔJn[mpD.p2n[nn,p]]+= mpD.ϕ∂ϕ[nn,p,1]*(mpD.m[p]*mpD.ΔJ[p])  
-        end
-    end 
+    @isdefined(ΔJn!) ? nothing : ΔJn! = kernel_ΔJn(CPU())
+    # mapping to mesh
+    ΔJn!(mpD,meD,:p2n; ndrange=mpD.nmp);sync(CPU())
     # compute nodal determinant of incremental deformation 
-    for n ∈ 1:meD.nno[end]
-        meD.mn[n]>0.0 ? meD.ΔJn[n]/= meD.mn[n] : nothing
-    end
+    ΔJn!(mpD,meD,:solve; ndrange=meD.nno[end]);sync(CPU())
     # compute determinant Jbar 
-    for p ∈ 1:mpD.nmp
-        mpD.ΔF[:,:,p].*= (dot(mpD.ϕ∂ϕ[:,p,1],meD.ΔJn[mpD.p2n[:,p]])/mpD.ΔJ[p]).^dim
-    end
+    ΔJn!(mpD,meD,:n2p; ndrange=mpD.nmp);sync(CPU())
     return nothing
 end
 @views function domainUpd!(mpD)
@@ -29,7 +37,7 @@ end
     end
     return nothing
 end
-@views function deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
+@views function deform!(mpD,meD,Δt)
     for p ∈ 1:mpD.nmp
         # compute velocity & displacement gradients
         mpD.∇v[:,:,p].= (permutedims(mpD.ϕ∂ϕ[:,p,2:end],(2,1))*meD.vn[mpD.p2n[:,p],:])'
@@ -43,10 +51,6 @@ end
         mpD.J[p]      = det(mpD.F[:,:,p])
         mpD.V[p]      = mpD.J[p]*mpD.V0[p]
     end
-    # update material point's domain
-    ϕ∂ϕType == :gimpm ? domainUpd!(mpD) : nothing
-    # volumetric locking correction
-    isΔFbar ? ΔFbar!(mpD,meD) : nothing
     return nothing
 end
 @views function mutate(ϵ,Χ,type)
@@ -68,38 +72,30 @@ end
     end
     return ϵmut
 end
-@views function finite!(mpD,Del)
-    for p ∈ 1:mpD.nmp
-        # update left cauchy-green tensor
-        mpD.b[:,:,p].= mpD.ΔF[:,:,p]*mpD.b[:,:,p]*mpD.ΔF[:,:,p]'
-        # compute logarithmic strain tensor
-        λ,n          = eigen(mpD.b[:,:,p],sortby=nothing)
-        mpD.ϵ[:,:,p].= 0.5.*(n*diagm(log.(λ))*n')
-        # krichhoff stress tensor
-        mul!(mpD.τ[:,p],Del,mutate(mpD.ϵ[:,:,p],2.0,:voigt))
-    end
-    return nothing
-end
-@views function inifinitesimal!(mpD,Del)
-    for p ∈ 1:mpD.nmp
-        # calculate elastic strains & spin(s)
-        mpD.ϵ[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-mpD.I
-        mpD.ω[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]-mpD.ΔF[:,:,p]')
-        # update cauchy stress tensor
-        mpD.σJ[:,:,p].= mutate(mpD.σ[:,p],1.0,:tensor)
-        mpD.σJ[:,:,p].= mpD.σJ[:,:,p]*mpD.ω[:,:,p]'+mpD.σJ[:,:,p]'*mpD.ω[:,:,p]
-        mpD.σ[:,p]  .+= Del*mutate(mpD.ϵ[:,:,p],2.0,:voigt).+mutate(mpD.σJ[:,:,p],1.0,:voigt)
-    end   
-    return nothing
-end
-@views function elast!(mpD,Del,fwrkDeform)
+@kernel inbounds = true function kernel_elast(mpD,Del,fwrkDeform)
+    p = @index(Global)
     # deformation framework dispatcher
     if fwrkDeform == :finite
-        finite!(mpD,Del) 
+        if p ≤ mpD.nmp 
+            # update left cauchy-green tensor
+            mpD.b[:,:,p].= mpD.ΔF[:,:,p]*mpD.b[:,:,p]*mpD.ΔF[:,:,p]'
+            # compute logarithmic strain tensor
+            λ,n          = eigen(mpD.b[:,:,p],sortby=nothing)
+            mpD.ϵ[:,:,p].= 0.5.*(n*diagm(log.(λ))*n')
+            # krichhoff stress tensor
+            mpD.τ[:,p]   = Del*mutate(mpD.ϵ[:,:,p],2.0,:voigt)
+        end
     elseif fwrkDeform == :infinitesimal
-        inifinitesimal!(mpD,Del)
+        if p ≤ mpD.nmp 
+            # calculate elastic strains & spin(s)
+            mpD.ϵ[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]+mpD.ΔF[:,:,p]').-mpD.I
+            mpD.ω[:,:,p] .= 0.5.*(mpD.ΔF[:,:,p]-mpD.ΔF[:,:,p]')
+            # update cauchy stress tensor
+            mpD.σJ[:,:,p].= mutate(mpD.σ[:,p],1.0,:tensor)
+            mpD.σJ[:,:,p].= mpD.σJ[:,:,p]*mpD.ω[:,:,p]'+mpD.σJ[:,:,p]'*mpD.ω[:,:,p]
+            mpD.σ[:,p]  .+= Del*mutate(mpD.ϵ[:,:,p],2.0,:voigt).+mutate(mpD.σJ[:,:,p],1.0,:voigt)
+        end   
     end
-    return nothing
 end
 function plast!(mpD,cmParam,cmType,fwrkDeform)
     # plastic return-mapping dispatcher
@@ -119,9 +115,14 @@ function plast!(mpD,cmParam,cmType,fwrkDeform)
 end
 @views function elastoplast!(mpD,meD,cmParam,cmType,Δt,ϕ∂ϕType,isΔFbar,fwrkDeform,plastOn)
     # get incremental deformation tensor & strains
-    deform!(mpD,meD,Δt,ϕ∂ϕType,isΔFbar)
+    deform!(mpD,meD,Δt)
+    # update material point's domain
+    ϕ∂ϕType == :gimpm ? domainUpd!(mpD) : nothing
+    # volumetric locking correction
+    isΔFbar ? ΔFbar!(mpD,meD) : nothing
     # update kirchoff/cauchy stresses
-    elast!(mpD,cmParam.Del,fwrkDeform)
+    @isdefined(elastK!) ? nothing : elastK! = kernel_elast(CPU())
+    elastK!(mpD,cmParam.Del,fwrkDeform; ndrange=mpD.nmp);sync(CPU())
     # plastic corrector
     if plastOn 
         ηmax = plast!(mpD,cmParam,cmType,fwrkDeform) 
